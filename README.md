@@ -42,6 +42,12 @@ Findings
 
 Find a list of findings below ordered by severity
 
+|Severity  |Finding                                           |
+|----------|--------------------------------------------------|
+|High      |B602: subprocess_popen_with_shell_equals_true     |
+|Medium    |DUO116: use of "shell=True" is insecure in "subpro|
+|Low       |B404: blacklist                                   |
+
 B602: subprocess_popen_with_shell_equals_true
 
 subprocess call with shell=True identified, security issue.

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "simplesecurity"
-version = "2020"
+version = "2020.0.1"
 description = "Combine multiple popular python security tools and generate reports or output into different formats"
 authors = ["FredHappyface"]
 classifiers = [

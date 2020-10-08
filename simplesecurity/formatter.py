@@ -39,16 +39,28 @@ def md(findings: list[dict], heading: str = None) -> str:
 	Returns:
 		str: String to write to a file of stdout
 	"""
+	if len(findings) == 0:
+		return "No findings"
+
 	heading = heading if heading is not None else \
 	"# Findings\nFind a list of findings below ordered by severity"
 	strBuf = [heading]
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
+
+	# Summary Table
+	strBuf.append("")
+	strBuf.append("|Severity|Finding|\n|:--|:--|")
+	for finding in findings:
+		strBuf.append(f"|{finding['severity']}|{finding['title']}|")
+	strBuf.append("")
+
+	# Details
 	for finding in findings:
 		strBuf.extend([
 		f"## {finding['title']}", f"{finding['description']}",
 		f"\n\nFile: {finding['file']}",
 		f"### Severity\n\n{finding['severity']} (confidence: {finding['confidence']})",
-		f"### Evidence\n\nLine: {finding['line']}\n\n```python\n{finding['evidence']}```",
+		f"### Evidence\n\nLine: {finding['line']}\n\n```python\n{finding['evidence']}\n```",
 		])
 	return "\n".join(strBuf) + "\n"
 
@@ -112,11 +124,24 @@ def ansi(findings: list[dict], heading: str = None) -> str:
 	CY = "\033[33m"
 	CR = "\033[31m"
 	CODE = "\033[100m\033[93m"
+
+	if len(findings) == 0:
+		return "{BLD}{UL}{CB}No findings{CLS}"
+
 	# pylint: enable=invalid-name
 	heading = heading if heading is not None else \
 	f"{BLD}{UL}{CB}Findings{CLS}\n\nFind a list of findings below ordered by severity\n"
 	strBuf = [heading]
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
+
+	# Summary Table
+	strBuf.append("|Severity  |Finding                                           |")
+	strBuf.append("|----------|--------------------------------------------------|")
+	for finding in findings:
+		strBuf.append(f"|{finding['severity']: <10}|{finding['title'][:50]: <50}|")
+	strBuf.append("")
+
+	# Details
 	for finding in findings:
 		strBuf.extend([
 		f"{BLD}{UL}{CG}{finding['title']}{CLS}", f"\n{finding['description']}",
