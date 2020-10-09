@@ -29,7 +29,7 @@ Formats
 
 - ansi (for terminal)
 - json
-- md
+- markdown
 - csv
 
 ## Example Use
@@ -98,12 +98,12 @@ usage: __main__.py [-h] [--format FORMAT] [--plugin PLUGIN] [--file FILE]
 
 Combine multiple popular python security tools and generate reports or output into different formats Plugins (these require the
 plugin executable in the system path. e.g. bandit requires bandit to be in the system path...) - bandit - safety - dodgy -
-dlint Formats - ansi (for terminal) - json - md - csv
+dlint Formats - ansi (for terminal) - json - markdown - csv
 
 optional arguments:
   -h, --help            show this help message and exit
   --format FORMAT, -f FORMAT
-                        Output format. One of ansi, json, md, csv. default=ansi
+                        Output format. One of ansi, json, markdown, csv. default=ansi
   --plugin PLUGIN, -p PLUGIN
                         Plugin to use. One of bandit, safety, dodgy, dlint, all, default=all
   --file FILE, -o FILE  Filename to write to (omit for stdout)

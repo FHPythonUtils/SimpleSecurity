@@ -18,7 +18,7 @@ finding dictionary
 
 Formats
 
-- md
+- markdown
 - json
 - csv
 - ansi
@@ -27,13 +27,15 @@ Formats
 from io import StringIO
 from json import dumps
 from csv import writer
+import typing
 
 
-def md(findings: list[dict], heading: str = None) -> str:
+def markdown(findings: list[dict[str, str]],
+heading: typing.Optional[str] = None) -> str:
 	"""Format to Markdown
 
 	Args:
-		findings (list[dict]): Findings to format
+		findings (list[dict[str, str]]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
 
 	Returns:
@@ -65,11 +67,12 @@ def md(findings: list[dict], heading: str = None) -> str:
 	return "\n".join(strBuf) + "\n"
 
 
-def json(findings: list[dict], heading: str = None) -> str:
+def json(findings: list[dict[str, str]],
+heading: typing.Optional[str] = None) -> str:
 	"""Format to Json
 
 	Args:
-		findings (list[dict]): Findings to format
+		findings (list[dict[str, str]]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
 
 	Returns:
@@ -82,18 +85,20 @@ def json(findings: list[dict], heading: str = None) -> str:
 	return dumps(out, indent="\t")
 
 
-def csv(findings: list[dict], heading: str = None) -> str:
+def csv(findings: list[dict[str, str]],
+heading: typing.Optional[str] = None) -> str:
 	"""Format to CSV
 
 	Args:
-		findings (list[dict]): Findings to format
+		findings (list[dict[str, str]]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
 
 	Returns:
 		str: String to write to a file of stdout
 	"""
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
-	csvString = writer(StringIO)
+	output = StringIO()
+	csvString = writer(output)
 	csvString.writerow([heading if heading is not None else \
 	"Findings - Findings below are ordered by severity (you may want to delete this line)"])
 	csvString.writerow([
@@ -103,13 +108,15 @@ def csv(findings: list[dict], heading: str = None) -> str:
 		finding["title"], finding["description"], finding["file"],
 		finding["evidence"], finding["severity"], finding["confidence"],
 		finding["line"]])
+	return output.getvalue()
 
 
-def ansi(findings: list[dict], heading: str = None) -> str:
+def ansi(findings: list[dict[str, str]],
+heading: typing.Optional[str] = None) -> str:
 	"""Format to ansi
 
 	Args:
-		findings (list[dict]): Findings to format
+		findings (list[dict[str, str]]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
 
 	Returns:
@@ -122,7 +129,6 @@ def ansi(findings: list[dict], heading: str = None) -> str:
 	CB = "\033[36m"
 	CG = "\033[32m"
 	CY = "\033[33m"
-	CR = "\033[31m"
 	CODE = "\033[100m\033[93m"
 
 	if len(findings) == 0:
@@ -135,8 +141,10 @@ def ansi(findings: list[dict], heading: str = None) -> str:
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 
 	# Summary Table
-	strBuf.append("|Severity  |Finding                                           |")
-	strBuf.append("|----------|--------------------------------------------------|")
+	strBuf.append(
+	"|Severity  |Finding                                           |")
+	strBuf.append(
+	"|----------|--------------------------------------------------|")
 	for finding in findings:
 		strBuf.append(f"|{finding['severity']: <10}|{finding['title'][:50]: <50}|")
 	strBuf.append("")

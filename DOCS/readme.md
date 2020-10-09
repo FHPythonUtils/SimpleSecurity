@@ -15,7 +15,7 @@ Formats
 
 - ansi (for terminal)
 - json
-- md
+- markdown
 - csv
 
 Sub-modules

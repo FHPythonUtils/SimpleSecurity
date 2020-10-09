@@ -19,7 +19,7 @@ finding dictionary
 
 Formats
 
-- md
+- markdown
 - json
 - csv
 - ansi
@@ -28,44 +28,44 @@ Functions
 ---------
 
     
-`ansi(findings: list, heading: str = None) ‑> str`
+`ansi(findings: list, heading: Optional[str] = None) ‑> str`
 :   Format to ansi
     
     Args:
-            findings (list[dict]): Findings to format
+            findings (list[dict[str, str]]): Findings to format
             heading (str, optional): Optional heading to include. Defaults to None.
     
     Returns:
             str: String to write to a file of stdout
 
     
-`csv(findings: list, heading: str = None) ‑> str`
+`csv(findings: list, heading: Optional[str] = None) ‑> str`
 :   Format to CSV
     
     Args:
-            findings (list[dict]): Findings to format
+            findings (list[dict[str, str]]): Findings to format
             heading (str, optional): Optional heading to include. Defaults to None.
     
     Returns:
             str: String to write to a file of stdout
 
     
-`json(findings: list, heading: str = None) ‑> str`
+`json(findings: list, heading: Optional[str] = None) ‑> str`
 :   Format to Json
     
     Args:
-            findings (list[dict]): Findings to format
+            findings (list[dict[str, str]]): Findings to format
             heading (str, optional): Optional heading to include. Defaults to None.
     
     Returns:
             str: String to write to a file of stdout
 
     
-`md(findings: list, heading: str = None) ‑> str`
+`markdown(findings: list, heading: Optional[str] = None) ‑> str`
 :   Format to Markdown
     
     Args:
-            findings (list[dict]): Findings to format
+            findings (list[dict[str, str]]): Findings to format
             heading (str, optional): Optional heading to include. Defaults to None.
     
     Returns:

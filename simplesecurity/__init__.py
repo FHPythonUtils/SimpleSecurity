@@ -13,7 +13,7 @@ Formats
 
 - ansi (for terminal)
 - json
-- md
+- markdown
 - csv
 """
 
@@ -23,7 +23,7 @@ from sys import exit as sysexit, stdout
 import simplesecurity.formatter as formatter
 import simplesecurity.plugins as plugins
 
-FORMAT_HELP = "Output format. One of ansi, json, md, csv. default=ansi"
+FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
 PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, all, default=all"
 
 
@@ -40,7 +40,7 @@ def cli():
 
 	# Format
 	formatMap = {
-	"json": formatter.json, "md": formatter.md, "csv": formatter.csv,
+	"json": formatter.json, "markdown": formatter.markdown, "csv": formatter.csv,
 	"ansi": formatter.ansi}
 	if args.format is None:
 		formatt = formatter.ansi

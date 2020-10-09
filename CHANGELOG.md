@@ -2,6 +2,10 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2020.0.4 - 2020/10/09
+- Update typing
+- bugfix to csv formatter
+
 ## 2020.0.3 - 2020/10/09
 - Add full build with all dependencies
 
@@ -10,8 +14,8 @@ patch-level version changes can be found in [commit messages](../../commits/mast
 - Safety will now interrogate dependents of dependencies (via poetry show)
 
 ## 2020.0.1 - 2020/10/08
-- Bugfix in md formatter
-- Overview table for md and ansi
+- Bugfix in markdown formatter
+- Overview table for markdown and ansi
 
 ## 2020 - 2020/10/08
 - First release

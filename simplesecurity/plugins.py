@@ -50,7 +50,7 @@ def _doSysExec(command: str) -> tuple[int, str]:
 	return exitCode, out
 
 
-def bandit() -> list[dict]:
+def bandit() -> list[dict[str, str]]:
 	"""Wrapper for bandit. requires bandit on the system path
 
 	Raises:
@@ -65,7 +65,8 @@ def bandit() -> list[dict]:
 	findings = []
 	levelMap = {"LOW": Level.LOW, "MEDIUM": Level.MED, "HIGH": Level.HIGH,
 	"UNDEFINED": Level.UNKNOWN} # yapf: disable
-	results = loads(_doSysExec("bandit -lirq --exclude **/test_*.py -s B322 -f json .")
+	results = loads(
+	_doSysExec("bandit -lirq --exclude **/test_*.py --exclude **/test.py -s B322 -f json .")
 	[1])["results"] # yapf: disable
 	for result in results:
 		findings.append({"title": f"{result['test_id']}: {result['test_name']}",
@@ -79,7 +80,7 @@ def bandit() -> list[dict]:
 	return findings
 
 
-def safety() -> list[dict]:
+def safety() -> list[dict[str, str]]:
 	"""Wrapper for safety. requires poetry and safety on the system path
 
 	Raises:
@@ -122,7 +123,7 @@ def safety() -> list[dict]:
 	return findings
 
 
-def dodgy() -> list[dict]:
+def dodgy() -> list[dict[str, str]]:
 	"""Wrapper for dodgy. requires dodgy on the system path
 
 	Raises:
@@ -148,7 +149,7 @@ def dodgy() -> list[dict]:
 	return findings
 
 
-def dlint() -> list[dict]:
+def dlint() -> list[dict[str, str]]:
 	"""Wrapper for dlint. requires flake8 and dlint on the system path
 
 	Raises:
