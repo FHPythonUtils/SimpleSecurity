@@ -21,6 +21,7 @@ Functions return finding dictionary
 ```
 """
 
+from os import remove
 import subprocess
 import warnings
 from json import loads
@@ -96,9 +97,18 @@ def safety() -> list[dict]:
 		raise RuntimeError("safety is not on the system path")
 	findings = []
 	if poetryInstalled:
-		results = loads(_doSysExec("poetry export -f requirements.txt | safety check --stdin --json")
-		[1]) # yapf: disable
+		# Use poetry show to get dependents of dependencies
+		lines = _doSysExec("poetry show")[1].splitlines(False)
+		data = []
+		for line in lines:
+			parts = line.split()
+			data.append(f"{parts[0]}=={parts[1]}")
+		with open("reqs.txt", "w") as reqs:
+			reqs.write("\n".join(data))
+		results = loads(_doSysExec("safety check -r reqs.txt --json")[1])
+		remove("reqs.txt")
 	else:
+		# Use plain old safety (this will miss optional dependencies)
 		results = loads(_doSysExec("safety check --json")[1]) # yapf: disable
 	for result in results:
 		findings.append({"title": f"{result[4]}: {result[0]}",

@@ -21,7 +21,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='simplesecurity',
-    version='2020.0.1',
+    version='2020.0.2',
     description='Combine multiple popular python security tools and generate reports or output into different formats',
     python_requires='==3.*,>=3.5.0',
     project_urls={

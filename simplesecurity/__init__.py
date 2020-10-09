@@ -44,7 +44,7 @@ def cli():
 	"ansi": formatter.ansi}
 	if args.format is None:
 		formatt = formatter.ansi
-	elif args.format in ["json", "md", "csv", "ansi"]:
+	elif args.format in formatMap:
 		formatt = formatMap[args.format]
 	else:
 		print(FORMAT_HELP)
@@ -54,12 +54,12 @@ def cli():
 	pluginMap = {
 	"bandit": plugins.bandit, "safety": plugins.safety, "dodgy": plugins.dodgy,
 	"dlint": plugins.dlint}
-	if args.plugin is None:
+	if args.plugin is None or args.plugin == "all":
 		print(
 		formatt(plugins.bandit() + plugins.safety() + plugins.dodgy() +
 		plugins.dlint()), file=filename)
-	elif args.plugin in ["json", "md", "csv", "ansi"]:
-		print(pluginMap[args.format](), file=filename)
+	elif args.plugin in pluginMap:
+		print(formatt(pluginMap[args.plugin]()), file=filename)
 	else:
 		print(PLUGIN_HELP)
 		sysexit(1)

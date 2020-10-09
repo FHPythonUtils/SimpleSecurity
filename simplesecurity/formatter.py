@@ -126,7 +126,7 @@ def ansi(findings: list[dict], heading: str = None) -> str:
 	CODE = "\033[100m\033[93m"
 
 	if len(findings) == 0:
-		return "{BLD}{UL}{CB}No findings{CLS}"
+		return f"{BLD}{UL}{CB}No findings{CLS}"
 
 	# pylint: enable=invalid-name
 	heading = heading if heading is not None else \
