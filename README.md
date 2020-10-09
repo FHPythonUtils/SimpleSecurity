@@ -141,8 +141,15 @@ See the [CHANGELOG](/CHANGELOG.md) for more information.
 
 ## Install With PIP
 
+**"Slim" Build:** Install bandit, dlint, dodgy, poetry, and safety with pipx
+
 ```python
 pip install simplesecurity
+```
+
+**Otherwise:**
+```python
+pip install simplesecurity[full]
 ```
 
 Head to https://pypi.org/project/SimpleSecurity/ for more info

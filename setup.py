@@ -21,7 +21,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='simplesecurity',
-    version='2020.0.2',
+    version='2020.0.3',
     description='Combine multiple popular python security tools and generate reports or output into different formats',
     python_requires='==3.*,>=3.5.0',
     project_urls={
@@ -56,4 +56,10 @@ setup(
     package_dir={"": "."},
     package_data={},
     install_requires=[],
+    extras_require={
+        "full": [
+            "bandit==1.*,>=1.6.2", "dlint==0.*,>=0.10.3", "dodgy==0.*,>=0.2.1",
+            "poetry==1.*,>=1.1.2", "safety==1.*,>=1.9.0"
+        ]
+    },
 )
