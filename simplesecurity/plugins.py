@@ -20,6 +20,7 @@ Functions return finding dictionary
 }
 ```
 """
+from __future__ import annotations
 
 from os import remove
 import subprocess
@@ -27,6 +28,7 @@ import warnings
 from json import loads
 from shlex import split
 from simplesecurity.level import Level
+from simplesecurity.findings import Finding
 
 
 def _doSysExec(command: str) -> tuple[int, str]:
@@ -50,7 +52,7 @@ def _doSysExec(command: str) -> tuple[int, str]:
 	return exitCode, out
 
 
-def bandit() -> list[dict[str, str]]:
+def bandit() -> list[Finding]:
 	"""Wrapper for bandit. requires bandit on the system path
 
 	Raises:
@@ -58,7 +60,7 @@ def bandit() -> list[dict[str, str]]:
 		error
 
 	Returns:
-		list[dict]: our findings dictionary
+		list[Finding]: our findings dictionary
 	"""
 	if _doSysExec("bandit -h")[0] != 0:
 		raise RuntimeError("bandit is not on the system path")
@@ -80,7 +82,7 @@ def bandit() -> list[dict[str, str]]:
 	return findings
 
 
-def safety() -> list[dict[str, str]]:
+def safety() -> list[Finding]:
 	"""Wrapper for safety. requires poetry and safety on the system path
 
 	Raises:
@@ -88,7 +90,7 @@ def safety() -> list[dict[str, str]]:
 		error
 
 	Returns:
-		list[dict]: our findings dictionary
+		list[Finding]: our findings dictionary
 	"""
 	poetryInstalled = True
 	if _doSysExec("poetry -h")[0] != 0:
@@ -123,7 +125,7 @@ def safety() -> list[dict[str, str]]:
 	return findings
 
 
-def dodgy() -> list[dict[str, str]]:
+def dodgy() -> list[Finding]:
 	"""Wrapper for dodgy. requires dodgy on the system path
 
 	Raises:
@@ -131,7 +133,7 @@ def dodgy() -> list[dict[str, str]]:
 		error
 
 	Returns:
-		list[dict]: our findings dictionary
+		list[Finding]: our findings dictionary
 	"""
 	if _doSysExec("dodgy -h")[0] != 0:
 		raise RuntimeError("dodgy is not on the system path")
@@ -149,7 +151,7 @@ def dodgy() -> list[dict[str, str]]:
 	return findings
 
 
-def dlint() -> list[dict[str, str]]:
+def dlint() -> list[Finding]:
 	"""Wrapper for dlint. requires flake8 and dlint on the system path
 
 	Raises:
@@ -157,7 +159,7 @@ def dlint() -> list[dict[str, str]]:
 		error
 
 	Returns:
-		list[dict]: our findings dictionary
+		list[Finding]: our findings dictionary
 	"""
 	if _doSysExec("flake8 -h")[0] != 0:
 		raise RuntimeError("flake8 is not on the system path")

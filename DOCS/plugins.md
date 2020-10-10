@@ -34,7 +34,7 @@ Functions
             error
     
     Returns:
-            list[dict]: our findings dictionary
+            list[Finding]: our findings dictionary
 
     
 `dlint() ‑> list`
@@ -45,7 +45,7 @@ Functions
             error
     
     Returns:
-            list[dict]: our findings dictionary
+            list[Finding]: our findings dictionary
 
     
 `dodgy() ‑> list`
@@ -56,7 +56,7 @@ Functions
             error
     
     Returns:
-            list[dict]: our findings dictionary
+            list[Finding]: our findings dictionary
 
     
 `safety() ‑> list`
@@ -67,4 +67,4 @@ Functions
             error
     
     Returns:
-            list[dict]: our findings dictionary
+            list[Finding]: our findings dictionary

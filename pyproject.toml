@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "simplesecurity"
-version = "2020.0.4"
+version = "2020.0.5"
 description = "Combine multiple popular python security tools and generate reports or output into different formats"
 authors = ["FredHappyface"]
 classifiers = [
@@ -14,8 +14,6 @@ classifiers = [
 	"Natural Language :: English",
 	"Operating System :: OS Independent",
 	"Programming Language :: Python :: 3",
-	"Programming Language :: Python :: 3.5",
-	"Programming Language :: Python :: 3.6",
 	"Programming Language :: Python :: 3.7",
 	"Programming Language :: Python :: 3.8",
 	"Programming Language :: Python :: 3.9",
@@ -33,7 +31,7 @@ readme = "README.md"
 simplesecurity = 'simplesecurity:cli'
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.7"
 poetry = {version = "^1.1.2", optional = true}
 bandit = {version = "^1.6.2", optional = true}
 safety = {version = "^1.9.0", optional = true}

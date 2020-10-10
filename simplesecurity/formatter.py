@@ -23,19 +23,21 @@ Formats
 - csv
 - ansi
 """
+from __future__ import annotations
 
 from io import StringIO
 from json import dumps
 from csv import writer
 import typing
+from simplesecurity.findings import Finding
 
 
-def markdown(findings: list[dict[str, str]],
+def markdown(findings: list[Finding],
 heading: typing.Optional[str] = None) -> str:
 	"""Format to Markdown
 
 	Args:
-		findings (list[dict[str, str]]): Findings to format
+		findings (list[Finding]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
 
 	Returns:
@@ -67,12 +69,12 @@ heading: typing.Optional[str] = None) -> str:
 	return "\n".join(strBuf) + "\n"
 
 
-def json(findings: list[dict[str, str]],
+def json(findings: list[Finding],
 heading: typing.Optional[str] = None) -> str:
 	"""Format to Json
 
 	Args:
-		findings (list[dict[str, str]]): Findings to format
+		findings (list[Finding]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
 
 	Returns:
@@ -85,12 +87,12 @@ heading: typing.Optional[str] = None) -> str:
 	return dumps(out, indent="\t")
 
 
-def csv(findings: list[dict[str, str]],
+def csv(findings: list[Finding],
 heading: typing.Optional[str] = None) -> str:
 	"""Format to CSV
 
 	Args:
-		findings (list[dict[str, str]]): Findings to format
+		findings (list[Finding]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
 
 	Returns:
@@ -111,12 +113,12 @@ heading: typing.Optional[str] = None) -> str:
 	return output.getvalue()
 
 
-def ansi(findings: list[dict[str, str]],
+def ansi(findings: list[Finding],
 heading: typing.Optional[str] = None) -> str:
 	"""Format to ansi
 
 	Args:
-		findings (list[dict[str, str]]): Findings to format
+		findings (list[Finding]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
 
 	Returns:
