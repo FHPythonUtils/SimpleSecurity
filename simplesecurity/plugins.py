@@ -121,7 +121,13 @@ def safety() -> list[Finding]:
 		data = []
 		for line in lines:
 			parts = line.split()
-			data.append(f"{parts[0]}=={parts[2]}")
+			if len(parts) > 1:
+				if "(!)" in parts[1] and len(parts) > 2:
+					data.append(f"{parts[0]}=={parts[2]}")
+				else:
+					data.append(f"{parts[0]}=={parts[1]}")
+			else:
+				data.append(f"{parts[0]}")
 		with open("reqs.txt", "w") as reqs:
 			reqs.write("\n".join(data))
 		results = loads(_doSysExec("safety check -r reqs.txt --json")[1])

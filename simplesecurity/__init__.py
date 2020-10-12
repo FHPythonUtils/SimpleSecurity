@@ -19,6 +19,8 @@ Formats
 import argparse
 from sys import exit as sysexit, stdout
 
+stdout.reconfigure(encoding="utf-8")
+
 import simplesecurity.formatter as formatter
 import simplesecurity.plugins as plugins
 
@@ -54,8 +56,7 @@ def cli():
 	"bandit": plugins.bandit, "safety": plugins.safety, "dodgy": plugins.dodgy,
 	"dlint": plugins.dlint}
 	if args.plugin is None or args.plugin == "all":
-		print(
-		formatt(plugins.bandit() + plugins.safety() + plugins.dodgy() +
+		print(formatt(plugins.bandit() + plugins.safety() + plugins.dodgy() +
 		plugins.dlint()), file=filename)
 	elif args.plugin in pluginMap:
 		print(formatt(pluginMap[args.plugin]()), file=filename)

@@ -2,6 +2,10 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2020.1.1 - 2020/10/12
+- fix error with poetry show
+- set stdout to utf-8 to work with fhmake
+
 ## 2020.1 - 2020/10/12
 - now works on linux (tested on wsl)
 - extract evidence from the source file using the desired line number
