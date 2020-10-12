@@ -2,6 +2,21 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2020.1 - 2020/10/12
+- now works on linux (tested on wsl)
+- extract evidence from the source file using the desired line number
+- use utf-8 encoding in files
+- update to ansi formatting
+  - reduce redundancy and therefore save scrolling
+  - use box drawing chars to make nice pretty tables
+  - update code snippet formatting
+- update to csv formatting
+  - integrate with new evidence type
+- update to markdown formatting
+  - integrate with new evidence type
+- update to md formatting
+  - integrate with new evidence type
+
 ## 2020.0.5 - 2020/10/10
 - fix python 3.7 and 3.8
 

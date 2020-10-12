@@ -8,10 +8,10 @@ finding dictionary
 	title: str
 	description: str
 	file: str
-	evidence: str
+	evidence: list[Line]
 	severity: Level
 	confidence: Level
-	line: str
+	line: int
 	_other: {}
 }
 ```
@@ -29,7 +29,24 @@ from io import StringIO
 from json import dumps
 from csv import writer
 import typing
-from simplesecurity.findings import Finding
+from simplesecurity.types import Finding, Line
+
+
+def formatEvidence(evidence: list[Line], newlineChar: bool =True) -> str:
+	"""Format evidence to plaintext
+
+	Args:
+		evidence (list[Line]): list of lines of code
+		newlineChar (bool, optional): use newline char. Defaults to true
+
+	Returns:
+		str: string representation of this
+	"""
+	evidenceText = [line["content"] for line in evidence]
+	if newlineChar:
+		return "\n".join(evidenceText)
+	return "\\n".join(evidenceText)
+
 
 
 def markdown(findings: list[Finding],
@@ -64,7 +81,7 @@ heading: typing.Optional[str] = None) -> str:
 		f"## {finding['title']}", f"{finding['description']}",
 		f"\n\nFile: {finding['file']}",
 		f"### Severity\n\n{finding['severity']} (confidence: {finding['confidence']})",
-		f"### Evidence\n\nLine: {finding['line']}\n\n```python\n{finding['evidence']}\n```",
+		f"### Evidence\n\nLine: {finding['line']}\n\n```python\n{formatEvidence(finding['evidence'])}\n```",
 		])
 	return "\n".join(strBuf) + "\n"
 
@@ -108,7 +125,7 @@ heading: typing.Optional[str] = None) -> str:
 	for finding in findings:
 		csvString.writerow([
 		finding["title"], finding["description"], finding["file"],
-		finding["evidence"], finding["severity"], finding["confidence"],
+		formatEvidence(finding["evidence"], False), finding["severity"], finding["confidence"],
 		finding["line"]])
 	return output.getvalue()
 
@@ -131,7 +148,7 @@ heading: typing.Optional[str] = None) -> str:
 	CB = "\033[36m"
 	CG = "\033[32m"
 	CY = "\033[33m"
-	CODE = "\033[100m\033[93m"
+	CODE = "│\033[100m\033[93m"
 
 	if len(findings) == 0:
 		return f"{BLD}{UL}{CB}No findings{CLS}"
@@ -143,20 +160,24 @@ heading: typing.Optional[str] = None) -> str:
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 
 	# Summary Table
-	strBuf.append(
-	"|Severity  |Finding                                           |")
-	strBuf.append(
-	"|----------|--------------------------------------------------|")
+	strBuf.append(f"┌{'─'*10}┬{'─'*50}┐")
+	strBuf.append("│Severity  │Finding                                           │") # yapf: disable
+	strBuf.append(f"├{'─'*10}┼{'─'*50}┤")
 	for finding in findings:
-		strBuf.append(f"|{finding['severity']: <10}|{finding['title'][:50]: <50}|")
+		strBuf.append(f"│{finding['severity']: <10}│{finding['title'][:50]: <50}│")
+	strBuf.append(f"└{'─'*10}┴{'─'*50}┘")
 	strBuf.append("")
 
 	# Details
 	for finding in findings:
+		evidence = [f"┌{' ' + finding['file'] + ' ':─^85}┐"]
+		for line in finding['evidence']:
+			evidence.append((CODE if line["selected"] else "│") +f"{str(line['line'])[:3]: >3}  {line['content'][:80]: <80}{CLS}│")
+		evidence.append(f"└{'─'*85}┘")
+		evidenceStr = '\n'.join(evidence)
 		strBuf.extend([
-		f"{BLD}{UL}{CG}{finding['title']}{CLS}", f"\n{finding['description']}",
-		f"File: {finding['file']}\n",
-		f">{UL}{CY}Severity: {finding['severity']} (confidence: {finding['confidence']}){CLS}\n",
-		f">{UL}{CY}Evidence{CLS}\n\nLine: {finding['line']}\n{CODE}{finding['evidence']}{CLS}\n",
+		f"{BLD}{UL}{CG}{finding['title']}{CLS}", f"{finding['description']}",
+		f"\n{UL}{CY}Severity: {finding['severity']} (confidence: {finding['confidence']}){CLS}\n",
+		f"{UL}{CY}Evidence{CLS}\n{evidenceStr}\n",
 		])
 	return "\n".join(strBuf)

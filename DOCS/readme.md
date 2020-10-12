@@ -20,10 +20,10 @@ Formats
 
 Sub-modules
 -----------
-* simplesecurity.findings
 * simplesecurity.formatter
 * simplesecurity.level
 * simplesecurity.plugins
+* simplesecurity.types
 
 Functions
 ---------

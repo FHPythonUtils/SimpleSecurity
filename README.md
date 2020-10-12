@@ -36,60 +36,7 @@ Formats
 
 See below for the output if you run `simplesecurity` in this directory
 
-```txt
->> simplesecurity
-Findings
-
-Find a list of findings below ordered by severity
-
-|Severity  |Finding                                           |
-|----------|--------------------------------------------------|
-|High      |B602: subprocess_popen_with_shell_equals_true     |
-|Medium    |DUO116: use of "shell=True" is insecure in "subpro|
-|Low       |B404: blacklist                                   |
-
-B602: subprocess_popen_with_shell_equals_true
-
-subprocess call with shell=True identified, security issue.
-File: ./simplesecurity/plugins.py
-
->Severity: High (confidence: High)
-
->Evidence
-
-Line: 45
-44      """
-45      with subprocess.Popen(split(command), shell=True, stdout=subprocess.PIPE,
-46      stderr=subprocess.STDOUT, universal_newlines=True) as process:
-47              out = process.communicate()[0]
-
-DUO116: use of "shell=True" is insecure in "subprocess" module
-
-use of "shell=True" is insecure in "subprocess" module
-File: ./simplesecurity/plugins.py
-
->Severity: Medium (confidence: Medium)
-
->Evidence
-
-Line: 45
-Unknown
-
-B404: blacklist
-
-Consider possible security implications associated with subprocess module.
-File: ./simplesecurity/plugins.py
-
->Severity: Low (confidence: High)
-
->Evidence
-
-Line: 24
-23
-24 import subprocess
-25 import warnings
-
-```
+<img src="readme-assets/screenshots/sec.svg" width="500px">
 
 ### Help
 

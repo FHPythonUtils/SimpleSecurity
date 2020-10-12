@@ -12,13 +12,12 @@ Functions return finding dictionary
 	title: str
 	description: str
 	file: str
-	evidence: str
+	evidence: list[Line]
 	severity: Level
 	confidence: Level
-	line: str
+	line: int
 	_other: {}
 }
-```
 """
 from __future__ import annotations
 
@@ -26,18 +25,12 @@ from os import remove
 import subprocess
 import warnings
 from json import loads
-from shlex import split
 from simplesecurity.level import Level
-from simplesecurity.findings import Finding
+from simplesecurity.types import Finding, Line
 
 
 def _doSysExec(command: str) -> tuple[int, str]:
 	"""execute a command and check for errors
-	shlex.split can be used to make this safer.
-	see https://docs.python.org/3/library/shlex.html#shlex.quote
-	Note however, that we can still call _doSysExec with a malicious command
-	but this change mitigates command chaining. Ultimately, do not accept user
-	input or if you do, escape with shlex.quote(), shlex.join(shlex.split())
 
 	Args:
 		command (str): commands as a string
@@ -45,11 +38,33 @@ def _doSysExec(command: str) -> tuple[int, str]:
 	Raises:
 		RuntimeWarning: throw a warning should there be a non exit code
 	"""
-	with subprocess.Popen(split(command), shell=True, stdout=subprocess.PIPE,
+	with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
 	stderr=subprocess.STDOUT, universal_newlines=True) as process:
 		out = process.communicate()[0]
 		exitCode = process.returncode
 	return exitCode, out
+
+
+def extractEvidence(desiredLine: int, file: str) -> list[Line]:
+	"""Grab evidence from the source file
+
+	Args:
+		desiredLine (int): line to highlight
+		file (str): file to extract evidence from
+
+	Returns:
+		list[Line]: list of lines
+	"""
+	with open(file) as fileContents:
+		start, stop = max(desiredLine - 3, 0), min(desiredLine + 2,
+		sum(1 for i in open(file, 'rb')))
+		for line in range(start):
+			next(fileContents)
+		content = []
+		for line in range(start + 1, stop + 1):
+			content.append({"selected": line==desiredLine,"line": line,
+			"content": next(fileContents).rstrip().replace("\t", "    ")}) # yapf: disable
+	return content
 
 
 def bandit() -> list[Finding]:
@@ -71,10 +86,11 @@ def bandit() -> list[Finding]:
 	_doSysExec("bandit -lirq --exclude **/test_*.py --exclude **/test.py -s B322 -f json .")
 	[1])["results"] # yapf: disable
 	for result in results:
+		file =result['filename'].replace("\\", "/")
 		findings.append({"title": f"{result['test_id']}: {result['test_name']}",
 		"description": result['issue_text'],
-		"file": result['filename'].replace("\\", "/"),
-		"evidence": result['code'].strip(),
+		"file": file,
+		"evidence": extractEvidence(result["line_number"], file),
 		"severity": levelMap[result['issue_severity']],
 		"confidence": levelMap[result['issue_confidence']],
 		"line": result['line_number'],
@@ -105,7 +121,7 @@ def safety() -> list[Finding]:
 		data = []
 		for line in lines:
 			parts = line.split()
-			data.append(f"{parts[0]}=={parts[1]}")
+			data.append(f"{parts[0]}=={parts[2]}")
 		with open("reqs.txt", "w") as reqs:
 			reqs.write("\n".join(data))
 		results = loads(_doSysExec("safety check -r reqs.txt --json")[1])
@@ -117,7 +133,8 @@ def safety() -> list[Finding]:
 		findings.append({"title": f"{result[4]}: {result[0]}",
 		"description": result[3],
 		"file": "Project Requirements",
-		"evidence": f"{result[0]} version={result[2]} affects{result[1]}",
+		"evidence": {"selected": True, "line": 0,
+		"content": f"{result[0]} version={result[2]} affects{result[1]}"},
 		"severity": Level.MED,
 		"confidence": Level.HIGH,
 		"line": "Unknown",
@@ -140,10 +157,11 @@ def dodgy() -> list[Finding]:
 	findings = []
 	results = loads(_doSysExec("dodgy")[1])["warnings"]
 	for result in results:
+		file = result["path"].replace("\\", "/")
 		findings.append({"title": result["message"],
 		"description": result["message"],
-		"file": result["path"].replace("\\", "/"),
-		"evidence": result["code"],
+		"file": file,
+		"evidence": extractEvidence(result["line"], file),
 		"severity": Level.MED,
 		"confidence": Level.MED,
 		"line": result["line"],
@@ -167,13 +185,16 @@ def dlint() -> list[Finding]:
 	results = _doSysExec("flake8 --select=DUO --format='%(path)s::%(row)d" +
 	"::%(col)d::%(code)s::%(text)s' .")[1].splitlines(False)# yapf: disable
 	for line in results:
+		if line[0] == "'":
+			line = line[1:-1]
 		result = line.split("::")
+		file = result[0].replace("\\", "/")
 		findings.append({"title": f"{result[3]}: {result[4]}",
 		"description": result[4],
-		"file": result[0].replace("\\", "/"),
-		"evidence": "Unknown",
+		"file": file,
+		"evidence": extractEvidence(int(result[1]), file),
 		"severity": Level.MED,
 		"confidence": Level.MED,
-		"line": result[1],
+		"line": int(result[1]),
 		"_other": {"col": result[2]}}) # yapf: disable
 	return findings

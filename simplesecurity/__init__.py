@@ -16,7 +16,6 @@ Formats
 - markdown
 - csv
 """
-
 import argparse
 from sys import exit as sysexit, stdout
 
@@ -36,7 +35,7 @@ def cli():
 	help="Filename to write to (omit for stdout)")
 	args = parser.parse_args()
 	# File
-	filename = stdout if args.file is None else open(args.file, "w")
+	filename = stdout if args.file is None else open(args.file, "w", encoding="utf-8")
 
 	# Format
 	formatMap = {

@@ -9,10 +9,10 @@ finding dictionary
         title: str
         description: str
         file: str
-        evidence: str
+        evidence: list[Line]
         severity: Level
         confidence: Level
-        line: str
+        line: int
         _other: {}
 }
 ```
@@ -48,6 +48,17 @@ Functions
     
     Returns:
             str: String to write to a file of stdout
+
+    
+`formatEvidence(evidence: list[Line], newlineChar: bool = True) ‑> str`
+:   Format evidence to plaintext
+    
+    Args:
+            evidence (list[Line]): list of lines of code
+            newlineChar (bool, optional): use newline char. Defaults to true
+    
+    Returns:
+            str: string representation of this
 
     
 `json(findings: list[Finding], heading: typing.Optional[str] = None) ‑> str`

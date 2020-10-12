@@ -14,13 +14,12 @@ Functions return finding dictionary
         title: str
         description: str
         file: str
-        evidence: str
+        evidence: list[Line]
         severity: Level
         confidence: Level
-        line: str
+        line: int
         _other: {}
 }
-```
 
 Functions
 ---------
@@ -57,6 +56,17 @@ Functions
     
     Returns:
             list[Finding]: our findings dictionary
+
+    
+`extractEvidence(desiredLine: int, file: str) ‑> list`
+:   Grab evidence from the source file
+    
+    Args:
+            desiredLine (int): line to highlight
+            file (str): file to extract evidence from
+    
+    Returns:
+            list[Line]: list of lines
 
     
 `safety() ‑> list`
