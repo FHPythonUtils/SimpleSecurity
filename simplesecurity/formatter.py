@@ -121,10 +121,10 @@ heading: typing.Optional[str] = None) -> str:
 	csvString.writerow([heading if heading is not None else \
 	"Findings - Findings below are ordered by severity (you may want to delete this line)"])
 	csvString.writerow([
-	"title", "description", "file", "evidence", "severity", "confidence", "line"])
+	"id", "title", "description", "file", "evidence", "severity", "confidence", "line"])
 	for finding in findings:
 		csvString.writerow([
-		finding["title"], finding["description"], finding["file"],
+		finding["id"], finding["title"], finding["description"], finding["file"],
 		formatEvidence(finding["evidence"], False), finding["severity"], finding["confidence"],
 		finding["line"]])
 	return output.getvalue()

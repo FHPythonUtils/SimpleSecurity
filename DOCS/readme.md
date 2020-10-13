@@ -20,6 +20,7 @@ Formats
 
 Sub-modules
 -----------
+* simplesecurity.deduplicate
 * simplesecurity.formatter
 * simplesecurity.level
 * simplesecurity.plugins

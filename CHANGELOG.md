@@ -2,10 +2,15 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2020.2 - 2020/10/13
+- New deduplication engine - So no more duplicates when running from the command
+  line! Use `from simplesecurity.deduplicate import deduplicate` to use the
+  deduplicator downstream.
+- `id`s are now included in findings and are included in json and csv output
+
 ## 2020.1.4 - 2020/10/13
 - Utf8 is not always the answer. But it is most of the time so use
   `errors="ignore"` for chars that we can't decode
-
 
 ## 2020.1.2/3 - 2020/10/13
 - Windows makes me want to cry 😢 - specify utf-8 in more places...

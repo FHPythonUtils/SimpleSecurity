@@ -23,6 +23,7 @@ stdout.reconfigure(encoding="utf-8")
 
 import simplesecurity.formatter as formatter
 import simplesecurity.plugins as plugins
+from simplesecurity.deduplicate import deduplicate
 
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
 PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, all, default=all"
@@ -56,10 +57,10 @@ def cli():
 	"bandit": plugins.bandit, "safety": plugins.safety, "dodgy": plugins.dodgy,
 	"dlint": plugins.dlint}
 	if args.plugin is None or args.plugin == "all":
-		print(formatt(plugins.bandit() + plugins.safety() + plugins.dodgy() +
-		plugins.dlint()), file=filename)
+		print(formatt(deduplicate(plugins.bandit() + plugins.safety() + plugins.dodgy() +
+		plugins.dlint())), file=filename)
 	elif args.plugin in pluginMap:
-		print(formatt(pluginMap[args.plugin]()), file=filename)
+		print(formatt(deduplicate(pluginMap[args.plugin]())), file=filename)
 	else:
 		print(PLUGIN_HELP)
 		sysexit(1)

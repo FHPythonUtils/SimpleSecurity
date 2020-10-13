@@ -37,6 +37,9 @@ Classes
     `file: str`
     :
 
+    `id: str`
+    :
+
     `line: int`
     :
 

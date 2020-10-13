@@ -87,7 +87,8 @@ def bandit() -> list[Finding]:
 	[1])["results"] # yapf: disable
 	for result in results:
 		file =result['filename'].replace("\\", "/")
-		findings.append({"title": f"{result['test_id']}: {result['test_name']}",
+		findings.append({"id": result['test_id'],
+		"title": f"{result['test_id']}: {result['test_name']}",
 		"description": result['issue_text'],
 		"file": file,
 		"evidence": extractEvidence(result["line_number"], file),
@@ -136,7 +137,8 @@ def safety() -> list[Finding]:
 		# Use plain old safety (this will miss optional dependencies)
 		results = loads(_doSysExec("safety check --json")[1]) # yapf: disable
 	for result in results:
-		findings.append({"title": f"{result[4]}: {result[0]}",
+		findings.append({"id": result[4],
+		"title": f"{result[4]}: {result[0]}",
 		"description": result[3],
 		"file": "Project Requirements",
 		"evidence": {"selected": True, "line": 0,
@@ -163,8 +165,9 @@ def dodgy() -> list[Finding]:
 	findings = []
 	results = loads(_doSysExec("dodgy")[1])["warnings"]
 	for result in results:
-		file = result["path"].replace("\\", "/")
-		findings.append({"title": result["message"],
+		file = "./" + result["path"].replace("\\", "/")
+		findings.append({"id": result['code'],
+		"title": result["message"],
 		"description": result["message"],
 		"file": file,
 		"evidence": extractEvidence(result["line"], file),
@@ -195,7 +198,8 @@ def dlint() -> list[Finding]:
 			line = line[1:-1]
 		result = line.split("::")
 		file = result[0].replace("\\", "/")
-		findings.append({"title": f"{result[3]}: {result[4]}",
+		findings.append({"id": result[3],
+		"title": f"{result[3]}: {result[4]}",
 		"description": result[4],
 		"file": file,
 		"evidence": extractEvidence(int(result[1]), file),

@@ -21,6 +21,7 @@ class Finding(typing.TypedDict):
 		_other: {}
 	}
 	"""
+	id: str
 	title: str
 	description: str
 	file: str
