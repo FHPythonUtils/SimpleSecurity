@@ -39,7 +39,7 @@ def _doSysExec(command: str) -> tuple[int, str]:
 		RuntimeWarning: throw a warning should there be a non exit code
 	"""
 	with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-	stderr=subprocess.STDOUT, universal_newlines=True) as process:
+	stderr=subprocess.STDOUT, encoding="utf-8") as process:
 		out = process.communicate()[0]
 		exitCode = process.returncode
 	return exitCode, out
@@ -128,7 +128,7 @@ def safety() -> list[Finding]:
 					data.append(f"{parts[0]}=={parts[1]}")
 			else:
 				data.append(f"{parts[0]}")
-		with open("reqs.txt", "w") as reqs:
+		with open("reqs.txt", "w", encoding="utf-8") as reqs:
 			reqs.write("\n".join(data))
 		results = loads(_doSysExec("safety check -r reqs.txt --json")[1])
 		remove("reqs.txt")

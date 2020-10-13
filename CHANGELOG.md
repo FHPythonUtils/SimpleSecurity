@@ -2,7 +2,7 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
-## 2020.1.2 - 2020/10/13
+## 2020.1.2/3 - 2020/10/13
 - Windows makes me want to cry 😢 - specify utf-8 in more places...
 
 ## 2020.1.1 - 2020/10/12
