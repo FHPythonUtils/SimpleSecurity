@@ -39,7 +39,7 @@ def _doSysExec(command: str) -> tuple[int, str]:
 		RuntimeWarning: throw a warning should there be a non exit code
 	"""
 	with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-	stderr=subprocess.STDOUT, encoding="utf-8") as process:
+	stderr=subprocess.STDOUT, encoding="utf-8", errors="ignore") as process:
 		out = process.communicate()[0]
 		exitCode = process.returncode
 	return exitCode, out
@@ -55,7 +55,7 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 	Returns:
 		list[Line]: list of lines
 	"""
-	with open(file, "r", encoding="utf-8") as fileContents:
+	with open(file, "r", encoding="utf-8", errors="ignore") as fileContents:
 		start, stop = max(desiredLine - 3, 0), min(desiredLine + 2,
 		sum(1 for i in open(file, 'rb')))
 		for line in range(start):
@@ -128,7 +128,7 @@ def safety() -> list[Finding]:
 					data.append(f"{parts[0]}=={parts[1]}")
 			else:
 				data.append(f"{parts[0]}")
-		with open("reqs.txt", "w", encoding="utf-8") as reqs:
+		with open("reqs.txt", "w", encoding="utf-8", errors="ignore") as reqs:
 			reqs.write("\n".join(data))
 		results = loads(_doSysExec("safety check -r reqs.txt --json")[1])
 		remove("reqs.txt")
