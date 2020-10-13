@@ -55,7 +55,7 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 	Returns:
 		list[Line]: list of lines
 	"""
-	with open(file) as fileContents:
+	with open(file, "r", encoding="utf-8") as fileContents:
 		start, stop = max(desiredLine - 3, 0), min(desiredLine + 2,
 		sum(1 for i in open(file, 'rb')))
 		for line in range(start):
