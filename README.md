@@ -41,11 +41,11 @@ See below for the output if you run `simplesecurity` in this directory
 ### Help
 
 ```txt
-usage: __main__.py [-h] [--format FORMAT] [--plugin PLUGIN] [--file FILE]
+usage: __main__.py [-h] [--format FORMAT] [--plugin PLUGIN] [--file FILE] [--level LEVEL] [--confidence CONFIDENCE]
+                   [--no-colour] [--high-contrast]
 
-Combine multiple popular python security tools and generate reports or output into different formats Plugins (these require the
-plugin executable in the system path. e.g. bandit requires bandit to be in the system path...) - bandit - safety - dodgy -
-dlint Formats - ansi (for terminal) - json - markdown - csv
+Combine multiple popular python security tools and generate reports or output
+into different formats
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -54,6 +54,12 @@ optional arguments:
   --plugin PLUGIN, -p PLUGIN
                         Plugin to use. One of bandit, safety, dodgy, dlint, all, default=all
   --file FILE, -o FILE  Filename to write to (omit for stdout)
+  --level LEVEL, -l LEVEL
+                        Minimum level/ severity to show
+  --confidence CONFIDENCE, -c CONFIDENCE
+                        Minimum confidence to show
+  --no-colour, -z       No ANSI colours
+  --high-contrast, -Z   High contrast colours
 ```
 
 You can also import this into your own project and use any of the functions

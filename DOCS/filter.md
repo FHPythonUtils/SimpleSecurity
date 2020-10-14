@@ -1,5 +1,5 @@
-Module simplesecurity.deduplicate
-=================================
+Module simplesecurity.filter
+============================
 Some of our analysis tools overlap one-another so lets remove duplicates
 
 Functions
@@ -11,6 +11,18 @@ Functions
     
     Args:
             findings (list[Finding]): list of findings to deduplicate
+    
+    Returns:
+            list[Finding]: new deduplicated list
+
+    
+`filterSeverityAndConfidence(findings: list[Finding], severity: int, confidence: int) ‑> list`
+:   filters the list of findings
+    
+    Args:
+            findings (list[Finding]): list of findings to
+            severity (int): min severity
+            confidence (int): min confidence
     
     Returns:
             list[Finding]: new deduplicated list

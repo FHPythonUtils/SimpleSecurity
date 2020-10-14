@@ -23,6 +23,7 @@ Formats
 - csv
 - ansi
 """
+# pyright: reportConstantRedefinition=false
 from __future__ import annotations
 
 from io import StringIO
@@ -50,7 +51,7 @@ def formatEvidence(evidence: list[Line], newlineChar: bool =True) -> str:
 
 
 def markdown(findings: list[Finding],
-heading: typing.Optional[str] = None) -> str:
+heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 	"""Format to Markdown
 
 	Args:
@@ -79,7 +80,7 @@ heading: typing.Optional[str] = None) -> str:
 	for finding in findings:
 		strBuf.extend([
 		f"## {finding['title']}", f"{finding['description']}",
-		f"\n\nFile: {finding['file']}",
+		f"\n\nFile: `{finding['file']}`",
 		f"### Severity\n\n{finding['severity']} (confidence: {finding['confidence']})",
 		f"### Evidence\n\nLine: {finding['line']}\n\n```python\n{formatEvidence(finding['evidence'])}\n```",
 		])
@@ -87,7 +88,7 @@ heading: typing.Optional[str] = None) -> str:
 
 
 def json(findings: list[Finding],
-heading: typing.Optional[str] = None) -> str:
+heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 	"""Format to Json
 
 	Args:
@@ -105,7 +106,7 @@ heading: typing.Optional[str] = None) -> str:
 
 
 def csv(findings: list[Finding],
-heading: typing.Optional[str] = None) -> str:
+heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 	"""Format to CSV
 
 	Args:
@@ -131,7 +132,7 @@ heading: typing.Optional[str] = None) -> str:
 
 
 def ansi(findings: list[Finding],
-heading: typing.Optional[str] = None) -> str:
+heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 	"""Format to ansi
 
 	Args:
@@ -142,25 +143,45 @@ heading: typing.Optional[str] = None) -> str:
 		str: String to write to a file of stdout
 	"""
 	# pylint: disable=invalid-name
-	BLD = "\033[01m"
-	CLS = "\033[00m"
-	UL = "\033[04m"
-	CB = "\033[36m"
-	CG = "\033[32m"
-	CY = "\033[33m"
-	CODE = "│\033[100m\033[93m"
+	# pylint: disable=invalid-name
+	TXT = ""
+	BLD = ""
+	CLS = ""
+	UL = ""
+	CB = ""
+	CG = ""
+	CY = ""
+	CODE = f"{TXT}│"
+	if colourMode == 1:
+		TXT = ""
+		BLD = "\033[01m"
+		CLS = "\033[00m"
+		UL = "\033[04m"
+		CB = "\033[36m"
+		CG = "\033[32m"
+		CY = "\033[33m"
+		CODE = f"{TXT}│\033[100m\033[93m"
+	elif colourMode == 2:
+		TXT = "\033[97m"
+		BLD = "\033[01m"
+		CLS = "\033[00m"
+		UL = "\033[04m"
+		CB = "\033[96m"
+		CG = "\033[92m"
+		CY = "\033[93m"
+		CODE = f"{TXT}│\033[107m\033[90m"
 
 	if len(findings) == 0:
 		return f"{BLD}{UL}{CB}No findings{CLS}"
 
 	# pylint: enable=invalid-name
 	heading = heading if heading is not None else \
-	f"{BLD}{UL}{CB}Findings{CLS}\n\nFind a list of findings below ordered by severity\n"
+	f"{BLD}{UL}{CB}Findings{CLS}\n\n{TXT}Find a list of findings below ordered by severity\n"
 	strBuf = [heading]
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 
 	# Summary Table
-	strBuf.append(f"┌{'─'*10}┬{'─'*50}┐")
+	strBuf.append(f"{TXT}┌{'─'*10}┬{'─'*50}┐")
 	strBuf.append("│Severity  │Finding                                           │") # yapf: disable
 	strBuf.append(f"├{'─'*10}┼{'─'*50}┤")
 	for finding in findings:
@@ -170,14 +191,14 @@ heading: typing.Optional[str] = None) -> str:
 
 	# Details
 	for finding in findings:
-		evidence = [f"┌{' ' + finding['file'] + ' ':─^85}┐"]
+		evidence = [f"{TXT}┌{' ' + finding['file'] + ' ':─^85}┐"]
 		for line in finding['evidence']:
-			evidence.append((CODE if line["selected"] else "│") +f"{str(line['line'])[:3]: >3}  {line['content'][:80]: <80}{CLS}│")
+			evidence.append((CODE if line["selected"] else f"{TXT}│") +f"{str(line['line'])[:3]: >3}  {line['content'][:80]: <80}{CLS}{TXT}│")
 		evidence.append(f"└{'─'*85}┘")
 		evidenceStr = '\n'.join(evidence)
 		strBuf.extend([
-		f"{BLD}{UL}{CG}{finding['title']}{CLS}", f"{finding['description']}",
+		f"{BLD}{UL}{CG}{finding['title']}{CLS}", f"{TXT}{finding['description']}",
 		f"\n{UL}{CY}Severity: {finding['severity']} (confidence: {finding['confidence']}){CLS}\n",
 		f"{UL}{CY}Evidence{CLS}\n{evidenceStr}\n",
 		])
-	return "\n".join(strBuf)
+	return "\n".join(strBuf) + f"{CLS}"

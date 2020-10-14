@@ -28,7 +28,7 @@ Functions
 ---------
 
     
-`ansi(findings: list[Finding], heading: typing.Optional[str] = None) ‑> str`
+`ansi(findings: list[Finding], heading: typing.Optional[str] = None, colourMode: int = 0) ‑> str`
 :   Format to ansi
     
     Args:
@@ -39,7 +39,7 @@ Functions
             str: String to write to a file of stdout
 
     
-`csv(findings: list[Finding], heading: typing.Optional[str] = None) ‑> str`
+`csv(findings: list[Finding], heading: typing.Optional[str] = None, colourMode: int = 0) ‑> str`
 :   Format to CSV
     
     Args:
@@ -61,7 +61,7 @@ Functions
             str: string representation of this
 
     
-`json(findings: list[Finding], heading: typing.Optional[str] = None) ‑> str`
+`json(findings: list[Finding], heading: typing.Optional[str] = None, colourMode: int = 0) ‑> str`
 :   Format to Json
     
     Args:
@@ -72,7 +72,7 @@ Functions
             str: String to write to a file of stdout
 
     
-`markdown(findings: list[Finding], heading: typing.Optional[str] = None) ‑> str`
+`markdown(findings: list[Finding], heading: typing.Optional[str] = None, colourMode: int = 0) ‑> str`
 :   Format to Markdown
     
     Args:

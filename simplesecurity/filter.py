@@ -70,3 +70,24 @@ def deduplicate(findings: list[Finding]) -> list[Finding]:
 			elif equal == -1: # lookup(right) is equal to left - bin right.
 				findings.remove(findingB)
 	return findings
+
+
+def filterSeverityAndConfidence(findings: list[Finding], severity: int,
+confidence: int) -> list[Finding]:
+	"""filters the list of findings
+
+	Args:
+		findings (list[Finding]): list of findings to
+		severity (int): min severity
+		confidence (int): min confidence
+
+	Returns:
+		list[Finding]: new deduplicated list
+	"""
+	if severity == 0 and confidence == 0:
+		return findings
+	findings = findings.copy()
+	for finding in findings:
+		if finding["severity"] < severity or finding["confidence"] < confidence:
+			findings.remove(finding)
+	return findings

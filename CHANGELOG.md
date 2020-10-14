@@ -2,6 +2,16 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2020.3 - 2020/10/14
+- Deduplicator has moved to filter - Use
+  `from simplesecurity.filter import deduplicate` to use the deduplicator
+- Added `filterSeverityAndConfidence` to `simplesecurity.filter`
+  - Filter level/ severity and confidence from the command line with -l INT
+    and -s INT
+- Added colour modes: 0 for no colour, 1 for colour, 2 for high contrast
+  - Use -Z from the command line for high contrast and -z for no colour
+- Minor tweaks
+
 ## 2020.2 - 2020/10/13
 - New deduplication engine - So no more duplicates when running from the command
   line! Use `from simplesecurity.deduplicate import deduplicate` to use the
