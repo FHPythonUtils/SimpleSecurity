@@ -1,31 +1,13 @@
-Module simplesecurity
-=====================
-Combine multiple popular python security tools and generate reports or output
-into different formats
+# Simplesecurity Modules
 
-Sub-modules
------------
-* simplesecurity.filter
-* simplesecurity.formatter
-* simplesecurity.level
-* simplesecurity.plugins
-* simplesecurity.types
+> Auto-generated documentation modules index.
 
-Functions
----------
+Full list of [Simplesecurity](#simplesecurity-index) project modules.
 
-    
-`cli()`
-:   cli entry point
-
-    
-`runAllPlugins(pluginMap: dict[str, Any], severity: int, confidence: int) ‑> list`
-:   Run each plugin
-    
-    Args:
-            pluginMap (dict[str, Any]): the plugin map
-            severity (int): the minimum severity to report on
-            confidence (int): the minimum confidence to report on
-    
-    Returns:
-            list[Finding]: list of findings
+- [Simplesecurity Index](#simplesecurity-index)
+- [simplesecurity](simplesecurity/index.md#simplesecurity)
+    - [\_\_main\_\_](simplesecurity/module.md#__main__)
+    - [filter](simplesecurity/filter.md#filter)
+    - [level](simplesecurity/level.md#level)
+    - [plugins](simplesecurity/plugins.md#plugins)
+    - [types](simplesecurity/types.md#types)
