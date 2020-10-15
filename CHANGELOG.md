@@ -2,6 +2,9 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2020.3.1 - 2020/10/15
+- Added mode to seperate stdout and stderr (bandit plugin uses this)
+
 ## 2020.3 - 2020/10/14
 - Deduplicator has moved to filter - Use
   `from simplesecurity.filter import deduplicate` to use the deduplicator

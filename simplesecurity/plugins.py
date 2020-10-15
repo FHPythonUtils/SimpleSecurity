@@ -29,17 +29,19 @@ from simplesecurity.level import Level
 from simplesecurity.types import Finding, Line
 
 
-def _doSysExec(command: str) -> tuple[int, str]:
+def _doSysExec(command: str, errorAsOut: bool=True) -> tuple[int, str]:
 	"""execute a command and check for errors
 
 	Args:
 		command (str): commands as a string
+		errorAsOut (bool, optional): redirect errors to stdout
 
 	Raises:
 		RuntimeWarning: throw a warning should there be a non exit code
 	"""
 	with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-	stderr=subprocess.STDOUT, encoding="utf-8", errors="ignore") as process:
+	stderr=subprocess.STDOUT if errorAsOut else subprocess.PIPE,
+	encoding="utf-8", errors="ignore") as process:
 		out = process.communicate()[0]
 		exitCode = process.returncode
 	return exitCode, out
@@ -83,7 +85,7 @@ def bandit() -> list[Finding]:
 	levelMap = {"LOW": Level.LOW, "MEDIUM": Level.MED, "HIGH": Level.HIGH,
 	"UNDEFINED": Level.UNKNOWN} # yapf: disable
 	results = loads(
-	_doSysExec("bandit -lirq --exclude **/test_*.py --exclude **/test.py -s B322 -f json .")
+	_doSysExec("bandit -lirq --exclude **/test_*.py --exclude **/test.py -s B322 -f json .", False)
 	[1])["results"] # yapf: disable
 	for result in results:
 		file =result['filename'].replace("\\", "/")
