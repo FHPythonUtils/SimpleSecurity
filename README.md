@@ -24,6 +24,8 @@ requires bandit to be in the system path...)
 - safety
 - dodgy
 - dlint
+- pygraudit
+- semgrep
 
 Formats
 
