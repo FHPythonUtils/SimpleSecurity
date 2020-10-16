@@ -1,0 +1,3839 @@
+rules:
+  - id: formatted-string-bashoperator
+    patterns:
+      - pattern-either:
+          - pattern: |
+              airflow.operators.bash_operator.BashOperator(..., bash_command="..." + $CONCAT, ...)
+          - pattern: |
+              airflow.operators.bash_operator.BashOperator(..., bash_command="...".format(...), ...)
+          - pattern: |
+              airflow.operators.bash_operator.BashOperator(..., bash_command=f"...", ...)
+          - pattern: |
+              airflow.operators.bash_operator.BashOperator(..., bash_command="..." % $PARAMS, ...)
+          - pattern: |
+              $CMD = "..." % $PARAMS
+              ...
+              airflow.operators.bash_operator.BashOperator(..., bash_command=$CMD, ...)
+          - pattern: |
+              $CMD = $STR.format(...)
+              ...
+              airflow.operators.bash_operator.BashOperator(..., bash_command=$CMD, ...)
+          - pattern: |
+              $CMD = f"..."
+              ...
+              airflow.operators.bash_operator.BashOperator(..., bash_command=$CMD, ...)
+          - pattern: |
+              $CMD = "..." + $CONCAT
+              ...
+              airflow.operators.bash_operator.BashOperator(..., bash_command=$CMD, ...)
+          - pattern: |
+              $CMD = "..."
+              ...
+              $CMD += $CONCAT
+              ...
+              airflow.operators.bash_operator.BashOperator(..., bash_command=$CMD, ...)
+    message: |
+      Found a formatted string in BashOperator: $CMD.
+      This could be vulnerable to injection.
+      Be extra sure your variables are not controllable by external sources.
+    metadata:
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      owasp: "A1: Injection"
+    languages:
+      - python
+    severity: WARNING
+
+  - id: avoid-insecure-deserialization
+    metadata:
+      owasp: "A8: Insecure Deserialization"
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      references: https://docs.python.org/3/library/pickle.html
+    message:
+      Avoid using insecure deserialization library, backed by `pickle`, `_pickle`, `cpickle`, `dill`, `shelve`, or `yaml`,
+      which are known to lead to remote code execution vulnerabilities.
+    languages:
+      - python
+    severity: ERROR
+    patterns:
+      - pattern-inside: |
+          def $X(..., request, ...):
+            ...
+      - pattern-either:
+          - pattern: |
+              $VAR = <... request.$Y.get(...) ...>
+              ...
+              pickle.$FUNC(<... $VAR ...>)
+          - pattern: pickle.$FUNC(<... request.$Y.get(...) ...>)
+          - pattern: |
+              $VAR = <... request.$Y.get(...) ...>
+              ...
+              _pickle.$FUNC(<... $VAR ...>)
+          - pattern: _pickle.$FUNC(<... request.$Y.get(...) ...>)
+          - pattern: |
+              $VAR = <... request.$Y.get(...) ...>
+              ...
+              cPickle.$FUNC(<... $VAR ...>)
+          - pattern: cPickle.$FUNC(<... request.$Y.get(...) ...>)
+          - pattern: |
+              $VAR = <... request.$Y.get(...) ...>
+              ...
+              dill.$FUNC(<... $VAR ...>)
+          - pattern: dill.$FUNC(<... request.$Y.get(...) ...>)
+          - pattern: |
+              $VAR = <... request.$Y.get(...) ...>
+              ...
+              shelve.$FUNC(<... $VAR ...>)
+          - pattern: shelve.$FUNC(<... request.$Y.get(...) ...>)
+          - pattern: |
+              $VAR = <... request.$Y.get(...) ...>
+              ...
+              yaml.$FUNC(<... $VAR ...>)
+          - pattern: yaml.$FUNC(<... request.$Y.get(...) ...>)
+
+  - id: avoid-mark-safe
+    patterns:
+      - pattern-not-inside: django.utils.html.format_html(...)
+      - pattern-not: django.utils.safestring.mark_safe("...")
+      - pattern: django.utils.safestring.mark_safe(...)
+    message: |
+      'mark_safe()' is used to mark a string as "safe" for HTML output.
+      This disables escaping and could therefore subject the content to
+      XSS attacks. Use 'django.utils.html.format_html()' to build HTML
+      for rendering instead.
+    metadata:
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      owasp: "A7: Cross-Site Scripting (XSS)"
+      references:
+        - https://docs.djangoproject.com/en/3.0/ref/utils/#django.utils.safestring.mark_safe
+        - https://docs.djangoproject.com/en/3.0/ref/utils/#django.utils.html.format_html
+    languages: [python]
+    severity: WARNING
+
+  - id: no-csrf-exempt
+    pattern: |
+      @django.views.decorators.csrf.csrf_exempt
+      def $R(...):
+        ...
+    message: There is rarely a good reason to use @csrf_exempt as is used for `$R`.
+    metadata:
+      cwe: "CWE-352: Cross-Site Request Forgery (CSRF)"
+      owasp: "A6: Security Misconfiguration"
+    languages: [python]
+    severity: WARNING
+
+  - id: custom-expression-as-sql
+    languages:
+      - python
+    message:
+      Detected a Custom Expression ''$EXPRESSION'' calling ''as_sql(...).'' Ensure no user input enters this function
+      because it is susceptible to SQL injection. See https://docs.djangoproject.com/en/3.0/ref/models/expressions/#django.db.models.Func.as_sql
+      for more information.
+    metadata:
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      owasp: "A1: Injection"
+      references:
+        - https://docs.djangoproject.com/en/3.0/ref/models/expressions/#django.db.models.Func.as_sql
+        - https://blog.r2c.dev/2020/preventing-sql-injection-a-django-authors-perspective/
+    pattern: $EXPRESSION.as_sql(...)
+    severity: WARNING
+
+  - id: extends-custom-expression
+    languages:
+      - python
+    message: |
+      Found extension of custom expression: $CLASS. Extending expressions
+      in this way could inadvertently expose a SQL injection vulnerability.
+      See https://docs.djangoproject.com/en/3.0/ref/models/expressions/#avoiding-sql-injection
+      for more information.
+    metadata:
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      owasp: "A1: Injection"
+      references:
+        - https://docs.djangoproject.com/en/3.0/ref/models/expressions/#avoiding-sql-injection
+        - https://blog.r2c.dev/2020/preventing-sql-injection-a-django-authors-perspective/
+    patterns:
+      - pattern-either:
+          - pattern: |
+              class $CLASS(..., django.db.models.Func, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Func, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.Expression, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Expression, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.Value, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Value, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.DurationValue, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.DurationValue, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.RawSQL, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.RawSQL, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.Star, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Star, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.Random, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Random, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.Col, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Col, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.Ref, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Ref, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.ExpressionList, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.ExpressionList, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.ExpressionWrapper, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.ExpressionWrapper, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.When, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.When, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.Case, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Case, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.Subquery, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Subquery, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.Exists, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Exists, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.Window, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.Window, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.WindowFrame, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.WindowFrame, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.RowRange, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.RowRange, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.ValueRange, ...):
+                  ...
+          - pattern: |
+              class $CLASS(..., django.db.models.expressions.ValueRange, ...):
+                  ...
+    severity: WARNING
+
+  - id: avoid-query-set-extra
+    patterns:
+      - pattern-either:
+          - pattern: $X.objects.$FUNC(...).extra(...)
+          - pattern: $X.objects.$FUNC(...).$FILTER(...).extra(...)
+          - pattern: $X.objects.$FUNC(...).$FILTER(...).$UPDATE(...).extra(...)
+    message: This is a last resort. You should be careful when using QuerySet.extra due to SQLi https://docs.djangoproject.com/en/3.0/ref/models/querysets/#django.db.models.query.QuerySet.extra
+    metadata:
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      owasp: "A1: Injection"
+      references:
+        - https://docs.djangoproject.com/en/3.0/ref/models/querysets/#django.db.models.query.QuerySet.extra
+        - https://blog.r2c.dev/2020/preventing-sql-injection-a-django-authors-perspective/
+    languages: [python]
+    severity: ERROR
+
+  - id: avoid-raw-sql
+    patterns:
+      - pattern-either:
+          - pattern: $MODEL.objects.raw($QUERY, ...)
+          - pattern: django.db.models.expressions.RawSQL(...)
+    message: You should be very careful whenever you write raw SQL. Consider using Django ORM before raw SQL. See https://docs.djangoproject.com/en/3.0/topics/db/sql/#passing-parameters-into-raw
+    metadata:
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      owasp: "A1: Injection"
+      references:
+        - https://docs.djangoproject.com/en/3.0/ref/models/expressions/#raw-sql-expressions
+        - https://blog.r2c.dev/2020/preventing-sql-injection-a-django-authors-perspective/
+    languages: [python]
+    severity: ERROR
+
+  - id: django-secure-set-cookie
+    patterns:
+      - pattern-either:
+          - pattern-inside: |
+              import django.http.HttpResponse
+              ...
+          - pattern-inside: |
+              import django.shortcuts.render
+              ...
+            # Exclude vendored i18n code
+      - pattern-not-inside: |
+          LANGUAGE_QUERY_PARAMETER = 'language'
+          ...
+          def set_language(request):
+              ...
+          # Exclude vendored contrib/messages/storage/cookie.py
+      - pattern-not-inside: |
+          class CookieStorage(django.contrib.messages.storage.base.BaseStorage):
+              ...
+          # Exclude cookies handled by vendored middleware
+      - pattern-not: response.set_cookie(django.conf.settings.SESSION_COOKIE_NAME, ...)
+      - pattern-not: response.set_cookie(django.conf.settings.CSRF_COOKIE_NAME, ...)
+      - pattern-not: response.set_cookie(django.conf.settings.LANGUAGE_COOKIE_NAME, ...)
+      - pattern-not: response.set_cookie(rest_framework_jwt.settings.api_settings.JWT_AUTH_COOKIE, ...)
+      - pattern-not: response.set_cookie(..., secure=$A, httponly=$B, samesite=$C, ...)
+      - pattern-not: response.set_cookie(..., **$A)
+      - pattern: response.set_cookie(...)
+    message: |
+      Django cookies should be handled securely by setting secure=True, httponly=True, and samesite='Lax' in
+      response.set_cookie(...). If your situation calls for different settings, explicitly disable the setting.
+      If you want to send the cookie over http, set secure=False.  If you want to let client-side JavaScript
+      read the cookie, set httponly=False. If you want to attach cookies to requests for external sites,
+      set samesite=None.
+    metadata:
+      cwe: "CWE-614: Sensitive Cookie in HTTPS Session Without 'Secure' Attribute"
+      owasp: "A3: Sensitive Data Exposure"
+      references:
+        - https://docs.djangoproject.com/en/3.0/ref/request-response/#django.http.HttpResponse.set_cookie
+        - https://blog.r2c.dev/2020/bento-check-keeping-cookies-safe-in-flask/
+        - https://bento.dev/checks/flask/secure-set-cookie/
+    languages: [python]
+    severity: WARNING
+
+  - id: unvalidated-password
+    patterns:
+      - pattern-not-inside: |
+          if <... django.contrib.auth.password_validation.validate_password(...) ...>:
+              ...
+      - pattern-not-inside: |
+          django.contrib.auth.password_validation.validate_password(...)
+          ...
+      - pattern-not-inside: |
+          try:
+            ...
+            django.contrib.auth.password_validation.validate_password(...)
+            ...
+          except $EX:
+            ...
+          ...
+      - pattern-not-inside: |
+          try:
+            ...
+            django.contrib.auth.password_validation.validate_password(...)
+            ...
+          except $EX as $E:
+            ...
+          ...
+      - pattern-not: UserModel().set_password($X)
+      - pattern: $MODEL.set_password($X)
+    fix: |
+      if django.contrib.auth.password_validation.validate_password($X, user=$MODEL):
+          $MODEL.set_password($X)
+    message: |
+      The password on '$MODEL' is being set without validating the password.
+      Call django.contrib.auth.password_validation.validate_password() with
+      validation functions before setting the password. See
+      https://docs.djangoproject.com/en/3.0/topics/auth/passwords/
+      for more information.
+    metadata:
+      cwe: "CWE-521: Weak Password Requirements"
+      owasp: "A2: Broken Authentication"
+      references:
+        - https://docs.djangoproject.com/en/3.0/topics/auth/passwords/#module-django.contrib.auth.password_validation
+    languages: [python]
+    severity: WARNING
+
+  - id: mass-assignment
+    languages: [python]
+    severity: WARNING
+    message: |
+      Mass assignment detected. This can result in assignment to
+      model fields that are unintended and can be exploited by
+      an attacker. Instead of using '**request.$W', assign each field you
+      want to edit individually to prevent mass assignment. You can read
+      more about mass assignment at
+      https://cheatsheetseries.owasp.org/cheatsheets/Mass_Assignment_Cheat_Sheet.html.
+    metadata:
+      cwe: "CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes"
+      owasp: "A1: Injection"
+      owaspapi: "API6: Mass Assignment"
+      references:
+        - https://cheatsheetseries.owasp.org/cheatsheets/Mass_Assignment_Cheat_Sheet.html
+    patterns:
+      - pattern-either:
+          - pattern: $MODEL.objects.create(**request.$W)
+          - pattern: |
+              $OBJ.update(**request.$W)
+              ...
+              $OBJ.save()
+
+  - id: open-redirect
+    message: |
+      Data from request ($DATA) is passed to redirect(). This is an open redirect and could be exploited.
+      Ensure you are redirecting to safe URLs by using django.utils.http.is_safe_url().
+      See https://cwe.mitre.org/data/definitions/601.html for more information.
+    metadata:
+      cwe: "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+      owasp: "A1: Injection"
+      references:
+        - https://www.djm.org.uk/posts/djangos-little-protections-word-redirect-dangers/
+        - https://github.com/django/django/blob/d1b7bd030b1db111e1a3505b1fc029ab964382cc/django/utils/http.py#L231
+    languages: [python]
+    severity: WARNING
+    patterns:
+      - pattern-inside: |
+          def $FUNC(...):
+            ...
+      - pattern-not-inside: |
+          def $FUNC(...):
+            ...
+            django.utils.http.is_safe_url(...)
+            ...
+      - pattern-not-inside: |
+          def $FUNC(...):
+            ...
+            if <... django.utils.http.is_safe_url(...) ...>:
+              ...
+      - pattern-either:
+          - pattern: django.shortcuts.redirect(..., request.$W.get(...), ...)
+          - pattern: django.shortcuts.redirect(..., $S.format(..., request.$W.get(...), ...), ...)
+          - pattern: django.shortcuts.redirect(..., $S % request.$W.get(...), ...)
+          - pattern: django.shortcuts.redirect(..., f"...{request.$W.get(...)}...", ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.shortcuts.redirect(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.shortcuts.redirect(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.shortcuts.redirect(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.shortcuts.redirect(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.shortcuts.redirect(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: $A = django.shortcuts.redirect(..., request.$W.get(...), ...)
+          - pattern: $A = django.shortcuts.redirect(..., $S.format(..., request.$W.get(...), ...), ...)
+          - pattern: $A = django.shortcuts.redirect(..., $S % request.$W.get(...), ...)
+          - pattern: $A = django.shortcuts.redirect(..., f"...{request.$W.get(...)}...", ...)
+          - pattern: return django.shortcuts.redirect(..., request.$W.get(...), ...)
+          - pattern: return django.shortcuts.redirect(..., $S.format(..., request.$W.get(...), ...), ...)
+          - pattern: return django.shortcuts.redirect(..., $S % request.$W.get(...), ...)
+          - pattern: return django.shortcuts.redirect(..., f"...{request.$W.get(...)}...", ...)
+          - pattern: django.shortcuts.redirect(..., request.$W(...), ...)
+          - pattern: django.shortcuts.redirect(..., $S.format(..., request.$W(...), ...), ...)
+          - pattern: django.shortcuts.redirect(..., $S % request.$W(...), ...)
+          - pattern: django.shortcuts.redirect(..., f"...{request.$W(...)}...", ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.shortcuts.redirect(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.shortcuts.redirect(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.shortcuts.redirect(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.shortcuts.redirect(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.shortcuts.redirect(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: $A = django.shortcuts.redirect(..., request.$W(...), ...)
+          - pattern: $A = django.shortcuts.redirect(..., $S.format(..., request.$W(...), ...), ...)
+          - pattern: $A = django.shortcuts.redirect(..., $S % request.$W(...), ...)
+          - pattern: $A = django.shortcuts.redirect(..., f"...{request.$W(...)}...", ...)
+          - pattern: return django.shortcuts.redirect(..., request.$W(...), ...)
+          - pattern: return django.shortcuts.redirect(..., $S.format(..., request.$W(...), ...), ...)
+          - pattern: return django.shortcuts.redirect(..., $S % request.$W(...), ...)
+          - pattern: return django.shortcuts.redirect(..., f"...{request.$W(...)}...", ...)
+          - pattern: django.shortcuts.redirect(..., request.$W[...], ...)
+          - pattern: django.shortcuts.redirect(..., $S.format(..., request.$W[...], ...), ...)
+          - pattern: django.shortcuts.redirect(..., $S % request.$W[...], ...)
+          - pattern: django.shortcuts.redirect(..., f"...{request.$W[...]}...", ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.shortcuts.redirect(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.shortcuts.redirect(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.shortcuts.redirect(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.shortcuts.redirect(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.shortcuts.redirect(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: $A = django.shortcuts.redirect(..., request.$W[...], ...)
+          - pattern: $A = django.shortcuts.redirect(..., $S.format(..., request.$W[...], ...), ...)
+          - pattern: $A = django.shortcuts.redirect(..., $S % request.$W[...], ...)
+          - pattern: $A = django.shortcuts.redirect(..., f"...{request.$W[...]}...", ...)
+          - pattern: return django.shortcuts.redirect(..., request.$W[...], ...)
+          - pattern: return django.shortcuts.redirect(..., $S.format(..., request.$W[...], ...), ...)
+          - pattern: return django.shortcuts.redirect(..., $S % request.$W[...], ...)
+          - pattern: return django.shortcuts.redirect(..., f"...{request.$W[...]}...", ...)
+          - pattern: django.shortcuts.redirect(..., request.$W, ...)
+          - pattern: django.shortcuts.redirect(..., $S.format(..., request.$W, ...), ...)
+          - pattern: django.shortcuts.redirect(..., $S % request.$W, ...)
+          - pattern: django.shortcuts.redirect(..., f"...{request.$W}...", ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.shortcuts.redirect(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.shortcuts.redirect(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.shortcuts.redirect(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.shortcuts.redirect(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.shortcuts.redirect(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.shortcuts.redirect(..., $INTERM, ...)
+          - pattern: $A = django.shortcuts.redirect(..., request.$W, ...)
+          - pattern: $A = django.shortcuts.redirect(..., $S.format(..., request.$W, ...), ...)
+          - pattern: $A = django.shortcuts.redirect(..., $S % request.$W, ...)
+          - pattern: $A = django.shortcuts.redirect(..., f"...{request.$W}...", ...)
+          - pattern: return django.shortcuts.redirect(..., request.$W, ...)
+          - pattern: return django.shortcuts.redirect(..., $S.format(..., request.$W, ...), ...)
+          - pattern: return django.shortcuts.redirect(..., $S % request.$W, ...)
+          - pattern: return django.shortcuts.redirect(..., f"...{request.$W}...", ...)
+          - pattern: django.http.HttpResponseRedirect(..., request.$W.get(...), ...)
+          - pattern: django.http.HttpResponseRedirect(..., $S.format(..., request.$W.get(...), ...), ...)
+          - pattern: django.http.HttpResponseRedirect(..., $S % request.$W.get(...), ...)
+          - pattern: django.http.HttpResponseRedirect(..., f"...{request.$W.get(...)}...", ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponseRedirect(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponseRedirect(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponseRedirect(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponseRedirect(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponseRedirect(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., request.$W.get(...), ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., $S.format(..., request.$W.get(...), ...), ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., $S % request.$W.get(...), ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., f"...{request.$W.get(...)}...", ...)
+          - pattern: return django.http.HttpResponseRedirect(..., request.$W.get(...), ...)
+          - pattern: return django.http.HttpResponseRedirect(..., $S.format(..., request.$W.get(...), ...), ...)
+          - pattern: return django.http.HttpResponseRedirect(..., $S % request.$W.get(...), ...)
+          - pattern: return django.http.HttpResponseRedirect(..., f"...{request.$W.get(...)}...", ...)
+          - pattern: django.http.HttpResponseRedirect(..., request.$W(...), ...)
+          - pattern: django.http.HttpResponseRedirect(..., $S.format(..., request.$W(...), ...), ...)
+          - pattern: django.http.HttpResponseRedirect(..., $S % request.$W(...), ...)
+          - pattern: django.http.HttpResponseRedirect(..., f"...{request.$W(...)}...", ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponseRedirect(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponseRedirect(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponseRedirect(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponseRedirect(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponseRedirect(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., request.$W(...), ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., $S.format(..., request.$W(...), ...), ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., $S % request.$W(...), ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., f"...{request.$W(...)}...", ...)
+          - pattern: return django.http.HttpResponseRedirect(..., request.$W(...), ...)
+          - pattern: return django.http.HttpResponseRedirect(..., $S.format(..., request.$W(...), ...), ...)
+          - pattern: return django.http.HttpResponseRedirect(..., $S % request.$W(...), ...)
+          - pattern: return django.http.HttpResponseRedirect(..., f"...{request.$W(...)}...", ...)
+          - pattern: django.http.HttpResponseRedirect(..., request.$W[...], ...)
+          - pattern: django.http.HttpResponseRedirect(..., $S.format(..., request.$W[...], ...), ...)
+          - pattern: django.http.HttpResponseRedirect(..., $S % request.$W[...], ...)
+          - pattern: django.http.HttpResponseRedirect(..., f"...{request.$W[...]}...", ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponseRedirect(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponseRedirect(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponseRedirect(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponseRedirect(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponseRedirect(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., request.$W[...], ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., $S.format(..., request.$W[...], ...), ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., $S % request.$W[...], ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., f"...{request.$W[...]}...", ...)
+          - pattern: return django.http.HttpResponseRedirect(..., request.$W[...], ...)
+          - pattern: return django.http.HttpResponseRedirect(..., $S.format(..., request.$W[...], ...), ...)
+          - pattern: return django.http.HttpResponseRedirect(..., $S % request.$W[...], ...)
+          - pattern: return django.http.HttpResponseRedirect(..., f"...{request.$W[...]}...", ...)
+          - pattern: django.http.HttpResponseRedirect(..., request.$W, ...)
+          - pattern: django.http.HttpResponseRedirect(..., $S.format(..., request.$W, ...), ...)
+          - pattern: django.http.HttpResponseRedirect(..., $S % request.$W, ...)
+          - pattern: django.http.HttpResponseRedirect(..., f"...{request.$W}...", ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponseRedirect(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponseRedirect(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponseRedirect(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponseRedirect(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponseRedirect(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponseRedirect(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., request.$W, ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., $S.format(..., request.$W, ...), ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., $S % request.$W, ...)
+          - pattern: $A = django.http.HttpResponseRedirect(..., f"...{request.$W}...", ...)
+          - pattern: return django.http.HttpResponseRedirect(..., request.$W, ...)
+          - pattern: return django.http.HttpResponseRedirect(..., $S.format(..., request.$W, ...), ...)
+          - pattern: return django.http.HttpResponseRedirect(..., $S % request.$W, ...)
+          - pattern: return django.http.HttpResponseRedirect(..., f"...{request.$W}...", ...)
+      - metavariable-regex:
+          metavariable: "$W"
+          regex: "(?!get_full_path)"
+
+  - id: reflected-data-httpresponse
+    message:
+      Found request data reflected into HttpResponse. This could be vulnerable to XSS. Ensure the request data is properly
+      escaped or sanitzed.
+    metadata:
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      owasp: "A7: Cross-Site Scripting (XSS)"
+      references:
+        - https://django-book.readthedocs.io/en/latest/chapter20.html#cross-site-scripting-xss
+    languages: [python]
+    severity: WARNING
+    patterns:
+      - pattern-inside: |
+          def $FUNC(...):
+            ...
+      - pattern-either:
+          - pattern: django.http.HttpResponse(..., $S.format(..., request.$W.get(...), ...), ...)
+          - pattern: django.http.HttpResponse(..., $S % request.$W.get(...), ...)
+          - pattern: django.http.HttpResponse(..., f"...{request.$W.get(...)}...", ...)
+          - pattern: django.http.HttpResponse(..., request.$W.get(...), ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponse(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponse(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponse(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponse(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponse(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponse(..., request.$W.get(...), ...)
+          - pattern: return django.http.HttpResponse(..., request.$W.get(...), ...)
+          - pattern: django.http.HttpResponse(..., $S.format(..., request.$W(...), ...), ...)
+          - pattern: django.http.HttpResponse(..., $S % request.$W(...), ...)
+          - pattern: django.http.HttpResponse(..., f"...{request.$W(...)}...", ...)
+          - pattern: django.http.HttpResponse(..., request.$W(...), ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponse(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponse(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponse(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponse(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponse(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponse(..., request.$W(...), ...)
+          - pattern: return django.http.HttpResponse(..., request.$W(...), ...)
+          - pattern: django.http.HttpResponse(..., $S.format(..., request.$W[...], ...), ...)
+          - pattern: django.http.HttpResponse(..., $S % request.$W[...], ...)
+          - pattern: django.http.HttpResponse(..., f"...{request.$W[...]}...", ...)
+          - pattern: django.http.HttpResponse(..., request.$W[...], ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponse(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponse(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponse(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponse(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponse(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponse(..., request.$W[...], ...)
+          - pattern: return django.http.HttpResponse(..., request.$W[...], ...)
+          - pattern: django.http.HttpResponse(..., $S.format(..., request.$W, ...), ...)
+          - pattern: django.http.HttpResponse(..., $S % request.$W, ...)
+          - pattern: django.http.HttpResponse(..., f"...{request.$W}...", ...)
+          - pattern: django.http.HttpResponse(..., request.$W, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponse(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponse(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponse(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponse(..., f"...{$DATA}...", ...)
+          - pattern: $A = django.http.HttpResponse(..., request.$W, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              $A = django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: return django.http.HttpResponse(..., request.$W, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponse(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponse(..., $INTERM, ...)
+
+  - id: reflected-data-httpresponsebadrequest
+    message:
+      Found request data reflected into HttpResponseBadRequest. This could be vulnerable to XSS. Ensure the request data
+      is properly escaped or sanitzed.
+    metadata:
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      owasp: "A7: Cross-Site Scripting (XSS)"
+      references:
+        - https://django-book.readthedocs.io/en/latest/chapter20.html#cross-site-scripting-xss
+    languages: [python]
+    severity: WARNING
+    patterns:
+      - pattern-inside: |
+          def $FUNC(...):
+            ...
+      - pattern-either:
+          - pattern: django.http.HttpResponseBadRequest(..., $S.format(..., request.$W.get(...), ...), ...)
+          - pattern: django.http.HttpResponseBadRequest(..., $S % request.$W.get(...), ...)
+          - pattern: django.http.HttpResponseBadRequest(..., f"...{request.$W.get(...)}...", ...)
+          - pattern: django.http.HttpResponseBadRequest(..., request.$W.get(...), ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponseBadRequest(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponseBadRequest(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponseBadRequest(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponseBadRequest(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.HttpResponseBadRequest(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponseBadRequest(..., request.$W.get(...), ...)
+          - pattern: return django.http.HttpResponseBadRequest(..., request.$W.get(...), ...)
+          - pattern: django.http.HttpResponseBadRequest(..., $S.format(..., request.$W(...), ...), ...)
+          - pattern: django.http.HttpResponseBadRequest(..., $S % request.$W(...), ...)
+          - pattern: django.http.HttpResponseBadRequest(..., f"...{request.$W(...)}...", ...)
+          - pattern: django.http.HttpResponseBadRequest(..., request.$W(...), ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponseBadRequest(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponseBadRequest(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponseBadRequest(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponseBadRequest(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.HttpResponseBadRequest(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponseBadRequest(..., request.$W(...), ...)
+          - pattern: return django.http.HttpResponseBadRequest(..., request.$W(...), ...)
+          - pattern: django.http.HttpResponseBadRequest(..., $S.format(..., request.$W[...], ...), ...)
+          - pattern: django.http.HttpResponseBadRequest(..., $S % request.$W[...], ...)
+          - pattern: django.http.HttpResponseBadRequest(..., f"...{request.$W[...]}...", ...)
+          - pattern: django.http.HttpResponseBadRequest(..., request.$W[...], ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponseBadRequest(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponseBadRequest(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponseBadRequest(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponseBadRequest(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.HttpResponseBadRequest(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponseBadRequest(..., request.$W[...], ...)
+          - pattern: return django.http.HttpResponseBadRequest(..., request.$W[...], ...)
+          - pattern: django.http.HttpResponseBadRequest(..., $S.format(..., request.$W, ...), ...)
+          - pattern: django.http.HttpResponseBadRequest(..., $S % request.$W, ...)
+          - pattern: django.http.HttpResponseBadRequest(..., f"...{request.$W}...", ...)
+          - pattern: django.http.HttpResponseBadRequest(..., request.$W, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponseBadRequest(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponseBadRequest(..., $STR.format(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR.format(..., $DATA, ...)
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponseBadRequest(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponseBadRequest(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.HttpResponseBadRequest(..., $STR + $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR + $DATA
+              ...
+              django.http.HttpResponseBadRequest(..., $INTERM, ...)
+          - pattern: $A = django.http.HttpResponseBadRequest(..., request.$W, ...)
+          - pattern: return django.http.HttpResponseBadRequest(..., request.$W, ...)
+
+  - id: request-data-fileresponse
+    message:
+      Found request data opening a file into FileResponse. This is dangerous because an attacker could specify an arbitrary
+      file to read, leaking data. Be sure to validate or sanitize the filename before using it in FileResponse.
+    metadata:
+      cwe: "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+      owasp: "A1: Injection"
+      references:
+        - https://django-book.readthedocs.io/en/latest/chapter20.html#cross-site-scripting-xss
+    languages: [python]
+    severity: WARNING
+    patterns:
+      - pattern-inside: |
+          def $FUNC(...):
+            ...
+      - pattern-either:
+          - pattern: django.http.FileResponse(..., request.$W.get(...), ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              django.http.FileResponse(..., open($DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = open($DATA, ...)
+              ...
+              django.http.FileResponse(..., $INTERM, ...)
+          - pattern: $A = django.http.FileResponse(..., request.$W.get(...), ...)
+          - pattern: return django.http.FileResponse(..., request.$W.get(...), ...)
+          - pattern: django.http.FileResponse(..., request.$W(...), ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              django.http.FileResponse(..., open($DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = open($DATA, ...)
+              ...
+              django.http.FileResponse(..., $INTERM, ...)
+          - pattern: $A = django.http.FileResponse(..., request.$W(...), ...)
+          - pattern: return django.http.FileResponse(..., request.$W(...), ...)
+          - pattern: django.http.FileResponse(..., request.$W[...], ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              django.http.FileResponse(..., open($DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = open($DATA, ...)
+              ...
+              django.http.FileResponse(..., $INTERM, ...)
+          - pattern: $A = django.http.FileResponse(..., request.$W[...], ...)
+          - pattern: return django.http.FileResponse(..., request.$W[...], ...)
+          - pattern: django.http.FileResponse(..., request.$W, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              django.http.FileResponse(..., open($DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = open($DATA, ...)
+              ...
+              django.http.FileResponse(..., $INTERM, ...)
+          - pattern: $A = django.http.FileResponse(..., request.$W, ...)
+          - pattern: return django.http.FileResponse(..., request.$W, ...)
+
+  - id: request-data-write
+    message: |
+      Found request data in '.write(...)'. This could be dangerous if a malicious
+      actor is able to control data into sensitive files. For example, a malicious
+      actor could force rolling of critical log files, or cause a denial-of-service
+      by using up available disk space. Ensure content is validated.
+    metadata:
+      cwe: "CWE-93: Improper Neutralization of CRLF Sequences ('CRLF Injection')"
+      owasp: "A1: Injection"
+    languages: [python]
+    severity: WARNING
+    patterns:
+      - pattern-either:
+          - pattern: $F.write(..., request.$W.get(...), ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $F.write(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $DATA
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $F.write(..., $B.$C(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $B.$C(..., $DATA, ...)
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $F.write(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $F.write(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W.get(...)
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: $A = $F.write(..., request.$W.get(...), ...)
+          - pattern: return $F.write(..., request.$W.get(...), ...)
+          - pattern: $F.write(..., request.$W(...), ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $F.write(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $DATA
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $F.write(..., $B.$C(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $B.$C(..., $DATA, ...)
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $F.write(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $F.write(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W(...)
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: $A = $F.write(..., request.$W(...), ...)
+          - pattern: return $F.write(..., request.$W(...), ...)
+          - pattern: $F.write(..., request.$W[...], ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $F.write(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $DATA
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $F.write(..., $B.$C(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $B.$C(..., $DATA, ...)
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $F.write(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $F.write(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W[...]
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: $A = $F.write(..., request.$W[...], ...)
+          - pattern: return $F.write(..., request.$W[...], ...)
+          - pattern: $F.write(..., request.$W, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $F.write(..., $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $DATA
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $F.write(..., $B.$C(..., $DATA, ...), ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $B.$C(..., $DATA, ...)
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $F.write(..., $STR % $DATA, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = $STR % $DATA
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $F.write(..., f"...{$DATA}...", ...)
+          - pattern: |
+              $DATA = request.$W
+              ...
+              $INTERM = f"...{$DATA}..."
+              ...
+              $F.write(..., $INTERM, ...)
+          - pattern: $A = $F.write(..., request.$W, ...)
+          - pattern: return $F.write(..., request.$W, ...)
+
+  - id: password-empty-string
+    message: |
+      '$VAR' is the empty string and is being used to set the password on '$MODEL'.
+      If you meant to set an unusable password, set the password to None or call
+      'set_unusable_password()'.
+    metadata:
+      cwe: "CWE-521: Weak Password Requirements"
+      owasp: "A2: Broken Authentication"
+      references:
+        - https://docs.djangoproject.com/en/3.0/ref/contrib/auth/#django.contrib.auth.models.User.set_password
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $MODEL.set_password($EMPTY)
+              ...
+              $MODEL.save()
+          - pattern: |
+              $VAR = $EMPTY
+              ...
+              $MODEL.set_password($VAR)
+              ...
+              $MODEL.save()
+      - metavariable-regex:
+          metavariable: "$EMPTY"
+          regex: (\'\'|\"\")
+    languages: [python]
+    severity: ERROR
+
+  - id: use-none-for-password-default
+    message: |
+      '$VAR' is using the empty string as its default and is being used to set
+      the password on '$MODEL'. If you meant to set an unusable password, set
+      the default value to 'None' or call 'set_unusable_password()'.
+    metadata:
+      cwe: "CWE-521: Weak Password Requirements"
+      owasp: "A2: Broken Authentication"
+      references:
+        - https://docs.djangoproject.com/en/3.0/ref/contrib/auth/#django.contrib.auth.models.User.set_password
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $VAR = request.$W.get($X, "")
+              ...
+              $MODEL.set_password($VAR)
+              ...
+              $MODEL.save(...)
+          - pattern: |
+              def $F(..., $VAR="", ...):
+                ...
+                $MODEL.set_password($VAR)
+    fix-regex:
+      regex: (def.*|request.*)(""|'')
+      replacement: \1None
+    languages: [python]
+    severity: ERROR
+  # Flask check3: Flask application app.run best practices https://flask.palletsprojects.com/en/1.1.x/api/?highlight=run#flask.Flask.run
+
+  # . Rules for app.run() parameters
+  - id: avoid_app_run_with_bad_host
+    patterns:
+      - pattern-either:
+          - pattern: app.run(..., host="0.0.0.0", ...)
+          - pattern: app.run(..., "0.0.0.0", ...)
+    message: Running flask app with host 0.0.0.0 could expose the server publicly.
+    metadata:
+      cwe: "CWE-668: Exposure of Resource to Wrong Sphere"
+      owasp: "A6: Security Misconfiguration"
+    languages: [python]
+    severity: WARNING
+  # Flask check3: Flask application app.run best practices https://flask.palletsprojects.com/en/1.1.x/api/?highlight=run#flask.Flask.run
+
+  - id: avoid_using_app_run_directly
+    patterns:
+      - pattern-not-inside: |
+          if __name__ == '__main__':
+            ...
+      - pattern-not-inside: |
+          def $X(...):
+            ...
+      - pattern: app.run(...)
+    message: top-level app.run(...) is ignored by flask. Consider putting app.run(...) behind a guard, like inside a function
+    metadata:
+      cwe: "CWE-668: Exposure of Resource to Wrong Sphere"
+      owasp: "A6: Security Misconfiguration"
+    languages: [python]
+    severity: WARNING
+
+  - id: debug-enabled
+    patterns:
+      - pattern-inside: |
+          import flask
+          ...
+      - pattern: $APP.run(..., debug=True, ...)
+    message: |
+      Detected Flask app with debug=True. Do not deploy to production with this flag enabled
+      as it will leak sensitive information. Instead, consider using Flask configuration
+      variables or setting 'debug' using system environment variables.
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://labs.detectify.com/2015/10/02/how-patreon-got-hacked-publicly-exposed-werkzeug-debugger/
+    severity: WARNING
+    languages:
+      - python
+
+  - id: directly-returned-format-string
+    message: |
+      Detected Flask route directly returning a formatted string. This
+      is subject to cross-site scripting if user input can reach the string.
+      Consider using the template engine instead and rendering pages with
+      'render_template()'.
+    metadata:
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      owasp: "A7: Cross-site Scripting (XSS)"
+    languages:
+      - python
+    severity: WARNING
+    patterns:
+      - pattern-inside: |
+          @$APP.route(...)
+          def $FUNC(...):
+            ...
+      - pattern-either:
+          - pattern: return "...".format(...)
+          - pattern: return "..." % ...
+          - pattern: return "..." + ...
+          - pattern: return ... + "..."
+          - pattern: return f"...{...}..."
+  # Flask check3: Avoid hardcoded config rules
+
+  # . Rules for `TESTING` config
+  - id: avoid_hardcoded_config_TESTING
+    pattern: $M.config['TESTING'] = True
+    message: Hardcoded variable `TESTING` detected. Use environment variables or config files instead
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: WARNING
+  - id: avoid_hardcoded_config_TESTING
+    pattern: $M.config['TESTING'] = False
+    message: Hardcoded variable `TESTING` detected. Use environment variables or config files instead
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: WARNING
+  - id: avoid_hardcoded_config_TESTING
+    pattern: $M.update(TESTING=True, ...)
+    message: Hardcoded variable `TESTING` detected. Use environment variables or config files instead
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: WARNING
+  - id: avoid_hardcoded_config_TESTING
+    pattern: $M.update(TESTING=False, ...)
+    message: Hardcoded variable `TESTING` detected. Use environment variables or config files instead
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: WARNING
+  - id: avoid_hardcoded_config_TESTING
+    pattern: $M.update(TESTING=False, ...)
+    message: Hardcoded variable `TESTING` detected. Use environment variables or config files instead
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: WARNING
+    # Rules for `SECRET_KEY` config
+  - id: avoid_hardcoded_config_SECRET_KEY
+    pattern: $M.config['SECRET_KEY'] = "=~/.*/"
+    message: Hardcoded variable `SECRET_KEY` detected. Use environment variables or config files instead
+    metadata:
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      owasp: "A2: Broken Authentication"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: ERROR
+  - id: avoid_hardcoded_config_SECRET_KEY
+    pattern: $M.update(SECRET_KEY="=~/.*/")
+    message: Hardcoded variable `SECRET_KEY` detected. Use environment variables or config files instead
+    metadata:
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      owasp: "A2: Broken Authentication"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: ERROR
+    # Rules for `ENV` config
+  - id: avoid_hardcoded_config_ENV
+    pattern: $M.update(ENV="=~/^development|production$/")
+    message: Hardcoded variable `ENV` detected. Set this by using FLASK_ENV environment variable
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: WARNING
+  - id: avoid_hardcoded_config_ENV
+    pattern: $M.config['ENV'] = "=~/^development|production$/"
+    message: Hardcoded variable `ENV` detected. Set this by using FLASK_ENV environment variable
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity:
+      WARNING
+      # Rules for `DEBUG` config
+  - id: avoid_hardcoded_config_DEBUG
+    pattern: $M.update(DEBUG=True)
+    message: Hardcoded variable `DEBUG` detected. Set this by using FLASK_DEBUG environment variable
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: WARNING
+  - id: avoid_hardcoded_config_DEBUG
+    pattern: $M.update(DEBUG=False)
+    message: Hardcoded variable `DEBUG` detected. Set this by using FLASK_DEBUG environment variable
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: WARNING
+  - id: avoid_hardcoded_config_DEBUG
+    pattern: $M.config['DEBUG'] = True
+    message: Hardcoded variable `DEBUG` detected. Set this by using FLASK_DEBUG environment variable
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: WARNING
+  - id: avoid_hardcoded_config_DEBUG
+    pattern: $M.config['DEBUG'] = False
+    message: Hardcoded variable `DEBUG` detected. Set this by using FLASK_DEBUG environment variable
+    metadata:
+      cwe: "CWE-489: Active Debug Code"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://bento.dev/checks/flask/avoid-hardcoded-config/
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
+        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
+    languages: [python]
+    severity: WARNING
+
+  - id: render-template-string
+    pattern: flask.render_template_string(...)
+    metadata:
+      cwe: "CWE-96: Improper Neutralization of Directives in Statically Saved Code ('Static Code Injection')"
+      owasp: "A1: Injection"
+      references:
+        - https://nvisium.com/blog/2016/03/09/exploring-ssti-in-flask-jinja2.html
+    message:
+      Found a template created with string formatting. This is susceptible to server-side template injection and cross-site
+      scripting attacks.
+    languages: [python]
+    severity: WARNING
+
+  - id: secure-set-cookie
+    patterns:
+      - pattern-either:
+          - pattern-inside: |
+              $RESP = flask.make_response(...)
+              ...
+          - pattern-inside: |
+              $RESP = flask.Response(...)
+              ...
+      - pattern-not: $RESPONSE.set_cookie(..., secure=$A, httponly=$B, samesite=$C, ...)
+      - pattern-not: $RESPONSE.set_cookie(..., **$A)
+      - pattern: $RESPONSE.set_cookie(...)
+    message: |
+      Flask cookies should be handled securely by setting secure=True, httponly=True, and samesite='Lax' in
+      response.set_cookie(...). If your situation calls for different settings, explicitly disable the setting.
+      If you want to send the cookie over http, set secure=False.  If you want to let client-side JavaScript
+      read the cookie, set httponly=False. If you want to attach cookies to requests for external sites,
+      set samesite=None.
+    metadata:
+      cwe: "CWE-614: Sensitive Cookie in HTTPS Session Without 'Secure' Attribute"
+      owasp: "A3: Sensitive Data Exposure"
+      references:
+        - https://blog.r2c.dev/2020/bento-check-keeping-cookies-safe-in-flask/
+        - https://bento.dev/checks/flask/secure-set-cookie/
+        - https://flask.palletsprojects.com/en/1.1.x/security/#set-cookie-options
+    languages: [python]
+    severity: WARNING
+
+  - id: flask-wtf-csrf-disabled
+    patterns:
+      - pattern: |
+          $APP.config['WTF_CSRF_ENABLED'] = False
+    message: |
+      `$APP.config['WTF_CSRF_ENABLED'] = False` is probably not what you want in production because it disables https://flask-wtf.readthedocs.io/en/stable/csrf.html CSRF protection
+    metadata:
+      cwe: "CWE-352: Cross-Site Request Forgery (CSRF)"
+      owasp: "A6: Security Misconfiguration"
+      references:
+        - https://flask-wtf.readthedocs.io/en/stable/csrf.html
+    severity: WARNING
+    languages:
+      - python
+
+  - id: os-system-injection
+    languages:
+      - python
+    severity: ERROR
+    message:
+      User data detected in os.system. This could be vulnerable to a command injection and should be avoided. If this
+      must be done, use the 'subprocess' module instead and pass the arguments as a list.
+    metadata:
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      owasp: "A1: Injection"
+      references:
+        - https://owasp.org/www-community/attacks/Command_Injection
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  @$APP.route($ROUTE, ...)
+                  def $FUNC(..., $ROUTEVAR, ...):
+                    ...
+              - pattern-either:
+                  - pattern: os.system(..., <... $ROUTEVAR ...>, ...)
+                  - pattern: |
+                      $INTERM = <... $ROUTEVAR ...>
+                      ...
+                      os.system(..., <... $INTERM ...>, ...)
+          - patterns:
+              - pattern-either:
+                  - pattern: os.system(..., <... flask.request.$W.get(...) ...>, ...)
+                  - pattern: os.system(..., <... flask.request.$W[...] ...>, ...)
+                  - pattern: os.system(..., <... flask.request.$W(...) ...>, ...)
+                  - pattern: os.system(..., <... flask.request.$W ...>, ...)
+          - patterns:
+              - pattern-either:
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W.get(...) ...>
+                          ...
+                      - pattern: os.system(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W[...] ...>
+                          ...
+                      - pattern: os.system(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W(...) ...>
+                          ...
+                      - pattern: os.system(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W ...>
+                          ...
+                      - pattern: os.system(..., <... $INTERM ...>, ...)
+
+  - id: path-traversal-open
+    languages:
+      - python
+    severity: ERROR
+    message:
+      Found request data in a call to 'open'. Ensure the request data is validated or sanitized, otherwise it could result
+      in path traversal attacks.
+    metadata:
+      cwe: "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+      owasp: "A1: Injection"
+      references:
+        - https://owasp.org/www-community/attacks/Path_Traversal
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  @$APP.route($ROUTE, ...)
+                  def $FUNC(..., $ROUTEVAR, ...):
+                    ...
+              - pattern-either:
+                  - pattern: open(..., <... $ROUTEVAR ...>, ...)
+                  - pattern: |
+                      $INTERM = <... $ROUTEVAR ...>
+                      ...
+                      open(..., <... $INTERM ...>, ...)
+          - patterns:
+              - pattern-either:
+                  - pattern: open(..., <... flask.request.$W.get(...) ...>, ...)
+                  - pattern: open(..., <... flask.request.$W[...] ...>, ...)
+                  - pattern: open(..., <... flask.request.$W(...) ...>, ...)
+                  - pattern: open(..., <... flask.request.$W ...>, ...)
+          - patterns:
+              - pattern-either:
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W.get(...) ...>
+                          ...
+                      - pattern: open(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W[...] ...>
+                          ...
+                      - pattern: open(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W(...) ...>
+                          ...
+                      - pattern: open(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W ...>
+                          ...
+                      - pattern: open(..., <... $INTERM ...>, ...)
+
+  - id: ssrf-requests
+    languages:
+      - python
+    severity: ERROR
+    message:
+      Data from request object is passed to a new server-side request. This could lead to a server-side request forgery
+      (SSRF). To mitigate, ensure that schemes and hosts are validated against a whitelist, do not forward the response to the
+      user, and ensure proper authentication and transport-layer security in the proxied request.
+    metadata:
+      cwe: "CWE-918: Server-Side Request Forgery (SSRF)"
+      owasp: "A1: Injection"
+      references:
+        - https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  @$APP.route($ROUTE, ...)
+                  def $ROUTE_FUNC(..., $ROUTEVAR, ...):
+                    ...
+              - pattern-either:
+                  - pattern: requests.$FUNC(..., <... $ROUTEVAR ...>, ...)
+                  - pattern: |
+                      $INTERM = <... $ROUTEVAR ...>
+                      ...
+                      requests.$FUNC(..., <... $INTERM ...>, ...)
+          - patterns:
+              - pattern-either:
+                  - pattern: requests.$FUNC(..., <... flask.request.$W.get(...) ...>, ...)
+                  - pattern: requests.$FUNC(..., <... flask.request.$W[...] ...>, ...)
+                  - pattern: requests.$FUNC(..., <... flask.request.$W(...) ...>, ...)
+                  - pattern: requests.$FUNC(..., <... flask.request.$W ...>, ...)
+          - patterns:
+              - pattern-either:
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W.get(...) ...>
+                          ...
+                      - pattern: requests.$FUNC(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W[...] ...>
+                          ...
+                      - pattern: requests.$FUNC(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W(...) ...>
+                          ...
+                      - pattern: requests.$FUNC(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W ...>
+                          ...
+                      - pattern: requests.$FUNC(..., <... $INTERM ...>, ...)
+
+  - id: eval-injection
+    languages:
+      - python
+    severity: ERROR
+    message: Detected user data flowing into eval. This is code injection and should be avoided.
+    metadata:
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+      owasp: "A1: Injection"
+      references:
+        - https://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  @$APP.route($ROUTE, ...)
+                  def $FUNC(..., $ROUTEVAR, ...):
+                    ...
+              - pattern-either:
+                  - pattern: eval(..., <... $ROUTEVAR ...>, ...)
+                  - pattern: |
+                      $INTERM = <... $ROUTEVAR ...>
+                      ...
+                      eval(..., <... $INTERM ...>, ...)
+          - patterns:
+              - pattern-either:
+                  - pattern: eval(..., <... flask.request.$W.get(...) ...>, ...)
+                  - pattern: eval(..., <... flask.request.$W[...] ...>, ...)
+                  - pattern: eval(..., <... flask.request.$W(...) ...>, ...)
+                  - pattern: eval(..., <... flask.request.$W ...>, ...)
+          - patterns:
+              - pattern-either:
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W.get(...) ...>
+                          ...
+                      - pattern: eval(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W[...] ...>
+                          ...
+                      - pattern: eval(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W(...) ...>
+                          ...
+                      - pattern: eval(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W ...>
+                          ...
+                      - pattern: eval(..., <... $INTERM ...>, ...)
+
+  - id: exec-injection
+    languages:
+      - python
+    severity: ERROR
+    message: |
+      Found user data in a call to 'exec'. This is extremely dangerous because
+      it can enable an attacker to execute remote code.
+    metadata:
+      cwe:
+        "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code\
+        \ ('Eval Injection')"
+      owasp: "A1: Injection"
+      references:
+        - https://owasp.org/www-community/attacks/Code_Injection
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside: |
+                  @$APP.route($ROUTE, ...)
+                  def $FUNC(..., $ROUTEVAR, ...):
+                    ...
+              - pattern-either:
+                  - pattern: exec(..., <... $ROUTEVAR ...>, ...)
+                  - pattern: |
+                      $INTERM = <... $ROUTEVAR ...>
+                      ...
+                      exec(..., <... $INTERM ...>, ...)
+          - patterns:
+              - pattern-either:
+                  - pattern: exec(..., <... flask.request.$W.get(...) ...>, ...)
+                  - pattern: exec(..., <... flask.request.$W[...] ...>, ...)
+                  - pattern: exec(..., <... flask.request.$W(...) ...>, ...)
+                  - pattern: exec(..., <... flask.request.$W ...>, ...)
+          - patterns:
+              - pattern-either:
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W.get(...) ...>
+                          ...
+                      - pattern: exec(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W[...] ...>
+                          ...
+                      - pattern: exec(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W(...) ...>
+                          ...
+                      - pattern: exec(..., <... $INTERM ...>, ...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W ...>
+                          ...
+                      - pattern: exec(..., <... $INTERM ...>, ...)
+
+  - id: autoescape-disabled
+    patterns:
+      - pattern-not: jinja2.Environment(..., autoescape=True, ...)
+      - pattern-not: jinja2.Environment(..., autoescape=jinja2.select_autoescape(...), ...)
+      - pattern: jinja2.Environment(...)
+    message: |
+      Detected a Jinja2 environment without autoescaping. Jinja2 does not autoescape by default.
+      This is dangerous if you are rendering to a browser because this allows for cross-site
+      scripting (XSS) attacks. If you are in a web context, enable autoescaping by setting
+      autoescape=True.
+    metadata:
+      cwe: "CWE-116: Improper Encoding or Escaping of Output"
+      owasp: "A6: Security Misconfiguration"
+    languages: [python]
+    severity: WARNING
+
+  - id: jwt-python-exposed-data
+    message: |
+      The object is passed strictly to jwt.encode(...)
+      Make sure that sensitive information is not exposed through JWT token payload.
+    severity: WARNING
+    metadata:
+      owasp: A3:2017-Sensitive Data Exposure
+      cwe: "CWE-522: Insufficiently Protected Credentials"
+      source-rule-url: https://r2c.dev/blog/2020/hardcoded-secrets-unverified-tokens-and-other-common-jwt-mistakes/
+    languages: [python]
+    patterns:
+      - pattern-inside: |
+          def $FUNC(...,$INPUT,...):
+            ...
+      - pattern: |-
+          jwt.encode($INPUT,...)
+
+  - id: multiprocessing-recv
+    languages:
+      - python
+    message:
+      "The Connection.recv() method automatically unpickles the data it receives, which can be a security risk unless
+      you can trust the process which sent the message. Therefore, unless the connection object was produced using Pipe() you
+      should only use the recv() and send() methods after performing some sort of authentication. See more dettails: https://docs.python.org/3/library/multiprocessing.html?highlight=security#multiprocessing.connection.Connection"
+    metadata:
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      owasp: "A8: Insecure Deserialization"
+      references:
+        - https://docs.python.org/3/library/multiprocessing.html?highlight=security#multiprocessing.connection.Connection
+    pattern-either:
+      - pattern: multiprocessing.connection.Connection.recv(...)
+      - pattern: multiprocessing.connection.Client.recv(...)
+      - pattern: |
+          $C = multiprocessing.connection.Client(...)
+          ...
+          $C.recv(...)
+    severity: WARNING
+
+  - id: dangerous-spawn-process
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-not: os.$W("...", ...)
+              - pattern-either:
+                  - pattern: os.execl(...)
+                  - pattern: os.execle(...)
+                  - pattern: os.execlp(...)
+                  - pattern: os.execlpe(...)
+                  - pattern: os.execv(...)
+                  - pattern: os.execve(...)
+                  - pattern: os.execvp(...)
+                  - pattern: os.execvpe(...)
+                  - pattern: os.startfile(...)
+          - patterns:
+              - pattern-not: os.$W($MODE, "...", ...)
+              - pattern-either:
+                  - pattern: os.spawnl(...)
+                  - pattern: os.spawnle(...)
+                  - pattern: os.spawnlp(...)
+                  - pattern: os.spawnlpe(...)
+                  - pattern: os.spawnv(...)
+                  - pattern: os.spawnve(...)
+                  - pattern: os.spawnvp(...)
+                  - pattern: os.spawnvpe(...)
+    message: |
+      Found dynamic content when spawning a process. This is dangerous if external
+      data can reach this function call because it allows a malicious actor to
+      execute commands. Ensure no external data reaches here.
+    metadata:
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      owasp: "A1: Injection"
+    languages: [python]
+    severity: WARNING
+
+  - id: dangerous-subprocess-use
+    patterns:
+      - pattern-not: subprocess.$FUNC("...", ...)
+      - pattern-not: subprocess.$FUNC([...], ...)
+      - pattern: subprocess.$FUNC(...)
+    message: |
+      Detected subprocess function '$FUNC' without a static string. Audit the use of this
+      call to ensure it is not vulnerable to a command injection. You may consider using
+      shlex.escape.
+    metadata:
+      owasp: "A1: Injection"
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      references:
+        - https://stackoverflow.com/questions/3172470/actual-meaning-of-shell-true-in-subprocess
+        - https://docs.python.org/3/library/subprocess.html
+        - https://docs.python.org/3/library/shlex.html
+    languages: [python]
+    severity: WARNING
+
+  - id: dangerous-system-call
+    patterns:
+      - pattern-not: os.$W("...", ...)
+      - pattern-either:
+          - pattern: os.system(...)
+          - pattern: os.popen(...)
+          - pattern: os.popen2(...)
+          - pattern: os.popen3(...)
+          - pattern: os.popen4(...)
+    message: |
+      Found dynamic content used in a system call. This is dangerous if external
+      data can reach this function call because it allows a malicious actor to
+      execute commands. Ensure no external data reaches here.
+    metadata:
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      owasp: "A1: Injection"
+    languages: [python]
+    severity: WARNING
+
+  - id: dynamic-urllib-use-detected
+    patterns:
+      - pattern-not: urllib.$W("...")
+      - pattern-not: urllib.request.$W("...")
+      - pattern-not: $OPENER.$W("...")
+      - pattern-either:
+          - patterns:
+              - pattern-either:
+                  - pattern: urllib.urlopen(...)
+                  - pattern: urllib.request.urlopen(...)
+                  - pattern: urllib.urlretrieve(...)
+                  - pattern: urllib.request.urlretrieve(...)
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: |
+                      $OPENER = urllib.URLopener(...)
+                      ...
+                  - pattern-inside: |
+                      $OPENER = urllib.request.URLopener(...)
+                      ...
+                  - pattern-inside: |
+                      $OPENER = urllib.FancyURLopener(...)
+                      ...
+                  - pattern-inside: |
+                      $OPENER = urllib.request.FancyURLopener(...)
+                      ...
+              - pattern-either:
+                  - pattern: $OPENER.open(...)
+                  - pattern: $OPENER.retrieve(...)
+    message: |
+      Detected a dynamic value being used with urllib. urllib supports 'file://' schemes.
+      Audit uses of urllib calls to ensure user data cannot control the URLs, or consider
+      using the 'requests' library instead.
+    metadata:
+      cwe: "CWE-939: Improper Authorization in Handler for Custom URL Scheme"
+      owasp: "A1: Injection"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/blacklists/calls.py#L163
+      bandit-code: B310
+    languages: [python]
+    severity: WARNING
+
+  - id: eval-detected
+    patterns:
+      - pattern-not: eval("...")
+      - pattern: eval(...)
+    message: |
+      Detected the use of eval(). eval() can be dangerous if used to evaluate
+      dynamic content. If this content can be input from outside the program, this
+      may be a code injection vulnerability. Ensure evaluated content is not definable
+      by external sources.
+    metadata:
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+      owasp: "A1: Injection"
+    languages: [python]
+    severity: WARNING
+
+  - id: exec-detected
+    patterns:
+      - pattern-not: exec("...")
+      - pattern: exec(...)
+    message: |
+      Detected the use of exec(). exec() can be dangerous if used to evaluate
+      dynamic content. If this content can be input from outside the program, this
+      may be a code injection vulnerability. Ensure evaluated content is not definable
+      by external sources.
+    metadata:
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+      owasp: "A1: Injection"
+    languages: [python]
+    severity: WARNING
+
+  - id: formatted-sql-query
+    patterns:
+      - pattern-either:
+          - pattern: $DB.execute("..." % ...)
+          - pattern: $DB.execute("...".format(...))
+          - pattern: $DB.execute(f"...")
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: |
+                      $SQL = "..." % ...
+                      ...
+                  - pattern-inside: |
+                      $SQL = "...".format(...)
+                      ...
+                  - pattern-inside: |
+                      $SQL = f"...{$X}..."
+                      ...
+              - pattern: $DB.execute($SQL)
+    message: |
+      Detected possible formatted SQL query. Use parameterized queries instead.
+    metadata:
+      owasp: "A1: Injection"
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      references:
+        - https://stackoverflow.com/questions/775296/mysql-parameterized-queries
+    severity: WARNING
+    languages:
+      - python
+
+  - id: ftplib
+    pattern: ftplib.$ANYTHING(...)
+    message: |
+      FTP does not encrypt communications by default. This can lead to sensitive
+      data being exposed. Ensure use of FTP here does not expose sensitive data.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L265
+      cwe: "CWE-319: Cleartext Transmission of Sensitive Information"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B321
+      references:
+        - https://docs.python.org/3/library/telnetlib.html
+    severity: WARNING
+    languages:
+      - python
+
+  - id: hardcoded-password-default-argument
+    patterns:
+      - pattern: |
+          def $FUNC(..., password="...", ...):
+            ...
+    message: |
+      Hardcoded password is used as a default argument to '$FUNC'. This could be dangerous if
+      a real password is not supplied.
+    languages: [python]
+    severity: WARNING
+
+  - id: httpsconnection-detected
+    patterns:
+      - pattern-either:
+          - pattern: httplib.HTTPSConnection(...)
+          - pattern: http.client.HTTPSConnection(...)
+          - pattern: six.moves.http_client.HTTPSConnection(...)
+    message: |
+      The HTTPSConnection API has changed frequently with minor releases of Python.
+      Ensure you are using the API for your version of Python securely.
+      For example, Python 3 versions prior to 3.4.3 will not verify SSL certificates by default.
+      See https://docs.python.org/3/library/http.client.html#http.client.HTTPSConnection
+      for more information.
+    metadata:
+      owasp: "A6: Security Misconfiguration"
+      cwe: "CWE-295: Improper Certificate Validation"
+      references:
+        - https://docs.python.org/3/library/http.client.html#http.client.HTTPSConnection
+    severity: WARNING
+    languages:
+      - python
+
+  - id: insecure-file-permissions
+    patterns:
+      - pattern-either:
+          - pattern: os.chmod($FILENAME, $MODE, ...)
+          - pattern: os.lchmod($FILENAME, $MODE)
+          - pattern: os.fchmod($FD, $MODE)
+      - pattern-where-python: |-
+          import stat
+
+          def stat_to_bits(mode):
+            bits = 0
+            for flag in mode.split('|'):
+              try:
+                bits |= {k: v for k, v in stat.__dict__.items() if type(v) == int}[flag.strip().replace("stat.", "")]
+              except: # ignore things that aren't in stat module
+                continue
+            return bits
+
+          def numeric_to_bits(mode):
+            # Try combos of ints: 0o777, 511, 0x1ff
+            bits = 0
+            for num in mode.split("|"):
+              num = num.strip()
+              try:
+                tidbit = int(num)
+              except:
+                try:
+                  tidbit = int(num, 8)
+                except:
+                  try:
+                    tidbit = int(num, 16)
+                  except:
+                    try:
+                      tidbit = int(num, 2)
+                    except:
+                      tidbit = 0
+              bits |= tidbit
+            return bits
+
+          perms = vars['$MODE']
+          try:
+            if "stat" in perms:
+              mode = stat_to_bits(perms)
+            else:
+              mode = numeric_to_bits(perms)
+          except:
+            mode = 0 # can't resolve. ignore this.
+
+          filemode = stat.filemode(mode)
+          alert = False
+          if 'w' in filemode[-3:] or 'x' in filemode[-3:]:
+            alert = True
+          elif 'x' in filemode[-6:-3]:
+            alert = True
+          alert
+    message: |
+      Insecure file permissions detected.
+    languages: [python]
+    severity: WARNING
+
+  - id: mako-templates-detected
+    pattern: mako.template.Template(...)
+    message: |
+      Mako templates do not provide a global HTML escaping mechanism.
+      This means you must escape all sensitive data in your templates
+      using '| u' for URL escaping or '| h' for HTML escaping.
+      If you are using Mako to serve web content, consider using
+      a system such as Jinja2 which enables global escaping.
+    metadata:
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      owasp: "A7: Cross-Site Scripting (XSS)"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/plugins/mako_templates.py
+      references:
+        - https://docs.makotemplates.org/en/latest/syntax.html#expression-escaping
+        - https://jinja.palletsprojects.com/en/2.11.x/intro/#
+    languages: [python]
+    severity: INFO
+
+  - id: marshal-usage
+    languages:
+      - python
+    message: |
+      The marshal module is not intended to be secure against erroneous or maliciously constructed data.
+      Never unmarshal data received from an untrusted or unauthenticated source.
+      See more details: https://docs.python.org/3/library/marshal.html?highlight=security
+    metadata:
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      owasp: "A8: Insecure Deserialization"
+      references:
+        - https://docs.python.org/3/library/marshal.html?highlight=security
+    pattern-either:
+      - pattern: marshal.dump(...)
+      - pattern: marshal.dumps(...)
+      - pattern: marshal.load(...)
+      - pattern: marshal.loads(...)
+    severity: WARNING
+
+  - id: paramiko-implicit-trust-host-key
+    patterns:
+      - pattern-inside: |
+          $CLIENT = paramiko.client.SSHClient(...)
+          ...
+          $CLIENT.set_missing_host_key_policy(...)
+      - pattern-either:
+          - pattern: paramiko.client.AutoAddPolicy
+          - pattern: paramiko.client.WarningPolicy
+    message: |
+      Detected a paramiko host key policy that implicitly trusts a server's
+      host key. Host keys should be verified to ensure the connection
+      is not to a malicious server. Use RejectPolicy or a custom subclass
+      instead.
+    metadata:
+      cwe: "CWE-322: Key Exchange without Entity Authentication"
+      owasp: "A3: Sensitive Data Exposure"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/plugins/ssh_no_host_key_verification.py
+      references:
+        - http://docs.paramiko.org/en/stable/api/client.html#paramiko.client.AutoAddPolicy
+    languages: [python]
+    severity: WARNING
+
+  - id: ssl-wrap-socket-is-deprecated
+    pattern: ssl.wrap_socket(...)
+    message: |
+      'ssl.wrap_socket()' is deprecated. This function creates an insecure socket
+      without server name indication or hostname matching. Instead, create an SSL
+      context using 'ssl.SSLContext()' and use that to wrap a socket.
+    metadata:
+      cwe: "CWE-326: Inadequate Encryption Strength"
+      owasp: "A3: Sensitive Data Exposure"
+      references:
+        - https://docs.python.org/3/library/ssl.html#ssl.wrap_socket
+        - https://docs.python.org/3/library/ssl.html#ssl.SSLContext.wrap_socket
+    languages: [python]
+    severity: WARNING
+
+  - id: subprocess-shell-true
+    pattern: subprocess.$FUNC(..., shell=True, ...)
+    message: |
+      Found subprocess function '$FUNC' with 'shell=True'. This is dangerous spawns the command using a shell process.
+      This propagates current shell settings and variables, which makes it much easier for a malicious actor
+      to execute commands. Use 'shell=False' instead.
+    metadata:
+      owasp: "A1: Injection"
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      references:
+        - https://stackoverflow.com/questions/3172470/actual-meaning-of-shell-true-in-subprocess
+        - https://docs.python.org/3/library/subprocess.html
+    languages: [python]
+    severity: ERROR
+
+  - id: system-wildcard-detected
+    patterns:
+      - pattern-either:
+          - pattern-inside: os.system("...")
+          - pattern-inside: os.popen("...")
+          - pattern-inside: os.popen2("...")
+          - pattern-inside: os.popen3("...")
+          - pattern-inside: os.popen4("...")
+          - pattern-inside: subprocess.$W(..., shell=True, ...)
+      - pattern-regex: (.*?)[tar|chmod|chown|rsync](.*?)\*
+    message: |
+      Detected use of the wildcard character in a system call that spawns a shell.
+      This subjects the wildcard to normal shell expansion, which can have unintended consequences
+      if there exist any non-standard file names. Consider a file named '-e sh script.sh' -- this
+      will execute a script when 'rsync' is called. See
+      https://www.defensecode.com/public/DefenseCode_Unix_WildCards_Gone_Wild.txt
+      for more information.
+    metadata:
+      cwe: "CWE-155: Improper Neutralization of Wildcards or Matching Symbols"
+      owasp: "A1: Injection"
+      source-url-open: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/plugins/injection_wildcard.py
+      references:
+        - https://www.defensecode.com/public/DefenseCode_Unix_WildCards_Gone_Wild.txt
+    languages: [python]
+    severity: WARNING
+
+  - id: telnetlib
+    pattern: telnetlib.$ANYTHING(...)
+    message: |
+      Telnet does not encrypt communications. Use SSH instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L208
+      cwe: "CWE-319: Cleartext Transmission of Sensitive Information"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B312
+      references:
+        - https://docs.python.org/3/library/telnetlib.html
+    severity: WARNING
+    languages:
+      - python
+
+  - id: weak-ssl-version
+    patterns:
+      - pattern-either:
+          - pattern: ssl.PROTOCOL_SSLv2
+          - pattern: ssl.PROTOCOL_SSLv3
+          - pattern: ssl.PROTOCOL_TLSv1
+          - pattern: ssl.PROTOCOL_TLSv1_1
+          - pattern: pyOpenSSL.SSL.SSLv2_METHOD
+          - pattern: pyOpenSSL.SSL.SSLv23_METHOD
+          - pattern: pyOpenSSL.SSL.SSLv3_METHOD
+          - pattern: pyOpenSSL.SSL.TLSv1_METHOD
+          - pattern: pyOpenSSL.SSL.TLSv1_1_METHOD
+    message: |
+      An insecure SSL version was detected. TLS versions 1.0, 1.1, and all SSL versions
+      are considered weak encryption and are deprecated.
+      Use 'ssl.PROTOCOL_TLSv1_2' or higher.
+    metadata:
+      cwe: "CWE-326: Inadequate Encryption Strength"
+      owasp: "A3: Sensitive Data Exposure"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/plugins/insecure_ssl_tls.py#L30
+      references:
+        - https://tools.ietf.org/html/rfc7568
+        - https://tools.ietf.org/id/draft-ietf-tls-oldversions-deprecate-02.html
+        - https://docs.python.org/3/library/ssl.html#ssl.PROTOCOL_TLSv1_2
+    languages: [python]
+    severity: WARNING
+
+  - id: avoid-pyyaml-load
+    metadata:
+      owasp: "A8: Insecure Deserialization"
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      references:
+        - https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
+        - https://nvd.nist.gov/vuln/detail/CVE-2017-18342
+    languages:
+      - python
+    message: |
+      Avoid using `load()`. `PyYAML.load` can create arbitrary Python
+      objects. A malicious actor could exploit this to run arbitrary
+      code. Use `safe_load()` instead.
+    fix: yaml.safe_load($FOO)
+    severity: ERROR
+    patterns:
+      - pattern-not-inside: |
+          yaml = $X
+          ...
+      - pattern: yaml.load($FOO)
+
+  - id: avoid-unsafe-ruamel
+    metadata:
+      owasp: "A8: Insecure Deserialization"
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      references:
+        - https://yaml.readthedocs.io/en/latest/basicuse.html?highlight=typ
+    languages:
+      - python
+    message: |
+      Avoid using unsafe `ruamel.yaml.YAML()`. `ruamel.yaml.YAML` can
+      create arbitrary Python objects. A malicious actor could exploit
+      this to run arbitrary code. Use `YAML(typ='rt')` or
+      `YAML(typ='safe')` instead.
+    severity: ERROR
+    pattern-either:
+      - pattern: ruamel.yaml.YAML(..., typ='unsafe', ...)
+      - pattern: ruamel.yaml.YAML(..., typ='base', ...)
+
+  - id: avoid-pickle
+    metadata:
+      owasp: "A8: Insecure Deserialization"
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      references: https://docs.python.org/3/library/pickle.html
+    languages:
+      - python
+    message: |
+      Avoid using `pickle`, which is known to lead to code execution vulnerabilities.
+      When unpickling, the serialized data could be manipulated to run arbitrary code.
+      Instead, consider serializing the relevant data as JSON or a similar text-based
+      serialization format.
+    severity: WARNING
+    pattern-either:
+      - pattern: pickle.$FUNC(...)
+      - pattern: _pickle.$FUNC(...)
+  - id: avoid-cPickle
+    metadata:
+      owasp: "A8: Insecure Deserialization"
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      references: https://docs.python.org/3/library/pickle.html
+    languages:
+      - python
+    message: |
+      Avoid using `cPickle`, which is known to lead to code execution vulnerabilities.
+      When unpickling, the serialized data could be manipulated to run arbitrary code.
+      Instead, consider serializing the relevant data as JSON or a similar text-based
+      serialization format.
+    severity: WARNING
+    pattern: cPickle.$FUNC(...)
+  - id: avoid-dill
+    metadata:
+      owasp: "A8: Insecure Deserialization"
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      references: https://docs.python.org/3/library/pickle.html
+    languages:
+      - python
+    message: |
+      Avoid using `dill`, which uses `pickle`, which is known to lead to code execution vulnerabilities.
+      When unpickling, the serialized data could be manipulated to run arbitrary code.
+      Instead, consider serializing the relevant data as JSON or a similar text-based
+      serialization format.
+    severity: WARNING
+    pattern-either:
+      - pattern: dill.$FUNC(...)
+  - id: avoid-shelve
+    metadata:
+      owasp: "A8: Insecure Deserialization"
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      references: https://docs.python.org/3/library/pickle.html
+    languages:
+      - python
+    message: |
+      Avoid using `shelve`, which uses `pickle`, which is known to lead to code execution vulnerabilities.
+      When unpickling, the serialized data could be manipulated to run arbitrary code.
+      Instead, consider serializing the relevant data as JSON or a similar text-based
+      serialization format.
+    severity: WARNING
+    pattern-either:
+      - pattern: shelve.$FUNC(...)
+
+  - id: hardcoded-token
+    message: |
+      Hardcoded AWS access token detected. Use environment variables
+      to access tokens (e.g., os.environ.get(...)) or use non version-controlled
+      configuration files.
+    metadata:
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      owasp: "A2: Broken Authentication"
+      source-rule-url: https://pypi.org/project/flake8-boto3/
+      references:
+        - https://bento.dev/checks/boto3/hardcoded-access-token/
+        - https://aws.amazon.com/blogs/security/what-to-do-if-you-inadvertently-expose-an-aws-access-key/
+    patterns:
+      - pattern-either:
+          - pattern: $W(..., aws_secret_access_key="=~/^[A-Za-z0-9/+=]+$/", ...)
+          - pattern: $W(..., aws_access_key_id="=~/^AKI/", ...)
+          - pattern: $W(..., aws_session_token="...", ...)
+    languages: [python]
+    severity: WARNING
+
+  - id: insecure-cipher-algorithm-rc4
+    pattern: cryptography.hazmat.primitives.ciphers.algorithms.ARC4(...)
+    message: |
+      Detected RC4 cipher algorithm which is considered insecure. The algorithm has many
+      known vulnerabilities. Use AES instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L94
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B304
+      references:
+        - https://crypto.stackexchange.com/questions/853/google-is-using-rc4-but-isnt-rc4-considered-unsafe
+        - https://sweet32.info/
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-cipher-algorithm-blowfish
+    pattern: cryptography.hazmat.primitives.ciphers.algorithms.Blowfish(...)
+    message: |
+      Detected Blowfish cipher algorithm which is considered insecure. The algorithm has many
+      known vulnerabilities. Use AES instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L96
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B304
+      references:
+        - https://sweet32.info/
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-cipher-algorithm-idea
+    pattern: cryptography.hazmat.primitives.ciphers.algorithms.IDEA(...)
+    message: |
+      Detected IDEA cipher algorithm which is considered insecure. The algorithm is
+      considered weak and has been deprecated. Use AES instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L98
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B304
+      references:
+        - https://tools.ietf.org/html/rfc5469
+    severity: WARNING
+    languages:
+      - python
+
+  - id: insecure-cipher-mode-ecb
+    pattern: cryptography.hazmat.primitives.ciphers.modes.ECB(...)
+    message: |
+      Detected ECB cipher mode which is considered insecure. The algorithm can
+      potentially leak information about the plaintext. Use CBC mode instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L101
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B305
+      references:
+        - https://crypto.stackexchange.com/questions/20941/why-shouldnt-i-use-ecb-encryption
+    severity: WARNING
+    languages:
+      - python
+
+  - id: insecure-hash-algorithm-md5
+    pattern: cryptography.hazmat.primitives.hashes.MD5(...)
+    message: |
+      Detected MD5 hash algorithm which is considered insecure. MD5 is not
+      collision resistant and is therefore not suitable as a cryptographic
+      signature. Use SHA256 or SHA3 instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L59
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B303
+      references:
+        - https://tools.ietf.org/html/rfc6151
+        - https://crypto.stackexchange.com/questions/44151/how-does-the-flame-malware-take-advantage-of-md5-collision
+        - https://pycryptodome.readthedocs.io/en/latest/src/hash/sha3_256.html
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-hash-algorithm-sha1
+    pattern: cryptography.hazmat.primitives.hashes.SHA1(...)
+    message: |
+      Detected SHA1 hash algorithm which is considered insecure. SHA1 is not
+      collision resistant and is therefore not suitable as a cryptographic
+      signature. Use SHA256 or SHA3 instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L59
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B303
+      references:
+        - https://www.schneier.com/blog/archives/2012/10/when_will_we_se.html
+        - https://www.trendmicro.com/vinfo/us/security/news/vulnerabilities-and-exploits/sha-1-collision-signals-the-end-of-the-algorithm-s-viability
+        - http://2012.sharcs.org/slides/stevens.pdf
+        - https://pycryptodome.readthedocs.io/en/latest/src/hash/sha3_256.html
+    severity: WARNING
+    languages:
+      - python
+
+  - id: insufficient-dsa-key-size
+    patterns:
+      - pattern-either:
+          - pattern: cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key(..., key_size=$SIZE, ...)
+          - pattern: cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key($SIZE, ...)
+      - pattern-where-python: |
+          alert = False
+          try:
+            alert = int(vars['$SIZE']) < 2048
+          except:
+            alert = False
+          alert
+    message: |
+      Detected an insufficient key size for DSA. NIST recommends
+      a key size of 2048 or higher.
+    metadata:
+      cwe: "CWE-326: Inadequate Encryption Strength"
+      owasp: "A3: Sensitive Data Exposure"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/plugins/weak_cryptographic_key.py
+      references:
+        - https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57Pt3r1.pdf
+    languages: [python]
+    severity: WARNING
+
+  - id: insufficient-ec-key-size
+    patterns:
+      - pattern-inside: cryptography.hazmat.primitives.asymmetric.ec.generate_private_key(...)
+      - pattern-either:
+          - pattern: cryptography.hazmat.primitives.asymmetric.ec.SECP192R1
+          - pattern: cryptography.hazmat.primitives.asymmetric.ec.SECT163K1
+          - pattern: cryptography.hazmat.primitives.asymmetric.ec.SECT163R2
+    message: |
+      Detected an insufficient curve size for EC. NIST recommends
+      a key size of 224 or higher. For example, use 'ec.SECP256R1'.
+    metadata:
+      cwe: "CWE-326: Inadequate Encryption Strength"
+      owasp: "A3: Sensitive Data Exposure"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/plugins/weak_cryptographic_key.py
+      references:
+        - https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57Pt3r1.pdf
+        - https://cryptography.io/en/latest/hazmat/primitives/asymmetric/ec/#elliptic-curves
+    languages: [python]
+    severity: WARNING
+
+  - id: insufficient-rsa-key-size
+    patterns:
+      - pattern-either:
+          - pattern: cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(..., key_size=$SIZE, ...)
+          - pattern: cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key($EXP, $SIZE, ...)
+      - pattern-where-python: |
+          alert = False
+          try:
+            alert = int(vars['$SIZE']) < 2048
+          except:
+            alert = False
+          alert
+    message: |
+      Detected an insufficient key size for RSA. NIST recommends
+      a key size of 2048 or higher.
+    metadata:
+      cwe: "CWE-326: Inadequate Encryption Strength"
+      owasp: "A3: Sensitive Data Exposure"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/plugins/weak_cryptographic_key.py
+      references:
+        - https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57Pt3r1.pdf
+    languages: [python]
+    severity: WARNING
+
+  - id: dangerous-template-string
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $V = "...".format(...)
+              ...
+              flask.render_template_string($V, ...)
+          - pattern: |
+              $V = "...".format(...)
+              ...
+              return flask.render_template_string($V, ...), $MORE
+          - pattern: |
+              $V = "..." % $S
+              ...
+              flask.render_template_string($V, ...)
+          - pattern: |
+              $V = "..." % $S
+              ...
+              return flask.render_template_string($V, ...), $MORE
+          - pattern: |
+              $V = "..."
+              ...
+              $V += $O
+              ...
+              flask.render_template_string($V, ...)
+          - pattern: |
+              $V = "..."
+              ...
+              $V += $O
+              ...
+              return flask.render_template_string($V, ...), $MORE
+          - pattern: |
+              $V = f"...{$X}..."
+              ...
+              flask.render_template_string($V, ...)
+          - pattern: |
+              $V = f"...{$X}..."
+              ...
+              return flask.render_template_string($V, ...), $CODE
+    message: |
+      Found a template created with string formatting.
+      This is susceptible to server-side template injection
+      and cross-site scripting attacks.
+    metadata:
+      cwe: "CWE-96: Improper Neutralization of Directives in Statically Saved Code ('Static Code Injection')"
+      owasp: "A1: Injection"
+      references:
+        - https://nvisium.com/blog/2016/03/09/exploring-ssti-in-flask-jinja2.html
+        - https://pequalsnp-team.github.io/cheatsheet/flask-jinja2-ssti
+    languages: [python]
+    severity: ERROR
+
+  - id: insecure-deserialization
+    metadata:
+      owasp: "A8: Insecure Deserialization"
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      references:
+        - https://docs.python.org/3/library/pickle.html
+    message: |
+      Detected the use of an insecure deserizliation library in a Flask route. These libraries
+      are prone to code execution vulnerabilities. Ensure user data does not enter this function.
+      To fix this, try to avoid serializing whole objects. Consider instead using a serializer
+      such as JSON.
+    languages:
+      - python
+    severity: ERROR
+    patterns:
+      - pattern-inside: |
+          @app.route(...)
+          def $X(...):
+            ...
+      - pattern-not: $MODULE.$FUNC("...")
+      - pattern-not: $MODULE.$FUNC(open("...", ...))
+      - pattern-either:
+          - pattern: pickle.$FUNC(...)
+          - pattern: _pickle.$FUNC(...)
+          - pattern: cPickle.$FUNC(...)
+          - pattern: dill.$FUNC(...)
+          - pattern: shelve.$FUNC(...)
+          - pattern: yaml.load(...)
+
+  - id: open-redirect
+    patterns:
+      - pattern-inside: |
+          @$APP.route(...)
+          def $X():
+            ...
+      - pattern-not-inside: |
+          ...
+          if <... werkzeug.urls.url_parse($V) ...>:
+            ...
+      - pattern-either:
+          - pattern: flask.redirect(<... flask.request.$W.get(...) ...>, ...)
+          - pattern: flask.redirect(<... flask.request.$W[...] ...>, ...)
+          - pattern: flask.redirect(<... flask.request.$W(...) ...>, ...)
+          - pattern: flask.redirect(<... flask.request.$W ...>, ...)
+          - pattern: |
+              $V = flask.request.$W.get(...)
+              ...
+              flask.redirect(<... $V ...>, ...)
+          - pattern: |
+              $V = flask.request.$W[...]
+              ...
+              flask.redirect(<... $V ...>, ...)
+          - pattern: |
+              $V = flask.request.$W(...)
+              ...
+              flask.redirect(<... $V ...>, ...)
+          - pattern: |
+              $V = flask.request.$W
+              ...
+              flask.redirect(<... $V ...>, ...)
+    message: |
+      Data from request is passed to redirect().
+      This is an open redirect and could be exploited.
+      Consider using 'url_for()' to generate links to known locations.
+      If you must use a URL to unknown pages, consider using 'urlparse()'
+      or similar and checking if the 'netloc' property is the same as
+      your site's host name. See the references for more information.
+    metadata:
+      cwe: "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+      owasp: "A1: Injection"
+      references:
+        - https://flask-login.readthedocs.io/en/latest/#login-example
+        - https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html#dangerous-url-redirect-example-1
+        - https://docs.python.org/3/library/urllib.parse.html#url-parsing
+    languages: [python]
+    severity: ERROR
+  # For Flask app to serve file securely, it should use `send_from_directory` method
+  # The other methods like `send_file` or `send_static_file` are not recommended per
+  # https://stackoverflow.com/questions/20646822/how-to-serve-static-files-in-flask
+
+  - id: avoid_send_file_without_path_sanitization
+    patterns:
+      - pattern-inside: |
+          @app.route(...)
+          def $X(filename):
+            ...
+      - pattern-either:
+          - pattern: flask.send_file(filename, ...)
+    message:
+      Looks like `filename` could flow to `flask.send_file()` function. Make sure to properly sanitize filename or use
+      `flask.send_from_directory`
+    metadata:
+      cwe: "CWE-73: External Control of File Name or Path"
+      owasp: "A1: Injection"
+    languages: [python]
+    severity: WARNING
+
+  - id: unescaped-template-extension
+    message: |
+      Flask does not automatically escape Jinja templates unless they have
+      .html, .htm, .xml, or .xhtml extensions. This could lead to XSS attacks.
+      Use .html, .htm, .xml, or .xhtml for your template extensions.
+      See https://flask.palletsprojects.com/en/1.1.x/templating/#jinja-setup
+      for more information.
+    metadata:
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      owasp: "A7: Cross-Site Scripting (XSS)"
+      source-rule-url: https://pypi.org/project/flake8-flask/
+      references:
+        - https://flask.palletsprojects.com/en/1.1.x/templating/#jinja-setup
+        - https://blog.r2c.dev/2020/bento-check-unescaped-template-extensions-in-flask/
+        - https://bento.dev/checks/flask/unescaped-file-extension/
+    patterns:
+      - pattern-not: flask.render_template("=~/.+\.html$/", ...)
+      - pattern-not: flask.render_template("=~/.+\.xml$/", ...)
+      - pattern-not: flask.render_template("=~/.+\.htm$/", ...)
+      - pattern-not: flask.render_template("=~/.+\.xhtml$/", ...)
+      - pattern-not: flask.render_template($X + "=~/\.html$/", ...)
+      - pattern-not: flask.render_template($X + "=~/\.xml$/", ...)
+      - pattern-not: flask.render_template($X + "=~/\.htm$/", ...)
+      - pattern-not: flask.render_template($X + "=~/\.xhtml$/", ...)
+      - pattern-not: flask.render_template("=~/.+\.html$/" % $X, ...)
+      - pattern-not: flask.render_template("=~/.+\.xml$/" % $X, ...)
+      - pattern-not: flask.render_template("=~/.+\.htm$/" % $X, ...)
+      - pattern-not: flask.render_template("=~/.+\.xhtml$/" % $X, ...)
+      - pattern-not: flask.render_template("=~/.+\.html$/".format(...), ...)
+      - pattern-not: flask.render_template("=~/.+\.xml$/".format(...), ...)
+      - pattern-not: flask.render_template("=~/.+\.htm$/".format(...), ...)
+      - pattern-not: flask.render_template("=~/.+\.xhtml$/".format(...), ...)
+      - pattern-not: flask.render_template($TEMPLATE)
+      - pattern-either:
+          - pattern: flask.render_template("...", ...)
+          - pattern: flask.render_template($X + "...", ...)
+          - pattern: flask.render_template("..." % $Y, ...)
+          - pattern: flask.render_template("...".format(...), ...)
+    languages: [python]
+    severity: WARNING
+
+  - id: response-contains-unsanitized-input
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $X = flask.request.args.get(...)
+              ...
+              flask.make_response("...".format($X))
+          - pattern: |
+              $X = flask.request.args.get(...)
+              ...
+              flask.make_response(f"...{$X}...")
+          - pattern: |
+              $X = flask.request.args.get(...)
+              ...
+              flask.make_response(f"...{$X}")
+          - pattern: |
+              $X = flask.request.args.get(...)
+              ...
+              flask.make_response(f"{$X}...")
+    message: |
+      Flask response reflects unsanitized user input. This could lead to a
+      cross-site scripting vulnerability (https://owasp.org/www-community/attacks/xss/)
+      in which an attacker causes arbitrary code to be executed in the user's browser.
+      To prevent, please sanitize the user input, e.g. by rendering the response
+      in a Jinja2 template (see considerations in https://flask.palletsprojects.com/en/1.0.x/security/).
+    metadata:
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      owasp: "A7: Cross-Site Scripting (XSS)"
+      references:
+        - https://flask.palletsprojects.com/en/1.0.x/security/
+        - https://owasp.org/www-community/attacks/xss/
+    languages: [python]
+    severity: WARNING
+
+  - id: jwt-python-exposed-credentials
+    languages:
+      - python
+    metadata:
+      cwe: "CWE-522: Insufficiently Protected Credentials"
+      owasp: "A2: Broken Authentication"
+      source-rule-url: https://r2c.dev/blog/2020/hardcoded-secrets-unverified-tokens-and-other-common-jwt-mistakes/
+      references:
+        - https://cwe.mitre.org/data/definitions/522.html
+    message: |
+      Password is exposed through JWT token payload. This is not encrypted and
+      the password could be compromised. Do not store passwords in JWT tokens.
+    pattern-either:
+      - pattern: |
+          jwt.encode({...,"password":$P,...},...)
+      - pattern: |
+          $PAYLOAD = {...,"password":$P,...}
+          ...
+          jwt.encode($PAYLOAD,...)
+    severity: ERROR
+
+  - id: jwt-python-hardcoded-secret
+    message: |
+      Hardcoded JWT secret or private key is used.
+      This is a Insufficiently Protected Credentials weakness: https://cwe.mitre.org/data/definitions/522.html
+      Consider using an appropriate security mechanism to protect the credentials (e.g. keeping secrets in environment variables)
+    metadata:
+      cwe: "CWE-522: Insufficiently Protected Credentials"
+      owasp: "A2: Broken Authentication"
+      source-rule-url: https://r2c.dev/blog/2020/hardcoded-secrets-unverified-tokens-and-other-common-jwt-mistakes/
+    pattern-either:
+      - pattern: |
+          jwt.encode($X, "...", ...)
+      - pattern: |
+          $SECRET = "..."
+          ...
+          jwt.encode($X, $SECRET, ...)
+    languages: [python]
+    severity: ERROR
+
+  - id: jwt-python-none-alg
+    message: |
+      Detected use of the 'none' algorithm in a JWT token.
+      The 'none' algorithm assumes the integrity of the token has already
+      been verified. This would allow a malicious actor to forge a JWT token
+      that will automatically be verified. Do not explicitly use the 'none'
+      algorithm. Instead, use an algorithm such as 'HS256'.
+    metadata:
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A2: Broken Authentication"
+      source-rule-url: https://r2c.dev/blog/2020/hardcoded-secrets-unverified-tokens-and-other-common-jwt-mistakes/
+    languages: [python]
+    severity: ERROR
+    pattern-either:
+      - pattern: |
+          jwt.encode(...,algorithm="none",...)
+      - pattern: |-
+          jwt.decode(...,algorithms=[...,"none",...],...)
+
+  - id: unverified-jwt-decode
+    pattern: |
+      jwt.decode(..., verify=False, ...)
+    message: |
+      Detected JWT token decoded with 'verify=False'. This bypasses any integrity
+      checks for the token which means the token could be tampered with by
+      malicious actors. Ensure that the JWT token is verified.
+    metadata:
+      owasp: "A5: Broken Authentication"
+      cwe: "CWE-287: Improper Authentication"
+      references:
+        - https://github.com/we45/Vulnerable-Flask-App/blob/752ee16087c0bfb79073f68802d907569a1f0df7/app/app.py#L96
+    fix-regex:
+      regex: (verify\s*=\s*)False
+      replacement: \1True
+    severity: ERROR
+    languages:
+      - python
+
+  - id: insecure-hash-algorithm-md5
+    pattern: hashlib.md5(...)
+    message: |
+      Detected MD5 hash algorithm which is considered insecure. MD5 is not
+      collision resistant and is therefore not suitable as a cryptographic
+      signature. Use SHA256 or SHA3 instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L59
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B303
+      references:
+        - https://tools.ietf.org/html/rfc6151
+        - https://crypto.stackexchange.com/questions/44151/how-does-the-flame-malware-take-advantage-of-md5-collision
+        - https://pycryptodome.readthedocs.io/en/latest/src/hash/sha3_256.html
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-hash-algorithm-sha1
+    pattern: hashlib.sha1(...)
+    message: |
+      Detected SHA1 hash algorithm which is considered insecure. SHA1 is not
+      collision resistant and is therefore not suitable as a cryptographic
+      signature. Use SHA256 or SHA3 instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L59
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B303
+      references:
+        - https://www.schneier.com/blog/archives/2012/10/when_will_we_se.html
+        - https://www.trendmicro.com/vinfo/us/security/news/vulnerabilities-and-exploits/sha-1-collision-signals-the-end-of-the-algorithm-s-viability
+        - http://2012.sharcs.org/slides/stevens.pdf
+        - https://pycryptodome.readthedocs.io/en/latest/src/hash/sha3_256.html
+    severity: WARNING
+    languages:
+      - python
+
+  - id: insecure-hash-function
+    patterns:
+      - pattern-either:
+          - pattern: hashlib.new("=~/[M|m][D|d][4|5]/", ...)
+          - pattern: hashlib.new(..., name="=~/[M|m][D|d][4|5]/", ...)
+    message: |
+      Detected use of an insecure MD4 or MD5 hash function.
+      These functions have known vulnerabilities and are considered deprecated.
+      Consider using 'SHA256' or a similar function instead.
+    metadata:
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/plugins/hashlib_new_insecure_functions.py
+      references:
+        - https://tools.ietf.org/html/rfc6151
+        - https://crypto.stackexchange.com/questions/44151/how-does-the-flame-malware-take-advantage-of-md5-collision
+        - https://pycryptodome.readthedocs.io/en/latest/src/hash/sha3_256.html
+    languages: [python]
+    severity: WARNING
+
+  - id: unquoted-csv-writer
+    patterns:
+      - pattern-not: csv.writer(..., quoting=csv.QUOTE_ALL, ...)
+      - pattern: csv.writer(...)
+    message: Found an unquoted CSV writer. This is susceptible to injection. Use 'quoting=csv.QUOTE_ALL'.
+    metadata:
+      cwe: "CWE-1236: Improper Neutralization of Formula Elements in a CSV File"
+      owasp: "A1: Injection"
+      references:
+        - https://affinity-it-security.com/how-to-prevent-csv-injection/
+    fix-regex:
+      regex: (.*)\)
+      replacement: \1, quoting=csv.QUOTE_ALL)
+    languages: [python]
+    severity: ERROR
+
+  - id: unverified-ssl-context
+    pattern: ssl._create_unverified_context(...)
+    message: |
+      Unverified SSL context detected. This will permit insecure connections without verifying
+      SSL certificates. Use 'ssl.create_default_context()' instead.
+    metadata:
+      owasp: "A6: Security Misconfiguration"
+      cwe: "CWE-295: Improper Certificate Validation"
+      references:
+        - https://docs.python.org/3/library/ssl.html#ssl-security
+        - https://docs.python.org/3/library/http.client.html#http.client.HTTPSConnection
+    severity: ERROR
+    languages:
+      - python
+
+  - id: use-defused-xml
+    pattern-either:
+      - pattern: import xml
+      - pattern: import lxml
+    fix: import defusedxml
+    metadata:
+      owasp: "A4: XML External Entities (XXE)"
+      cwe: "CWE-611: Improper Restriction of XML External Entity Reference"
+      references:
+        - https://docs.python.org/3/library/xml.html
+    message: |
+      Found use of the native Python XML libraries, which is vulnerable to XML external entity (XXE)
+      attacks. The Python documentation recommends the 'defusedxml' library instead if the XML being
+      loaded is untrusted.
+    languages: [python]
+    severity: ERROR
+
+  - id: use-defused-xmlrpc
+    pattern-either:
+      - pattern: import xmlrpclib
+      - pattern: import SimpleXMLRPCServer
+      # Python 3
+      - pattern: import xmlrpc
+    message: |
+      Detected use of xmlrpc. xmlrpc is not inherently safe from vulnerabilities.
+      Use defusedxml.xmlrpc instead.
+    metadata:
+      cwe: "CWE-776: Improper Restriction of Recursive Entity References in DTDs ('XML Entity Expansion')"
+      owasp: "A4: XML External Entities (XXE)"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/07f84cb5f5e7c1055e6feaa0fe93afa471de0ac3/bandit/blacklists/imports.py#L160
+      references:
+        - https://pypi.org/project/defusedxml/
+        - https://docs.python.org/3/library/xml.html#xml-vulnerabilities
+    severity: ERROR
+    languages:
+      - python
+
+  - id: insecure-cipher-algorithm-rc2
+    patterns:
+      - pattern-either:
+          - pattern: Cryptodome.Cipher.ARC2.new(...)
+          - pattern: Crypto.Cipher.ARC2.new
+    message: |
+      Detected RC2 cipher algorithm which is considered insecure. The algorithm has known vulnerabilities and is difficult to use securely. Use AES instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L84
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B304
+      references:
+        - https://security.stackexchange.com/questions/93924/is-rc2-cbc-at-all-secure
+        - https://sweet32.info/
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-cipher-algorithm-rc4
+    patterns:
+      - pattern-either:
+          - pattern: Cryptodome.Cipher.ARC4.new(...)
+          - pattern: Crypto.Cipher.ARC4.new(...)
+    message: |
+      Detected RC4 cipher algorithm which is considered insecure. The algorithm has many
+      known vulnerabilities. Use AES instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L84
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B304
+      references:
+        - https://crypto.stackexchange.com/questions/853/google-is-using-rc4-but-isnt-rc4-considered-unsafe
+        - https://sweet32.info/
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-cipher-algorithm-blowfish
+    patterns:
+      - pattern-either:
+          - pattern: Cryptodome.Cipher.Blowfish.new(...)
+          - pattern: Crypto.Cipher.Blowfish.new(...)
+    message: |
+      Detected Blowfish cipher algorithm which is considered insecure. The algorithm has many
+      known vulnerabilities. Use AES instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L84
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B304
+      references:
+        - https://sweet32.info/
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-cipher-algorithm-des
+    patterns:
+      - pattern-either:
+          - pattern: Cryptodome.Cipher.DES.new(...)
+          - pattern: Crypto.Cipher.DES.new(...)
+    message: |
+      Detected DES cipher algorithm which is considered insecure. The algorithm is
+      considered weak and has been deprecated. Use AES instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L84
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B304
+      references:
+        - https://tools.ietf.org/html/rfc5469
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-cipher-algorithm-xor
+    patterns:
+      - pattern-either:
+          - pattern: Cryptodome.Cipher.XOR.new(...)
+          - pattern: Crypto.Cipher.XOR.new(...)
+    message: |
+      Detected XOR cipher algorithm which is considered insecure. This algorithm
+      is not cryptographically secure and can be reversed easily. Use AES instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L84
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      bandit-code: B304
+      references:
+        - https://stackoverflow.com/questions/1135186/whats-wrong-with-xor-encryption
+    severity: WARNING
+    languages:
+      - python
+
+  - id: insecure-hash-algorithm-md2
+    patterns:
+      - pattern-either:
+          - pattern: Crypto.Hash.MD2.new(...)
+          - pattern: Cryptodome.Hash.MD2.new (...)
+    message: |
+      Detected MD2 hash algorithm which is considered insecure. This algorithm
+      has many known vulnerabilities and has been deprecated. Use SHA256 or SHA3 instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L59
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      references:
+        - https://tools.ietf.org/html/rfc6149
+        - https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2009-2409
+        - https://pycryptodome.readthedocs.io/en/latest/src/hash/sha3_256.html
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-hash-algorithm-md4
+    patterns:
+      - pattern-either:
+          - pattern: Crypto.Hash.MD4.new(...)
+          - pattern: Cryptodome.Hash.MD4.new (...)
+    message: |
+      Detected MD4 hash algorithm which is considered insecure. This algorithm
+      has many known vulnerabilities and has been deprecated. Use SHA256 or SHA3 instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L59
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      references:
+        - https://tools.ietf.org/html/rfc6150
+        - https://pycryptodome.readthedocs.io/en/latest/src/hash/sha3_256.html
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-hash-algorithm-md5
+    patterns:
+      - pattern-either:
+          - pattern: Crypto.Hash.MD5.new(...)
+          - pattern: Cryptodome.Hash.MD5.new (...)
+    message: |
+      Detected MD5 hash algorithm which is considered insecure. MD5 is not
+      collision resistant and is therefore not suitable as a cryptographic
+      signature. Use SHA256 or SHA3 instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L59
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      references:
+        - https://tools.ietf.org/html/rfc6151
+        - https://crypto.stackexchange.com/questions/44151/how-does-the-flame-malware-take-advantage-of-md5-collision
+        - https://pycryptodome.readthedocs.io/en/latest/src/hash/sha3_256.html
+    severity: WARNING
+    languages:
+      - python
+  - id: insecure-hash-algorithm-sha1
+    patterns:
+      - pattern-either:
+          - pattern: Crypto.Hash.SHA.new(...)
+          - pattern: Cryptodome.Hash.SHA.new (...)
+    message: |
+      Detected SHA1 hash algorithm which is considered insecure. SHA1 is not
+      collision resistant and is therefore not suitable as a cryptographic
+      signature. Use SHA256 or SHA3 instead.
+    metadata:
+      source-rule-url: https://github.com/PyCQA/bandit/blob/d5f8fa0d89d7b11442fc6ec80ca42953974354c8/bandit/blacklists/calls.py#L59
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp: "A3: Sensitive Data Exposure"
+      references:
+        - https://www.schneier.com/blog/archives/2012/10/when_will_we_se.html
+        - https://www.trendmicro.com/vinfo/us/security/news/vulnerabilities-and-exploits/sha-1-collision-signals-the-end-of-the-algorithm-s-viability
+        - http://2012.sharcs.org/slides/stevens.pdf
+        - https://pycryptodome.readthedocs.io/en/latest/src/hash/sha3_256.html
+    severity: WARNING
+    languages:
+      - python
+
+  - id: insufficient-dsa-key-size
+    patterns:
+      - pattern-either:
+          - pattern: Crypto.PublicKey.DSA.generate(..., bits=$SIZE, ...)
+          - pattern: Crypto.PublicKey.DSA.generate($SIZE, ...)
+          - pattern: Cryptodome.PublicKey.DSA.generate(..., bits=$SIZE, ...)
+          - pattern: Cryptodome.PublicKey.DSA.generate($SIZE, ...)
+      - pattern-where-python: |
+          alert = False
+          try:
+            alert = int(vars['$SIZE']) < 2048
+          except:
+            alert = False
+          alert
+    message: |
+      Detected an insufficient key size for DSA. NIST recommends
+      a key size of 2048 or higher.
+    metadata:
+      cwe: "CWE-326: Inadequate Encryption Strength"
+      owasp: "A3: Sensitive Data Exposure"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/plugins/weak_cryptographic_key.py
+      references:
+        - https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57Pt3r1.pdf
+    languages: [python]
+    severity: WARNING
+
+  - id: insufficient-rsa-key-size
+    patterns:
+      - pattern-either:
+          - pattern: Crypto.PublicKey.RSA.generate(..., bits=$SIZE, ...)
+          - pattern: Crypto.PublicKey.RSA.generate($SIZE, ...)
+          - pattern: Cryptodome.PublicKey.RSA.generate(..., bits=$SIZE, ...)
+          - pattern: Cryptodome.PublicKey.RSA.generate($SIZE, ...)
+      - pattern-where-python: |
+          alert = False
+          try:
+            alert = int(vars['$SIZE']) < 2048
+          except:
+            alert = False
+          alert
+    message: |
+      Detected an insufficient key size for RSA. NIST recommends
+      a key size of 2048 or higher.
+    metadata:
+      cwe: "CWE-326: Inadequate Encryption Strength"
+      owasp: "A3: Sensitive Data Exposure"
+      source-rule-url: https://github.com/PyCQA/bandit/blob/b1411bfb43795d3ffd268bef17a839dee954c2b1/bandit/plugins/weak_cryptographic_key.py
+      references:
+        - https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-57Pt3r1.pdf
+    languages: [python]
+    severity: WARNING
+
+  - id: disabled-cert-validation
+    patterns:
+      - pattern-either:
+          - pattern: requests.put(..., verify=False, ...)
+          - pattern: requests.patch(..., verify=False, ...)
+          - pattern: requests.delete(..., verify=False, ...)
+          - pattern: requests.head(..., verify=False, ...)
+          - pattern: requests.options(..., verify=False, ...)
+          - pattern: requests.request(..., verify=False, ...)
+          - pattern: requests.get(..., verify=False, ...)
+          - pattern: requests.post(..., verify=False, ...)
+    message: |
+      Certificate verification has been explicitly disabled. This
+      permits insecure connections to insecure servers. Re-enable
+      certification validation.
+    metadata:
+      cwe: "CWE-295: Improper Certificate Validation"
+      owasp: "A3: Sensitive Data Exposure"
+      references:
+        - https://stackoverflow.com/questions/41740361/is-it-safe-to-disable-ssl-certificate-verification-in-pythonss-requests-lib
+    languages: [python]
+    severity: ERROR
+
+  - id: no-auth-over-http
+    patterns:
+      - pattern-either:
+          - pattern: requests.$W("=~/http:\/\/.*/", ..., auth=$X, ...)
+          - pattern: |
+              $URL = "=~/http:\/\/.../"
+              ...
+              requests.$W($URL, ..., auth=$X, ...)
+    fix-regex:
+      regex: http:\/\/
+      replacement: https://
+      count: 1
+    message: |
+      Authentication detected over HTTP. HTTP does not provide any
+      encryption or protection for these authentication credentials.
+      This may expose these credentials to unauthhorized parties.
+      Use 'https://' instead.
+    metadata:
+      cwe: "CWE-523: Unprotected Transport of Credentials"
+      owasp: "A2: Broken Authentication"
+      source-rule-url: https://pypi.org/project/flake8-flask/
+      references:
+        - https://blog.r2c.dev/2020/bento-check-no-auth-over-http/
+        - https://bento.dev/checks/requests/no-auth-over-http/
+    languages: [python]
+    severity: ERROR
+
+  - id: string-concat
+    languages: [python]
+    severity: WARNING
+    message: |
+      Detected string concatenation or formatting in a call to a command via 'sh'.
+      This could be a command injection vulnerability if the data is user-controlled.
+      Instead, use a list and append the argument.
+    metadata:
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      owasp: "A1: Injection"
+    pattern-either:
+      - pattern: sh.$BIN($X + $Y)
+      - pattern: sh.$BIN($X.format(...))
+      - pattern: sh.$BIN(f"...{...}...")
+
+  - id: sqlalchemy-sql-injection
+    patterns:
+      - pattern-either:
+          - pattern: |
+              def $FUNC(...,$VAR,...):
+                ...
+                $SESSION.query(...).$SQLFUNC("...".$FORMATFUNC(...,$VAR,...))
+          - pattern: |
+              def $FUNC(...,$VAR,...):
+                ...
+                $SESSION.query.join(...).$SQLFUNC("...".$FORMATFUNC(...,$VAR,...))
+          - pattern: |
+              def $FUNC(...,$VAR,...):
+                ...
+                $SESSION.query.$SQLFUNC("...".$FORMATFUNC(...,$VAR,...))
+          - pattern: |
+              def $FUNC(...,$VAR,...):
+                ...
+                query.$SQLFUNC("...".$FORMATFUNC(...,$VAR,...))
+      - metavariable-regex:
+          metavariable: $SQLFUNC
+          regex: (group_by|order_by|distinct|having|filter)
+      - metavariable-regex:
+          metavariable: $FORMATFUNC
+          regex: (?!bindparams)
+    message: |
+      Distinct, Having, Group_by, Order_by, and Filter in SQLAlchemy can cause sql injections
+      if the developer inputs raw SQL into the before-mentioned clauses.
+      This pattern captures relevant cases in which the developer inputs raw SQL into the distinct, having, group_by, order_by or filter clauses and
+      injects user-input into the raw SQL with any function besides "bindparams". Use bindParams to securely bind user-input
+      to SQL statements.
+    fix-regex:
+      regex: format
+      replacement: bindparams
+    languages:
+      - python
+    severity: WARNING

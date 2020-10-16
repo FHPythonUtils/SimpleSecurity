@@ -17,7 +17,7 @@ into different formats
 
 ## cli
 
-[[find in source code]](../../simplesecurity/__init__.py#L43)
+[[find in source code]](../../simplesecurity/__init__.py#L45)
 
 ```python
 def cli():
@@ -34,10 +34,11 @@ def runAllPlugins(
     pluginMap: dict[(str, Any)],
     severity: int,
     confidence: int,
+    fast: bool,
 ) -> list[Finding]:
 ```
 
-Run each plugin
+Run each plugin. Optimise as much as we can
 
 #### Arguments
 

@@ -4,6 +4,8 @@
 - safety
 - dodgy
 - dlint
+- pygraudit
+- semgrep
 
 Functions return finding dictionary
 
@@ -21,14 +23,17 @@ Functions return finding dictionary
 ```
 """
 from __future__ import annotations
-
+from typing import Any
 from os import remove
+import platform
 import subprocess
 import warnings
+from pathlib import Path
 from json import loads
 from simplesecurity.level import Level
 from simplesecurity.types import Finding, Line
 
+THISDIR = str(Path(__file__).resolve().parent)
 
 def _doSysExec(command: str, errorAsOut: bool=True) -> tuple[int, str]:
 	"""execute a command and check for errors
@@ -101,6 +106,20 @@ def bandit() -> list[Finding]:
 		"_other": {"more_info": result['more_info'], "line_range": result['line_range']}}) # yapf: disable
 	return findings
 
+def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
+	findings = []
+	for result in results:
+		findings.append({"id": result[4],
+		"title": f"{result[4]}: {result[0]}",
+		"description": result[3],
+		"file": "Project Requirements",
+		"evidence": {"selected": True, "line": 0,
+		"content": f"{result[0]} version={result[2]} affects{result[1]}"},
+		"severity": Level.MED,
+		"confidence": Level.HIGH,
+		"line": "Unknown",
+		"_other": {"id": result[4], "affected": result[1]}}) # yapf: disable
+	return findings
 
 def safety() -> list[Finding]:
 	"""Wrapper for safety. requires poetry and safety on the system path
@@ -118,7 +137,6 @@ def safety() -> list[Finding]:
 		warnings.warn(RuntimeWarning("poetry is not on the system path"))
 	if _doSysExec("safety --help")[0] != 0:
 		raise RuntimeError("safety is not on the system path")
-	findings = []
 	if poetryInstalled:
 		# Use poetry show to get dependents of dependencies
 		lines = _doSysExec("poetry show")[1].splitlines(False)
@@ -139,18 +157,25 @@ def safety() -> list[Finding]:
 	else:
 		# Use plain old safety (this will miss optional dependencies)
 		results = loads(_doSysExec("safety check --json")[1]) # yapf: disable
-	for result in results:
-		findings.append({"id": result[4],
-		"title": f"{result[4]}: {result[0]}",
-		"description": result[3],
-		"file": "Project Requirements",
-		"evidence": {"selected": True, "line": 0,
-		"content": f"{result[0]} version={result[2]} affects{result[1]}"},
-		"severity": Level.MED,
-		"confidence": Level.HIGH,
-		"line": "Unknown",
-		"_other": {"id": result[4], "affected": result[1]}}) # yapf: disable
-	return findings
+	return _doSafetyProcessing(results)
+
+
+def safetyFast() -> list[Finding]:
+	"""Wrapper for safety. requires safety on the system path
+
+	Raises:
+		RuntimeError: if saftey is not on the system path, then throw this
+		error
+
+	Returns:
+		list[Finding]: our findings dictionary
+	"""
+	if _doSysExec("safety --help")[0] != 0:
+		raise RuntimeError("safety is not on the system path")
+	# Use plain old safety (this will miss optional dependencies)
+	results = loads(_doSysExec("safety check --json")[1]) # yapf: disable
+	return _doSafetyProcessing(results)
+
 
 
 def dodgy() -> list[Finding]:
@@ -210,4 +235,68 @@ def dlint() -> list[Finding]:
 		"confidence": Level.MED,
 		"line": int(result[1]),
 		"_other": {"col": result[2]}}) # yapf: disable
+	return findings
+
+
+def pygraudit() -> list[Finding]:
+	"""Wrapper for pygraudit. requires pygraudit on the system path
+
+	Raises:
+		RuntimeError: if pygraudit is not on the system path, then throw this
+		error
+
+	Returns:
+		list[Finding]: our findings dictionary
+	"""
+	if _doSysExec("pygraudit -h")[0] != 0:
+		raise RuntimeError("pygraudit is not on the system path")
+	findings = []
+	results = loads(_doSysExec("pygraudit -B -f json .")[1])["findings"]
+	for result in results:
+		findings.append({"id": result['id'],
+		"title": f"{result['id']}: {result['title']}",
+		"description": result['title'],
+		"file": result['file'],
+		"evidence": result["evidence"],
+		# The python database isn't the best tbh but the end user may want very
+		# verbose output
+		"severity": Level.LOW,
+		"confidence": Level.LOW,
+		"line": result['line'],
+		"_other": {"col": result['col']}}) # yapf: disable
+	return findings
+
+def semgrep() -> list[Finding]:
+	"""Wrapper for semgrep. requires semgrep on the system path (wsl in windows)
+
+	Raises:
+		RuntimeError: if semgrep is not on the system path, then throw this
+		error
+
+	Returns:
+		list[Finding]: our findings dictionary
+	"""
+	findings = []
+	prepend = "wsl " if platform.system() == "Windows" else ""
+	if _doSysExec(prepend + "semgrep -h")[0] != 0:
+		if platform.system() == "Windows":
+			raise RuntimeError("semgrep is not installed in wsl")
+		raise RuntimeError("semgrep is not on the system path")
+	directory = THISDIR.replace("\\", "/").replace("C:", "/mnt/c")
+	results = loads(_doSysExec(prepend + "semgrep -f " + directory +
+	"/semgrep_sec.yaml -q --json --no-rewrite-rule-ids")[1])["results"] # yapf: disable
+	levelMap = {"INFO": Level.LOW, "WARNING": Level.MED, "ERROR": Level.HIGH}
+	for result in results:
+		print(result)
+		file = "./" + result["path"].replace("\\", "/")
+		findings.append({"id": result['check_id'],
+		"title": result['check_id'].split(".")[-1],
+		"description": result["extra"]["message"].strip(),
+		"file": file,
+		"evidence": extractEvidence(result["start"]["line"], file),
+		"severity": levelMap[result["extra"]["severity"]],
+		"confidence": Level.HIGH,
+		"line": result["start"]["line"],
+		"_other": {"col": result["start"]["col"], "start": result["start"],
+		"end": result["end"], "extra": result["extra"]}}) # yapf: disable
 	return findings

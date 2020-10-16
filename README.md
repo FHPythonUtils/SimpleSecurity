@@ -42,7 +42,7 @@ See below for the output if you run `simplesecurity` in this directory
 
 ```txt
 usage: __main__.py [-h] [--format FORMAT] [--plugin PLUGIN] [--file FILE] [--level LEVEL] [--confidence CONFIDENCE]
-                   [--no-colour] [--high-contrast]
+                   [--no-colour] [--high-contrast] [--fast]
 
 Combine multiple popular python security tools and generate reports or output
 into different formats
@@ -52,7 +52,7 @@ optional arguments:
   --format FORMAT, -f FORMAT
                         Output format. One of ansi, json, markdown, csv. default=ansi
   --plugin PLUGIN, -p PLUGIN
-                        Plugin to use. One of bandit, safety, dodgy, dlint, all, default=all
+                        Plugin to use. One of bandit, safety, dodgy, dlint, pygraudit, semgrep, all, default=all
   --file FILE, -o FILE  Filename to write to (omit for stdout)
   --level LEVEL, -l LEVEL
                         Minimum level/ severity to show
@@ -60,6 +60,7 @@ optional arguments:
                         Minimum confidence to show
   --no-colour, -z       No ANSI colours
   --high-contrast, -Z   High contrast colours
+  --fast, --skip        Skip long running jobs. Will omit plugins with long run time (applies to -p all only)
 ```
 
 You can also import this into your own project and use any of the functions
@@ -71,6 +72,8 @@ in the DOCS
 	- [Help](#help)
 - [Changelog](#changelog)
 - [Install With PIP](#install-with-pip)
+- [Developer Notes](#developer-notes)
+	- [Generate semgrep_sec.yaml](#generate-semgrep_secyaml)
 - [Language information](#language-information)
 	- [Built for](#built-for)
 - [Install Python on Windows](#install-python-on-windows)
@@ -106,6 +109,22 @@ pip install simplesecurity[full]
 ```
 
 Head to https://pypi.org/project/SimpleSecurity/ for more info
+
+
+## Developer Notes
+
+### Generate semgrep_sec.yaml
+
+1. Clone https://github.com/returntocorp/semgrep-rules
+2. cd to project/python
+3. do
+   ```bash
+   $ cat **/security/**/*.yaml >> semgrep_sec.yaml
+   $ cat **/security/*.yaml >> semgrep_sec.yaml
+   ```
+4. Find and replace `rules:` with `` apart from the first instance
+5. Reformat with `ctrl+shift+i`
+6. replace simplesecurity/semgrep_sec.yaml with the new one
 
 ## Language information
 ### Built for

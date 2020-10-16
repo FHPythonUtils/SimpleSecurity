@@ -12,7 +12,7 @@ Some of our analysis tools overlap one-another so lets remove duplicates
 
 ## deduplicate
 
-[[find in source code]](../../simplesecurity/filter.py#L55)
+[[find in source code]](../../simplesecurity/filter.py#L57)
 
 ```python
 def deduplicate(findings: list[Finding]) -> list[Finding]:
@@ -30,7 +30,7 @@ Deduplicate the list of findings
 
 ## filterSeverityAndConfidence
 
-[[find in source code]](../../simplesecurity/filter.py#L75)
+[[find in source code]](../../simplesecurity/filter.py#L77)
 
 ```python
 def filterSeverityAndConfidence(
@@ -54,7 +54,7 @@ filters the list of findings
 
 ## findingsEqual
 
-[[find in source code]](../../simplesecurity/filter.py#L35)
+[[find in source code]](../../simplesecurity/filter.py#L37)
 
 ```python
 def findingsEqual(findingA: Finding, findingB: Finding) -> int:
@@ -78,7 +78,7 @@ Basically and __eq__ method for findings
 
 ## lookupId
 
-[[find in source code]](../../simplesecurity/filter.py#L21)
+[[find in source code]](../../simplesecurity/filter.py#L23)
 
 ```python
 def lookupId(identifier: str) -> str:

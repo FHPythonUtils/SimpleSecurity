@@ -8,6 +8,8 @@ ID_MAP = {
 	"DUO105": "B102", # use of exec
 	"DUO109": "B506", # use of yaml.load
 	"DUO116": "B602", # use of shell=True in subprocess
+	"DUO116": "subprocess-shell-true",
+	"B602": "subprocess-shell-true",
 	"DUO103": "B402", # use of pickle
 	"DUO120": "B302", # use of marshal
 	"DUO121": "B306", # use of mktemp

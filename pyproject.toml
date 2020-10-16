@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "simplesecurity"
-version = "2020.3.1"
+version = "2020.4.0"
 description = "Combine multiple popular python security tools and generate reports or output into different formats"
 authors = ["FredHappyface"]
 classifiers = [
@@ -37,9 +37,11 @@ bandit = {version = "<3,>=1.6.2", optional = true}
 safety = {version = "<3,>=1.9.0", optional = true}
 dodgy = {version = "<2,>=0.2.1", optional = true}
 dlint = {version = "<2,>=0.10.3", optional = true}
+pygraudit = {version = "<29,>=27.1.1", optional = true}
+semgrep = {version = "<2,>=0.27.0", optional = true}
 
 [tool.poetry.extras]
-full = ["bandit", "dlint", "dodgy", "poetry", "safety"]
+full = ["bandit", "dlint", "dodgy", "poetry", "safety", "pygraudit", "semgrep"]
 
 [tool.dephell.main]
 from = "pyproject.toml"

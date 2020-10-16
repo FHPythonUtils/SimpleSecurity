@@ -14,12 +14,12 @@ import simplesecurity.plugins as plugins
 import simplesecurity.filter as secfilter
 
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
-PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, all, default=all"
+PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, pygraudit, semgrep, all, default=all"
 
 
 def runAllPlugins(pluginMap: dict[str, Any], severity: int,
-confidence: int) -> list[Finding]:
-	"""Run each plugin
+confidence: int, fast: bool) -> list[Finding]:
+	"""Run each plugin. Optimise as much as we can
 
 	Args:
 		pluginMap (dict[str, Any]): the plugin map
@@ -31,8 +31,10 @@ confidence: int) -> list[Finding]:
 	"""
 	findings: list[Finding] = []
 	for plugin in pluginMap:
+		# Do optimisations
 		if (pluginMap[plugin]["max_severity"] >= severity and
-		pluginMap[plugin]["max_confidence"] >= confidence):
+		pluginMap[plugin]["max_confidence"] >= confidence and
+		(not fast or pluginMap[plugin]["fast"])):
 			try:
 				findings.extend(pluginMap[plugin]["func"]())
 			except RuntimeError as error:
@@ -48,10 +50,13 @@ def cli():
 	parser.add_argument("--format", "-f", help=FORMAT_HELP)
 	parser.add_argument("--plugin", "-p", help=PLUGIN_HELP)
 	parser.add_argument("--file", "-o", help="Filename to write to (omit for stdout)")
-	parser.add_argument("--level", "-l", help="Minimum level/ severity to show", type=int, default=0)
-	parser.add_argument("--confidence", "-c", help="Minimum confidence to show", type=int, default=0)
+	# Let's use a low severity and medium confidence by default
+	parser.add_argument("--level", "-l", help="Minimum level/ severity to show", type=int, default=1)
+	parser.add_argument("--confidence", "-c", help="Minimum confidence to show", type=int, default=2)
 	parser.add_argument("--no-colour", "-z", help="No ANSI colours", action="store_true")
 	parser.add_argument("--high-contrast", "-Z", help="High contrast colours", action="store_true")
+	parser.add_argument("--fast", "--skip", action="store_true",
+	help="Skip long running jobs. Will omit plugins with long run time (applies to -p all only)")
 	# yapf: enable
 	args = parser.parse_args()
 	# File
@@ -77,15 +82,25 @@ def cli():
 
 	# Plugin
 	pluginMap: dict[str, Any] = {
-	"bandit": {"func": plugins.bandit, "max_severity": 3, "max_confidence": 3},
-	"safety": {"func": plugins.safety, "max_severity": 2, "max_confidence": 3},
-	"dodgy": {"func": plugins.dodgy, "max_severity": 2, "max_confidence": 2},
-	"dlint": {"func": plugins.dlint, "max_severity": 2, "max_confidence": 2}
+	"bandit": {"func": plugins.bandit, "max_severity": 3, "max_confidence": 3,
+	"fast": True},
+	"safety": {"func": plugins.safety, "max_severity": 2, "max_confidence": 3,
+	"fast": False},
+	"_PRIVATE_safety": {"func": plugins.safetyFast, "max_severity": 2, "max_confidence": 3,
+	"fast": True},
+	"dodgy": {"func": plugins.dodgy, "max_severity": 2, "max_confidence": 2,
+	"fast": True},
+	"dlint": {"func": plugins.dlint, "max_severity": 2, "max_confidence": 2,
+	"fast": True},
+	"pygraudit": {"func": plugins.pygraudit, "max_severity": 1, "max_confidence": 1,
+	"fast": True},
+	"semgrep": {"func": plugins.semgrep, "max_severity": 3, "max_confidence": 3,
+	"fast": False},
 	} # yapf: disable
 	if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
 		findings = []
 		if args.plugin is None or args.plugin == "all":
-			findings = runAllPlugins(pluginMap, args.level, args.confidence)
+			findings = runAllPlugins(pluginMap, args.level, args.confidence, args.fast)
 		elif (pluginMap[args.plugin]["max_severity"] >= args.level and
 		pluginMap[args.plugin]["max_confidence"] >= args.confidence):
 			findings = pluginMap[args.plugin]["func"]()

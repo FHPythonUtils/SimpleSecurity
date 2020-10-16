@@ -2,6 +2,20 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2020.4 - 2020/10/16
+- Add PyGraudit https://github.com/FHPythonUtils/PyGraudit
+  - Pretty fast
+  - Not particularly accurate - lots of false negatives
+- semgrep https://github.com/returntocorp/semgrep
+  - Pretty slow (looking at 30s to run 110 tests)
+  - Pretty good (probably on par with bandit)
+- Added `--fast/--skip` to skip past slow plugins when running all plugins
+  - This will skip `semgrep` (saving 30s of 35s in tests)
+  - This will run a less reliable instance of `dodgy` (saving 3s of 5s in tests)
+  - ...so runtime is taken down from around 35s to 2s
+- Using semgrep rules 2020/10/16 52d7424
+  https://github.com/returntocorp/semgrep-rules/commit/52d74240dd3ece8d54a626aae89cb13af4b4d224
+
 ## 2020.3.1 - 2020/10/15
 - Added mode to seperate stdout and stderr (bandit plugin uses this)
 

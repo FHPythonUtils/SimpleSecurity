@@ -2,4 +2,6 @@ bandit<3,>=1.6.2
 dlint<2,>=0.10.3
 dodgy<2,>=0.2.1
 poetry<3,>=1.1.2
+pygraudit<29,>=27.1.1
 safety<3,>=1.9.0
+semgrep<2,>=0.27.0
