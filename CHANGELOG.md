@@ -2,6 +2,9 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2020.4.1 - 2020/10/17
+- Bugfixes with deduplication and erroneous print
+
 ## 2020.4 - 2020/10/16
 - Add PyGraudit https://github.com/FHPythonUtils/PyGraudit
   - Pretty fast

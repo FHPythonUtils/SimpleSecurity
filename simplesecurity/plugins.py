@@ -287,7 +287,6 @@ def semgrep() -> list[Finding]:
 	"/semgrep_sec.yaml -q --json --no-rewrite-rule-ids")[1])["results"] # yapf: disable
 	levelMap = {"INFO": Level.LOW, "WARNING": Level.MED, "ERROR": Level.HIGH}
 	for result in results:
-		print(result)
 		file = "./" + result["path"].replace("\\", "/")
 		findings.append({"id": result['check_id'],
 		"title": result['check_id'].split(".")[-1],
