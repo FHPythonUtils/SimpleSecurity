@@ -71,7 +71,7 @@ def cli():
 	# Format
 	formatMap = {
 	"json": formatter.json, "markdown": formatter.markdown, "csv": formatter.csv,
-	"ansi": formatter.ansi}
+	"ansi": formatter.ansi, "sarif": formatter.sarif}
 	if args.format is None:
 		formatt = formatter.ansi
 	elif args.format in formatMap:

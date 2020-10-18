@@ -202,3 +202,45 @@ heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 		f"{UL}{CY}Evidence{CLS}\n{evidenceStr}\n",
 		])
 	return "\n".join(strBuf) + f"{CLS}"
+
+
+
+def sarif(findings: list[Finding], heading: typing.Optional[str] = None,
+colourMode: int = 0) -> str:
+	"""Format to sarif https://sarifweb.azurewebsites.net/
+
+	Args:
+		findings (list[Finding]): Findings to format
+		heading (str, optional): Optional heading to include. Defaults to None.
+
+	Returns:
+		str: String to write to a file of stdout
+	"""
+	out = {
+	"version": "2.1.0",
+	"$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+	"runs": [{
+	"tool": {"driver": {
+		"name": "SimpleSecurity",
+		"informationUri": "https://github.com/FHPythonUtils/SimpleSecurity",
+		"version": "2020.*", }},
+	"results": [{
+		"ruleId": finding["id"],
+		"level": finding["severity"].toSarif(),
+		"message": {"text": f"{finding['title']}: {finding['description']}"},
+		"locations": [{
+		"physicalLocation": {
+			"artifactLocation": {"uri": finding["file"]},
+			"region": {
+				"startLine": finding["line"],
+				"snippet": {
+				"text": "".join([line["content"] for line in finding["evidence"] if line["selected"]])
+				}},
+			"contextRegion": {
+				"startLine": finding["evidence"][0]["line"],
+				"endLine": finding["evidence"][-1]["line"],
+				"snippet": {"text": "\n".join([line["content"] for line in finding["evidence"]])}}
+		}}]
+	} for finding in findings]
+	}]} # yapf: disable
+	return dumps(out, indent="\t")
