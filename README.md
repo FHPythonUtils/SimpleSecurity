@@ -33,6 +33,7 @@ Formats
 - json
 - markdown
 - csv
+- sarif
 
 ## Example Use
 
