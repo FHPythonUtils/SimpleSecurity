@@ -106,7 +106,7 @@ def cli():
 			findings = pluginMap[args.plugin]["func"]()
 		print(formatt(secfilter.filterSeverityAndConfidence(
 			secfilter.deduplicate(findings), args.level, args.confidence),
-		colourMode=colourMode), file=filename) # yapf: disable
+			colourMode=colourMode), file=filename) # yapf: disable
 	else:
 		print(PLUGIN_HELP)
 		sysexit(1)

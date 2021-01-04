@@ -91,7 +91,7 @@ def bandit() -> list[Finding]:
 	levelMap = {"LOW": Level.LOW, "MEDIUM": Level.MED, "HIGH": Level.HIGH,
 	"UNDEFINED": Level.UNKNOWN} # yapf: disable
 	results = loads(
-	_doSysExec("bandit -lirq --exclude **/test_*.py --exclude **/test.py -s B322 -f json .", False)
+	_doSysExec("bandit -lirq --exclude **/test_*.py --exclude **/test.py -f json .", False)
 	[1])["results"] # yapf: disable
 	for result in results:
 		file =result['filename'].replace("\\", "/")
