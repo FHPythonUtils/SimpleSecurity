@@ -935,8 +935,8 @@ rules:
           - pattern: return django.http.HttpResponseRedirect(..., $S % request.$W, ...)
           - pattern: return django.http.HttpResponseRedirect(..., f"...{request.$W}...", ...)
       - metavariable-regex:
-          metavariable: "$W"
-          regex: "(?!get_full_path)"
+          metavariable: $W
+          regex: (?!get_full_path)
 
   - id: reflected-data-httpresponse
     message:
@@ -1704,7 +1704,7 @@ rules:
               ...
               $MODEL.save()
       - metavariable-regex:
-          metavariable: "$EMPTY"
+          metavariable: $EMPTY
           regex: (\'\'|\"\")
     languages: [python]
     severity: ERROR
@@ -1736,6 +1736,30 @@ rules:
       replacement: \1None
     languages: [python]
     severity: ERROR
+
+  - id: docker-arbitrary-container-run
+    patterns:
+      - pattern-either:
+          - pattern-inside: |
+              $CLIENT = docker.from_env()
+              ...
+          - pattern-inside: |
+              $CLIENT = docker.DockerClient(...)
+              ...
+      - pattern-either:
+          - pattern: |
+              $CLIENT.containers.run(...)
+          - pattern: |
+              $CLIENT.containers.create(...)
+      - pattern-not: |
+          $CLIENT.containers.run("...",...)
+      - pattern-not: |
+          $CLIENT.containers.create("...",...)
+    message: |
+      If unverified user data can reach the `run` or `create` method it can result in runing arbitrary container.
+    languages:
+      - python
+    severity: WARNING
   # Flask check3: Flask application app.run best practices https://flask.palletsprojects.com/en/1.1.x/api/?highlight=run#flask.Flask.run
 
   # . Rules for app.run() parameters
@@ -1804,17 +1828,39 @@ rules:
           @$APP.route(...)
           def $FUNC(...):
             ...
+      - pattern-not-inside: return "..."
       - pattern-either:
           - pattern: return "...".format(...)
           - pattern: return "..." % ...
           - pattern: return "..." + ...
           - pattern: return ... + "..."
           - pattern: return f"...{...}..."
+          - patterns:
+              - pattern: return $X
+              - pattern-either:
+                  - pattern-inside: |
+                      $X = "...".format(...)
+                      ...
+                  - pattern-inside: |
+                      $X = "..." % ...
+                      ...
+                  - pattern-inside: |
+                      $X = "..." + ...
+                      ...
+                  - pattern-inside: |
+                      $X = ... + "..."
+                      ...
+                  - pattern-inside: |
+                      $X = f"...{...}..."
+                      ...
   # Flask check3: Avoid hardcoded config rules
 
-  # . Rules for `TESTING` config
   - id: avoid_hardcoded_config_TESTING
-    pattern: $M.config['TESTING'] = True
+    pattern-either:
+      - pattern: $M.config['TESTING'] = True
+      - pattern: $M.config['TESTING'] = False
+      - pattern: $M.update(TESTING=True, ...)
+      - pattern: $M.update(TESTING=False, ...)
     message: Hardcoded variable `TESTING` detected. Use environment variables or config files instead
     metadata:
       cwe: "CWE-489: Active Debug Code"
@@ -1825,57 +1871,10 @@ rules:
         - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
     languages: [python]
     severity: WARNING
-  - id: avoid_hardcoded_config_TESTING
-    pattern: $M.config['TESTING'] = False
-    message: Hardcoded variable `TESTING` detected. Use environment variables or config files instead
-    metadata:
-      cwe: "CWE-489: Active Debug Code"
-      owasp: "A6: Security Misconfiguration"
-      references:
-        - https://bento.dev/checks/flask/avoid-hardcoded-config/
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
-    languages: [python]
-    severity: WARNING
-  - id: avoid_hardcoded_config_TESTING
-    pattern: $M.update(TESTING=True, ...)
-    message: Hardcoded variable `TESTING` detected. Use environment variables or config files instead
-    metadata:
-      cwe: "CWE-489: Active Debug Code"
-      owasp: "A6: Security Misconfiguration"
-      references:
-        - https://bento.dev/checks/flask/avoid-hardcoded-config/
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
-    languages: [python]
-    severity: WARNING
-  - id: avoid_hardcoded_config_TESTING
-    pattern: $M.update(TESTING=False, ...)
-    message: Hardcoded variable `TESTING` detected. Use environment variables or config files instead
-    metadata:
-      cwe: "CWE-489: Active Debug Code"
-      owasp: "A6: Security Misconfiguration"
-      references:
-        - https://bento.dev/checks/flask/avoid-hardcoded-config/
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
-    languages: [python]
-    severity: WARNING
-  - id: avoid_hardcoded_config_TESTING
-    pattern: $M.update(TESTING=False, ...)
-    message: Hardcoded variable `TESTING` detected. Use environment variables or config files instead
-    metadata:
-      cwe: "CWE-489: Active Debug Code"
-      owasp: "A6: Security Misconfiguration"
-      references:
-        - https://bento.dev/checks/flask/avoid-hardcoded-config/
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
-    languages: [python]
-    severity: WARNING
-    # Rules for `SECRET_KEY` config
   - id: avoid_hardcoded_config_SECRET_KEY
-    pattern: $M.config['SECRET_KEY'] = "=~/.*/"
+    pattern-either:
+      - pattern: $M.update(SECRET_KEY="=~/.*/")
+      - pattern: $M.config['SECRET_KEY'] = "=~/.*/"
     message: Hardcoded variable `SECRET_KEY` detected. Use environment variables or config files instead
     metadata:
       cwe: "CWE-798: Use of Hard-coded Credentials"
@@ -1886,21 +1885,10 @@ rules:
         - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
     languages: [python]
     severity: ERROR
-  - id: avoid_hardcoded_config_SECRET_KEY
-    pattern: $M.update(SECRET_KEY="=~/.*/")
-    message: Hardcoded variable `SECRET_KEY` detected. Use environment variables or config files instead
-    metadata:
-      cwe: "CWE-798: Use of Hard-coded Credentials"
-      owasp: "A2: Broken Authentication"
-      references:
-        - https://bento.dev/checks/flask/avoid-hardcoded-config/
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
-    languages: [python]
-    severity: ERROR
-    # Rules for `ENV` config
   - id: avoid_hardcoded_config_ENV
-    pattern: $M.update(ENV="=~/^development|production$/")
+    pattern-either:
+      - pattern: $M.update(ENV="=~/^development|production$/")
+      - pattern: $M.config['ENV'] = "=~/^development|production$/"
     message: Hardcoded variable `ENV` detected. Set this by using FLASK_ENV environment variable
     metadata:
       cwe: "CWE-489: Active Debug Code"
@@ -1911,58 +1899,12 @@ rules:
         - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
     languages: [python]
     severity: WARNING
-  - id: avoid_hardcoded_config_ENV
-    pattern: $M.config['ENV'] = "=~/^development|production$/"
-    message: Hardcoded variable `ENV` detected. Set this by using FLASK_ENV environment variable
-    metadata:
-      cwe: "CWE-489: Active Debug Code"
-      owasp: "A6: Security Misconfiguration"
-      references:
-        - https://bento.dev/checks/flask/avoid-hardcoded-config/
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
-    languages: [python]
-    severity:
-      WARNING
-      # Rules for `DEBUG` config
   - id: avoid_hardcoded_config_DEBUG
-    pattern: $M.update(DEBUG=True)
-    message: Hardcoded variable `DEBUG` detected. Set this by using FLASK_DEBUG environment variable
-    metadata:
-      cwe: "CWE-489: Active Debug Code"
-      owasp: "A6: Security Misconfiguration"
-      references:
-        - https://bento.dev/checks/flask/avoid-hardcoded-config/
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
-    languages: [python]
-    severity: WARNING
-  - id: avoid_hardcoded_config_DEBUG
-    pattern: $M.update(DEBUG=False)
-    message: Hardcoded variable `DEBUG` detected. Set this by using FLASK_DEBUG environment variable
-    metadata:
-      cwe: "CWE-489: Active Debug Code"
-      owasp: "A6: Security Misconfiguration"
-      references:
-        - https://bento.dev/checks/flask/avoid-hardcoded-config/
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
-    languages: [python]
-    severity: WARNING
-  - id: avoid_hardcoded_config_DEBUG
-    pattern: $M.config['DEBUG'] = True
-    message: Hardcoded variable `DEBUG` detected. Set this by using FLASK_DEBUG environment variable
-    metadata:
-      cwe: "CWE-489: Active Debug Code"
-      owasp: "A6: Security Misconfiguration"
-      references:
-        - https://bento.dev/checks/flask/avoid-hardcoded-config/
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#builtin-configuration-values
-        - https://flask.palletsprojects.com/en/1.1.x/config/?highlight=configuration#environment-and-debug-features
-    languages: [python]
-    severity: WARNING
-  - id: avoid_hardcoded_config_DEBUG
-    pattern: $M.config['DEBUG'] = False
+    pattern-either:
+      - pattern: $M.update(DEBUG=True)
+      - pattern: $M.update(DEBUG=False)
+      - pattern: $M.config['DEBUG'] = True
+      - pattern: $M.config['DEBUG'] = False
     message: Hardcoded variable `DEBUG` detected. Set this by using FLASK_DEBUG environment variable
     metadata:
       cwe: "CWE-489: Active Debug Code"
@@ -2034,7 +1976,7 @@ rules:
     languages:
       - python
     severity: ERROR
-    message:
+    message: >-
       User data detected in os.system. This could be vulnerable to a command injection and should be avoided. If this
       must be done, use the 'subprocess' module instead and pass the arguments as a list.
     metadata:
@@ -2067,28 +2009,32 @@ rules:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W.get(...) ...>
                           ...
-                      - pattern: os.system(..., <... $INTERM ...>, ...)
+                          os.system(<... $INTERM ...>)
+                      - pattern: os.system(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W[...] ...>
                           ...
-                      - pattern: os.system(..., <... $INTERM ...>, ...)
+                          os.system(<... $INTERM ...>)
+                      - pattern: os.system(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W(...) ...>
                           ...
-                      - pattern: os.system(..., <... $INTERM ...>, ...)
+                          os.system(<... $INTERM ...>)
+                      - pattern: os.system(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W ...>
                           ...
-                      - pattern: os.system(..., <... $INTERM ...>, ...)
+                          os.system(<... $INTERM ...>)
+                      - pattern: os.system(...)
 
   - id: path-traversal-open
     languages:
       - python
     severity: ERROR
-    message:
+    message: >-
       Found request data in a call to 'open'. Ensure the request data is validated or sanitized, otherwise it could result
       in path traversal attacks.
     metadata:
@@ -2121,22 +2067,56 @@ rules:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W.get(...) ...>
                           ...
-                      - pattern: open(..., <... $INTERM ...>, ...)
+                          open(<... $INTERM ...>, ...)
+                      - pattern: open(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W[...] ...>
                           ...
-                      - pattern: open(..., <... $INTERM ...>, ...)
+                          open(<... $INTERM ...>, ...)
+                      - pattern: open(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W(...) ...>
                           ...
-                      - pattern: open(..., <... $INTERM ...>, ...)
+                          open(<... $INTERM ...>, ...)
+                      - pattern: open(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W ...>
                           ...
-                      - pattern: open(..., <... $INTERM ...>, ...)
+                          open(<... $INTERM ...>, ...)
+                      - pattern: open(...)
+          - patterns:
+              - pattern-either:
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W.get(...) ...>
+                          ...
+                          with open(<... $INTERM ...>, ...) as $F:
+                            ...
+                      - pattern: open(...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W[...] ...>
+                          ...
+                          with open(<... $INTERM ...>, ...) as $F:
+                            ...
+                      - pattern: open(...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W(...) ...>
+                          ...
+                          with open(<... $INTERM ...>, ...) as $F:
+                            ...
+                      - pattern: open(...)
+                  - patterns:
+                      - pattern-inside: |
+                          $INTERM = <... flask.request.$W ...>
+                          ...
+                          with open(<... $INTERM ...>, ...) as $F:
+                            ...
+                      - pattern: open(...)
 
   - id: ssrf-requests
     languages:
@@ -2176,22 +2156,26 @@ rules:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W.get(...) ...>
                           ...
-                      - pattern: requests.$FUNC(..., <... $INTERM ...>, ...)
+                          requests.$FUNC(<... $INTERM ...>, ...)
+                      - pattern: requests.$FUNC(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W[...] ...>
                           ...
-                      - pattern: requests.$FUNC(..., <... $INTERM ...>, ...)
+                          requests.$FUNC(<... $INTERM ...>, ...)
+                      - pattern: requests.$FUNC(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W(...) ...>
                           ...
-                      - pattern: requests.$FUNC(..., <... $INTERM ...>, ...)
+                          requests.$FUNC(<... $INTERM ...>, ...)
+                      - pattern: requests.$FUNC(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W ...>
                           ...
-                      - pattern: requests.$FUNC(..., <... $INTERM ...>, ...)
+                          requests.$FUNC(<... $INTERM ...>, ...)
+                      - pattern: requests.$FUNC(...)
 
   - id: eval-injection
     languages:
@@ -2228,37 +2212,37 @@ rules:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W.get(...) ...>
                           ...
-                      - pattern: eval(..., <... $INTERM ...>, ...)
+                          eval(..., <... $INTERM ...>, ...)
+                      - pattern: eval(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W[...] ...>
                           ...
-                      - pattern: eval(..., <... $INTERM ...>, ...)
+                          eval(..., <... $INTERM ...>, ...)
+                      - pattern: eval(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W(...) ...>
                           ...
-                      - pattern: eval(..., <... $INTERM ...>, ...)
+                          eval(..., <... $INTERM ...>, ...)
+                      - pattern: eval(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W ...>
                           ...
-                      - pattern: eval(..., <... $INTERM ...>, ...)
+                          eval(..., <... $INTERM ...>, ...)
+                      - pattern: eval(...)
 
   - id: exec-injection
     languages:
       - python
     severity: ERROR
-    message: |
-      Found user data in a call to 'exec'. This is extremely dangerous because
-      it can enable an attacker to execute remote code.
+    message: Detected user data flowing into exec. This is code injection and should be avoided.
     metadata:
-      cwe:
-        "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code\
-        \ ('Eval Injection')"
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
       owasp: "A1: Injection"
       references:
-        - https://owasp.org/www-community/attacks/Code_Injection
+        - https://nedbatchelder.com/blog/201206/exec_really_is_dangerous.html
     patterns:
       - pattern-either:
           - patterns:
@@ -2284,36 +2268,46 @@ rules:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W.get(...) ...>
                           ...
-                      - pattern: exec(..., <... $INTERM ...>, ...)
+                          exec(..., <... $INTERM ...>, ...)
+                      - pattern: exec(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W[...] ...>
                           ...
-                      - pattern: exec(..., <... $INTERM ...>, ...)
+                          exec(..., <... $INTERM ...>, ...)
+                      - pattern: exec(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W(...) ...>
                           ...
-                      - pattern: exec(..., <... $INTERM ...>, ...)
+                          exec(..., <... $INTERM ...>, ...)
+                      - pattern: exec(...)
                   - patterns:
                       - pattern-inside: |
                           $INTERM = <... flask.request.$W ...>
                           ...
-                      - pattern: exec(..., <... $INTERM ...>, ...)
+                          exec(..., <... $INTERM ...>, ...)
+                      - pattern: exec(...)
 
   - id: autoescape-disabled
     patterns:
       - pattern-not: jinja2.Environment(..., autoescape=True, ...)
       - pattern-not: jinja2.Environment(..., autoescape=jinja2.select_autoescape(...), ...)
       - pattern: jinja2.Environment(...)
-    message: |
+    fix-regex:
+      regex: (.*)\)
+      replacement: \1, autoescape=True)
+    message: >-
       Detected a Jinja2 environment without autoescaping. Jinja2 does not autoescape by default.
       This is dangerous if you are rendering to a browser because this allows for cross-site
       scripting (XSS) attacks. If you are in a web context, enable autoescaping by setting
-      autoescape=True.
+      'autoescape=True.' You may also consider using 'jinja2.select_autoescape()' to only enable
+      automatic escaping for certain file extensions.
     metadata:
       cwe: "CWE-116: Improper Encoding or Escaping of Output"
       owasp: "A6: Security Misconfiguration"
+      references:
+        - https://jinja.palletsprojects.com/en/2.11.x/api/#basics
     languages: [python]
     severity: WARNING
 
@@ -2395,11 +2389,14 @@ rules:
     patterns:
       - pattern-not: subprocess.$FUNC("...", ...)
       - pattern-not: subprocess.$FUNC([...], ...)
+      - pattern-not: subprocess.CalledProcessError(...)
+      - pattern-not: subprocess.SubprocessError(...)
       - pattern: subprocess.$FUNC(...)
     message: |
-      Detected subprocess function '$FUNC' without a static string. Audit the use of this
-      call to ensure it is not vulnerable to a command injection. You may consider using
-      shlex.escape.
+      Detected subprocess function '$FUNC' without a static string. If this data can be
+      controlled by a malicious actor, it may be an instance of command injection.
+      Audit the use of this call to ensure it is not controllable by an external resource.
+      You may consider using 'shlex.escape()'.
     metadata:
       owasp: "A1: Injection"
       cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
@@ -2419,10 +2416,11 @@ rules:
           - pattern: os.popen2(...)
           - pattern: os.popen3(...)
           - pattern: os.popen4(...)
-    message: |
+    message: >-
       Found dynamic content used in a system call. This is dangerous if external
       data can reach this function call because it allows a malicious actor to
-      execute commands. Ensure no external data reaches here.
+      execute commands. Use the 'subprocess' module instead, which is easier
+      to use without accidentally exposing a command injection vulnerability.
     metadata:
       cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
       owasp: "A1: Injection"
@@ -2458,8 +2456,9 @@ rules:
               - pattern-either:
                   - pattern: $OPENER.open(...)
                   - pattern: $OPENER.retrieve(...)
-    message: |
-      Detected a dynamic value being used with urllib. urllib supports 'file://' schemes.
+    message: >-
+      Detected a dynamic value being used with urllib. urllib supports 'file://' schemes,
+      so a dynamic value controlled by a malicious actor may allow them to read arbitrary files.
       Audit uses of urllib calls to ensure user data cannot control the URLs, or consider
       using the 'requests' library instead.
     metadata:
@@ -2715,9 +2714,12 @@ rules:
   - id: subprocess-shell-true
     pattern: subprocess.$FUNC(..., shell=True, ...)
     message: |
-      Found subprocess function '$FUNC' with 'shell=True'. This is dangerous spawns the command using a shell process.
-      This propagates current shell settings and variables, which makes it much easier for a malicious actor
-      to execute commands. Use 'shell=False' instead.
+      Found 'subprocess' function '$FUNC' with 'shell=True'. This is dangerous because this call will spawn
+      the command using a shell process. Doing so propagates current shell settings and variables, which
+      makes it much easier for a malicious actor to execute commands. Use 'shell=False' instead.
+    fix-regex:
+      regex: (shell\s*=\s*)True
+      replacement: \1False
     metadata:
       owasp: "A1: Injection"
       cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
@@ -2736,7 +2738,7 @@ rules:
           - pattern-inside: os.popen3("...")
           - pattern-inside: os.popen4("...")
           - pattern-inside: subprocess.$W(..., shell=True, ...)
-      - pattern-regex: (.*?)[tar|chmod|chown|rsync](.*?)\*
+      - pattern-regex: (tar|chmod|chown|rsync)(.*?)\*
     message: |
       Detected use of the wildcard character in a system call that spawns a shell.
       This subjects the wildcard to normal shell expansion, which can have unintended consequences
@@ -2811,9 +2813,10 @@ rules:
     fix: yaml.safe_load($FOO)
     severity: ERROR
     patterns:
-      - pattern-not-inside: |
-          yaml = $X
+      - pattern-inside: |
+          import yaml
           ...
+          yaml.load($FOO)
       - pattern: yaml.load($FOO)
 
   - id: avoid-unsafe-ruamel
@@ -2838,7 +2841,9 @@ rules:
     metadata:
       owasp: "A8: Insecure Deserialization"
       cwe: "CWE-502: Deserialization of Untrusted Data"
-      references: https://docs.python.org/3/library/pickle.html
+      references:
+        - https://docs.python.org/3/library/pickle.html
+        - https://davidhamann.de/2020/04/05/exploiting-python-pickle/
     languages:
       - python
     message: |
@@ -2854,7 +2859,8 @@ rules:
     metadata:
       owasp: "A8: Insecure Deserialization"
       cwe: "CWE-502: Deserialization of Untrusted Data"
-      references: https://docs.python.org/3/library/pickle.html
+      references:
+        - https://docs.python.org/3/library/pickle.html
     languages:
       - python
     message: |
@@ -2868,7 +2874,8 @@ rules:
     metadata:
       owasp: "A8: Insecure Deserialization"
       cwe: "CWE-502: Deserialization of Untrusted Data"
-      references: https://docs.python.org/3/library/pickle.html
+      references:
+        - https://docs.python.org/3/library/pickle.html
     languages:
       - python
     message: |
@@ -2883,7 +2890,8 @@ rules:
     metadata:
       owasp: "A8: Insecure Deserialization"
       cwe: "CWE-502: Deserialization of Untrusted Data"
-      references: https://docs.python.org/3/library/pickle.html
+      references:
+        - https://docs.python.org/3/library/pickle.html
     languages:
       - python
     message: |
@@ -3021,13 +3029,9 @@ rules:
       - pattern-either:
           - pattern: cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key(..., key_size=$SIZE, ...)
           - pattern: cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key($SIZE, ...)
-      - pattern-where-python: |
-          alert = False
-          try:
-            alert = int(vars['$SIZE']) < 2048
-          except:
-            alert = False
-          alert
+      - metavariable-comparison:
+          metavariable: $SIZE
+          comparison: $SIZE < 2048
     message: |
       Detected an insufficient key size for DSA. NIST recommends
       a key size of 2048 or higher.
@@ -3065,13 +3069,9 @@ rules:
       - pattern-either:
           - pattern: cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(..., key_size=$SIZE, ...)
           - pattern: cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key($EXP, $SIZE, ...)
-      - pattern-where-python: |
-          alert = False
-          try:
-            alert = int(vars['$SIZE']) < 2048
-          except:
-            alert = False
-          alert
+      - metavariable-comparison:
+          metavariable: $SIZE
+          comparison: $SIZE < 2048
     message: |
       Detected an insufficient key size for RSA. NIST recommends
       a key size of 2048 or higher.
@@ -3478,17 +3478,19 @@ rules:
   - id: use-defused-xml
     pattern-either:
       - pattern: import xml
-      - pattern: import lxml
-    fix: import defusedxml
+    fix-regex:
+      regex: xml
+      replacement: defusedxml
     metadata:
       owasp: "A4: XML External Entities (XXE)"
       cwe: "CWE-611: Improper Restriction of XML External Entity Reference"
       references:
         - https://docs.python.org/3/library/xml.html
+        - https://github.com/tiran/defusedxml
     message: |
       Found use of the native Python XML libraries, which is vulnerable to XML external entity (XXE)
-      attacks. The Python documentation recommends the 'defusedxml' library instead if the XML being
-      loaded is untrusted.
+      attacks. The Python documentation recommends the 'defusedxml' library instead. Use 'defusedxml'.
+      See https://github.com/tiran/defusedxml for more information.
     languages: [python]
     severity: ERROR
 
@@ -3690,13 +3692,9 @@ rules:
           - pattern: Crypto.PublicKey.DSA.generate($SIZE, ...)
           - pattern: Cryptodome.PublicKey.DSA.generate(..., bits=$SIZE, ...)
           - pattern: Cryptodome.PublicKey.DSA.generate($SIZE, ...)
-      - pattern-where-python: |
-          alert = False
-          try:
-            alert = int(vars['$SIZE']) < 2048
-          except:
-            alert = False
-          alert
+      - metavariable-comparison:
+          metavariable: $SIZE
+          comparison: $SIZE < 2048
     message: |
       Detected an insufficient key size for DSA. NIST recommends
       a key size of 2048 or higher.
@@ -3716,13 +3714,9 @@ rules:
           - pattern: Crypto.PublicKey.RSA.generate($SIZE, ...)
           - pattern: Cryptodome.PublicKey.RSA.generate(..., bits=$SIZE, ...)
           - pattern: Cryptodome.PublicKey.RSA.generate($SIZE, ...)
-      - pattern-where-python: |
-          alert = False
-          try:
-            alert = int(vars['$SIZE']) < 2048
-          except:
-            alert = False
-          alert
+      - metavariable-comparison:
+          metavariable: $SIZE
+          comparison: $SIZE < 2048
     message: |
       Detected an insufficient key size for RSA. NIST recommends
       a key size of 2048 or higher.

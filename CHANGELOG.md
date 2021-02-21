@@ -2,6 +2,11 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2021.1 - 2021/02/21
+- Fix `_doSafetyProcessing` findings/evidence
+- Update semgrep rules 2021/01/19 e74345b
+  https://github.com/returntocorp/semgrep-rules/tree/e74345bda4b1e080a7c72d383d06f1d110dedbce
+
 ## 2021 - 2021/01/04
 - Bandit broke things! Now fixed
 

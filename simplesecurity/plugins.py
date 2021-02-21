@@ -65,7 +65,7 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 	"""
 	with open(file, "r", encoding="utf-8", errors="ignore") as fileContents:
 		start, stop = max(desiredLine - 3, 0), min(desiredLine + 2,
-		sum(1 for i in open(file, 'rb')))
+		sum(1 for _i in open(file, 'rb')))
 		for line in range(start):
 			next(fileContents)
 		content = []
@@ -113,8 +113,8 @@ def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
 		"title": f"{result[4]}: {result[0]}",
 		"description": result[3],
 		"file": "Project Requirements",
-		"evidence": {"selected": True, "line": 0,
-		"content": f"{result[0]} version={result[2]} affects{result[1]}"},
+		"evidence": [{"selected": True, "line": 0,
+		"content": f"{result[0]} version={result[2]} affects{result[1]}"}],
 		"severity": Level.MED,
 		"confidence": Level.HIGH,
 		"line": "Unknown",
