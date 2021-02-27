@@ -2,6 +2,10 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2021.1.1 - 2021/02/27
+- Tweak safety plugin so it reads from the local requirements file if possible
+
+
 ## 2021.1 - 2021/02/21
 - Fix `_doSafetyProcessing` findings/evidence
 - Update semgrep rules 2021/01/19 e74345b

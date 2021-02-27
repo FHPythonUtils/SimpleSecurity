@@ -121,6 +121,14 @@ def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
 		"_other": {"id": result[4], "affected": result[1]}}) # yapf: disable
 	return findings
 
+def _doPureSafety():
+	safe = _doSysExec("safety check -r requirements.txt --json")[1]
+	if safe.startswith("Warning:"):
+		safe = _doSysExec("safety check --json")[1]
+		if safe.startswith("Warning:"):
+			raise RuntimeError("some error occurred: " + safe)
+	return loads(safe)
+
 def safety() -> list[Finding]:
 	"""Wrapper for safety. requires poetry and safety on the system path
 
@@ -132,9 +140,13 @@ def safety() -> list[Finding]:
 		list[Finding]: our findings dictionary
 	"""
 	poetryInstalled = True
+	pipreqsInstalled = True
 	if _doSysExec("poetry -h")[0] != 0:
 		poetryInstalled = False
 		warnings.warn(RuntimeWarning("poetry is not on the system path"))
+	if not poetryInstalled and _doSysExec("pipreqs -h")[0] != 0:
+		pipreqsInstalled = False
+		warnings.warn(RuntimeWarning("pipreqs is not on the system path"))
 	if _doSysExec("safety --help")[0] != 0:
 		raise RuntimeError("safety is not on the system path")
 	if poetryInstalled:
@@ -154,9 +166,13 @@ def safety() -> list[Finding]:
 			reqs.write("\n".join(data))
 		results = loads(_doSysExec("safety check -r reqs.txt --json")[1])
 		remove("reqs.txt")
+	elif pipreqsInstalled:
+		_doSysExec("pipreqs --savepath reqs.txt --encoding utf-8")
+		results = loads(_doSysExec("safety check -r reqs.txt --json")[1])
+		remove("reqs.txt")
 	else:
 		# Use plain old safety (this will miss optional dependencies)
-		results = loads(_doSysExec("safety check --json")[1]) # yapf: disable
+		results = _doPureSafety()
 	return _doSafetyProcessing(results)
 
 
@@ -173,8 +189,7 @@ def safetyFast() -> list[Finding]:
 	if _doSysExec("safety --help")[0] != 0:
 		raise RuntimeError("safety is not on the system path")
 	# Use plain old safety (this will miss optional dependencies)
-	results = loads(_doSysExec("safety check --json")[1]) # yapf: disable
-	return _doSafetyProcessing(results)
+	return _doSafetyProcessing(_doPureSafety())
 
 
 

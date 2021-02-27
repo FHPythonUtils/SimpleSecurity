@@ -57,7 +57,7 @@ error
 
 ## dlint
 
-[[find in source code]](../../simplesecurity/plugins.py#L209)
+[[find in source code]](../../simplesecurity/plugins.py#L224)
 
 ```python
 def dlint() -> list[Finding]:
@@ -76,7 +76,7 @@ error
 
 ## dodgy
 
-[[find in source code]](../../simplesecurity/plugins.py#L181)
+[[find in source code]](../../simplesecurity/plugins.py#L196)
 
 ```python
 def dodgy() -> list[Finding]:
@@ -114,7 +114,7 @@ Grab evidence from the source file
 
 ## pygraudit
 
-[[find in source code]](../../simplesecurity/plugins.py#L241)
+[[find in source code]](../../simplesecurity/plugins.py#L256)
 
 ```python
 def pygraudit() -> list[Finding]:
@@ -133,7 +133,7 @@ error
 
 ## safety
 
-[[find in source code]](../../simplesecurity/plugins.py#L124)
+[[find in source code]](../../simplesecurity/plugins.py#L132)
 
 ```python
 def safety() -> list[Finding]:
@@ -152,7 +152,7 @@ error
 
 ## safetyFast
 
-[[find in source code]](../../simplesecurity/plugins.py#L163)
+[[find in source code]](../../simplesecurity/plugins.py#L179)
 
 ```python
 def safetyFast() -> list[Finding]:
@@ -171,7 +171,7 @@ error
 
 ## semgrep
 
-[[find in source code]](../../simplesecurity/plugins.py#L269)
+[[find in source code]](../../simplesecurity/plugins.py#L284)
 
 ```python
 def semgrep() -> list[Finding]:
