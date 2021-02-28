@@ -44,8 +44,8 @@ def findingsEqual(findingA: Finding, findingB: Finding) -> int:
 		int: 0 if not equal. 1 if lookup(left) is equal to right - bin left.
 		-1 if lookup(right) is equal to left - bin right
 	"""
-	if (findingA["file"].replace("./", "") == findingB["file"].replace(
-	"./", "") and findingA["line"] == findingB["line"]):
+	if (findingA["file"].replace("./", "") == findingB["file"].replace("./", "")
+	and findingA["line"] == findingB["line"]):
 		if findingB["id"] in lookupId(findingA["id"]):
 			return 1
 		if findingA["id"] in lookupId(findingB["id"]):
@@ -64,7 +64,7 @@ def deduplicate(findings: list[Finding]) -> list[Finding]:
 	"""
 	findings = findings.copy()
 	for indexA, findingA in enumerate(findings):
-		for _indexB, findingB in enumerate(findings[indexA+1:]):
+		for _indexB, findingB in enumerate(findings[indexA + 1:]):
 			equal = findingsEqual(findingA, findingB)
 			if equal == 1: # lookup(left) is equal to right - bin left.
 				findings.remove(findingA)

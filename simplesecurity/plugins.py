@@ -23,19 +23,22 @@ Functions return finding dictionary
 ```
 """
 from __future__ import annotations
-from typing import Any
-from os import remove
+
 import platform
 import subprocess
 import warnings
-from pathlib import Path
 from json import loads
+from os import remove
+from pathlib import Path
+from typing import Any
+
 from simplesecurity.level import Level
 from simplesecurity.types import Finding, Line
 
 THISDIR = str(Path(__file__).resolve().parent)
 
-def _doSysExec(command: str, errorAsOut: bool=True) -> tuple[int, str]:
+
+def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
 	"""execute a command and check for errors
 
 	Args:
@@ -47,7 +50,7 @@ def _doSysExec(command: str, errorAsOut: bool=True) -> tuple[int, str]:
 	"""
 	with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
 	stderr=subprocess.STDOUT if errorAsOut else subprocess.PIPE,
-	encoding="utf-8", errors="ignore") as process:
+	encoding="utf-8", errors="ignore") as process: # yapf:disable
 		out = process.communicate()[0]
 		exitCode = process.returncode
 	return exitCode, out
@@ -94,7 +97,7 @@ def bandit() -> list[Finding]:
 	_doSysExec("bandit -lirq --exclude **/test_*.py --exclude **/test.py -f json .", False)
 	[1])["results"] # yapf: disable
 	for result in results:
-		file =result['filename'].replace("\\", "/")
+		file = result['filename'].replace("\\", "/")
 		findings.append({"id": result['test_id'],
 		"title": f"{result['test_id']}: {result['test_name']}",
 		"description": result['issue_text'],
@@ -105,6 +108,7 @@ def bandit() -> list[Finding]:
 		"line": result['line_number'],
 		"_other": {"more_info": result['more_info'], "line_range": result['line_range']}}) # yapf: disable
 	return findings
+
 
 def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
 	findings = []
@@ -121,6 +125,7 @@ def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
 		"_other": {"id": result[4], "affected": result[1]}}) # yapf: disable
 	return findings
 
+
 def _doPureSafety():
 	safe = _doSysExec("safety check -r requirements.txt --json")[1]
 	if safe.startswith("Warning:"):
@@ -128,6 +133,7 @@ def _doPureSafety():
 		if safe.startswith("Warning:"):
 			raise RuntimeError("some error occurred: " + safe)
 	return loads(safe)
+
 
 def safety() -> list[Finding]:
 	"""Wrapper for safety. requires poetry and safety on the system path
@@ -190,7 +196,6 @@ def safetyFast() -> list[Finding]:
 		raise RuntimeError("safety is not on the system path")
 	# Use plain old safety (this will miss optional dependencies)
 	return _doSafetyProcessing(_doPureSafety())
-
 
 
 def dodgy() -> list[Finding]:
@@ -280,6 +285,7 @@ def pygraudit() -> list[Finding]:
 		"line": result['line'],
 		"_other": {"col": result['col']}}) # yapf: disable
 	return findings
+
 
 def semgrep() -> list[Finding]:
 	"""Wrapper for semgrep. requires semgrep on the system path (wsl in windows)

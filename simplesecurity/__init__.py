@@ -2,23 +2,24 @@
 into different formats
 """
 from __future__ import annotations
+
 import argparse
-from typing import Any
 from sys import exit as sysexit, stdout
+from typing import Any
+
+import simplesecurity.filter as secfilter
+import simplesecurity.formatter as formatter
+import simplesecurity.plugins as plugins
 from simplesecurity.types import Finding
 
 stdout.reconfigure(encoding="utf-8")
-
-import simplesecurity.formatter as formatter
-import simplesecurity.plugins as plugins
-import simplesecurity.filter as secfilter
 
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
 PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, pygraudit, semgrep, all, default=all"
 
 
-def runAllPlugins(pluginMap: dict[str, Any], severity: int,
-confidence: int, fast: bool) -> list[Finding]:
+def runAllPlugins(pluginMap: dict[str, Any], severity: int, confidence: int,
+fast: bool) -> list[Finding]:
 	"""Run each plugin. Optimise as much as we can
 
 	Args:

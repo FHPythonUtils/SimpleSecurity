@@ -26,14 +26,15 @@ Formats
 # pyright: reportConstantRedefinition=false
 from __future__ import annotations
 
+from csv import writer
 from io import StringIO
 from json import dumps
-from csv import writer
-import typing
+from typing import Optional
+
 from simplesecurity.types import Finding, Line
 
 
-def formatEvidence(evidence: list[Line], newlineChar: bool =True) -> str:
+def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
 	"""Format evidence to plaintext
 
 	Args:
@@ -49,9 +50,8 @@ def formatEvidence(evidence: list[Line], newlineChar: bool =True) -> str:
 	return "\\n".join(evidenceText)
 
 
-
-def markdown(findings: list[Finding],
-heading: typing.Optional[str] = None, colourMode: int=0) -> str:
+def markdown(findings: list[Finding], heading: Optional[str] = None,
+colourMode: int = 0) -> str:
 	"""Format to Markdown
 
 	Args:
@@ -65,7 +65,7 @@ heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 		return "No findings"
 
 	heading = heading if heading is not None else \
-	"# Findings\nFind a list of findings below ordered by severity"
+ "# Findings\nFind a list of findings below ordered by severity"
 	strBuf = [heading]
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 
@@ -87,8 +87,8 @@ heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 	return "\n".join(strBuf) + "\n"
 
 
-def json(findings: list[Finding],
-heading: typing.Optional[str] = None, colourMode: int=0) -> str:
+def json(findings: list[Finding], heading: Optional[str] = None,
+colourMode: int = 0) -> str:
 	"""Format to Json
 
 	Args:
@@ -100,13 +100,13 @@ heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 	"""
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 	out = {"heading": heading if heading is not None else \
-	"Findings - Findings below are ordered by severity",
+ "Findings - Findings below are ordered by severity",
 	"findings": findings}
 	return dumps(out, indent="\t")
 
 
-def csv(findings: list[Finding],
-heading: typing.Optional[str] = None, colourMode: int=0) -> str:
+def csv(findings: list[Finding], heading: Optional[str] = None,
+colourMode: int = 0) -> str:
 	"""Format to CSV
 
 	Args:
@@ -120,19 +120,20 @@ heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 	output = StringIO()
 	csvString = writer(output)
 	csvString.writerow([heading if heading is not None else \
-	"Findings - Findings below are ordered by severity (you may want to delete this line)"])
+ "Findings - Findings below are ordered by severity (you may want to delete this line)"])
 	csvString.writerow([
-	"id", "title", "description", "file", "evidence", "severity", "confidence", "line"])
+	"id", "title", "description", "file", "evidence", "severity", "confidence",
+	"line"])
 	for finding in findings:
 		csvString.writerow([
 		finding["id"], finding["title"], finding["description"], finding["file"],
-		formatEvidence(finding["evidence"], False), finding["severity"], finding["confidence"],
-		finding["line"]])
+		formatEvidence(finding["evidence"], False), finding["severity"],
+		finding["confidence"], finding["line"]])
 	return output.getvalue()
 
 
-def ansi(findings: list[Finding],
-heading: typing.Optional[str] = None, colourMode: int=0) -> str:
+def ansi(findings: list[Finding], heading: Optional[str] = None,
+colourMode: int = 0) -> str:
 	"""Format to ansi
 
 	Args:
@@ -176,7 +177,7 @@ heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 
 	# pylint: enable=invalid-name
 	heading = heading if heading is not None else \
-	f"{BLD}{UL}{CB}Findings{CLS}\n\n{TXT}Find a list of findings below ordered by severity\n"
+ f"{BLD}{UL}{CB}Findings{CLS}\n\n{TXT}Find a list of findings below ordered by severity\n"
 	strBuf = [heading]
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 
@@ -193,19 +194,18 @@ heading: typing.Optional[str] = None, colourMode: int=0) -> str:
 	for finding in findings:
 		evidence = [f"{TXT}┌{' ' + finding['file'] + ' ':─^85}┐"]
 		for line in finding['evidence']:
-			evidence.append((CODE if line["selected"] else f"{TXT}│") +f"{str(line['line'])[:3]: >3}  {line['content'][:80]: <80}{CLS}{TXT}│")
+			evidence.append((CODE if line["selected"] else f"{TXT}│") +
+			f"{str(line['line'])[:3]: >3}  {line['content'][:80]: <80}{CLS}{TXT}│")
 		evidence.append(f"└{'─'*85}┘")
 		evidenceStr = '\n'.join(evidence)
 		strBuf.extend([
 		f"{BLD}{UL}{CG}{finding['title']}{CLS}", f"{TXT}{finding['description']}",
 		f"\n{UL}{CY}Severity: {finding['severity']} (confidence: {finding['confidence']}){CLS}\n",
-		f"{UL}{CY}Evidence{CLS}\n{evidenceStr}\n",
-		])
+		f"{UL}{CY}Evidence{CLS}\n{evidenceStr}\n", ])
 	return "\n".join(strBuf) + f"{CLS}"
 
 
-
-def sarif(findings: list[Finding], heading: typing.Optional[str] = None,
+def sarif(findings: list[Finding], heading: Optional[str] = None,
 colourMode: int = 0) -> str:
 	"""Format to sarif https://sarifweb.azurewebsites.net/
 

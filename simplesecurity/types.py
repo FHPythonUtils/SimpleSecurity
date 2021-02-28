@@ -4,8 +4,11 @@ Types used by simplesecurity
 """
 
 from __future__ import annotations
+
 import typing
+
 from simplesecurity.level import Level
+
 
 class Finding(typing.TypedDict):
 	"""Finding type
@@ -30,7 +33,6 @@ class Finding(typing.TypedDict):
 	confidence: Level
 	line: int
 	_other: dict[str, str]
-
 
 
 class Line(typing.TypedDict):
