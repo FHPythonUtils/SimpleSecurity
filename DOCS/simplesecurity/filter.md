@@ -2,7 +2,7 @@
 
 > Auto-generated documentation for [simplesecurity.filter](../../simplesecurity/filter.py) module.
 
-Some of our analysis tools overlap one-another so lets remove duplicates
+Some of our analysis tools overlap one-another so lets remove duplicates.
 
 - [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../README.md#simplesecurity-modules) / [simplesecurity](index.md#simplesecurity) / filter
     - [deduplicate](#deduplicate)
@@ -18,7 +18,7 @@ Some of our analysis tools overlap one-another so lets remove duplicates
 def deduplicate(findings: list[Finding]) -> list[Finding]:
 ```
 
-Deduplicate the list of findings
+Deduplicate the list of findings.
 
 #### Arguments
 
@@ -40,7 +40,7 @@ def filterSeverityAndConfidence(
 ) -> list[Finding]:
 ```
 
-filters the list of findings
+Filter the list of findings.
 
 #### Arguments
 
@@ -60,7 +60,7 @@ filters the list of findings
 def findingsEqual(findingA: Finding, findingB: Finding) -> int:
 ```
 
-Basically and __eq__ method for findings
+Basically and __eq__ method for findings.
 
 #### Arguments
 
@@ -81,10 +81,10 @@ Basically and __eq__ method for findings
 [[find in source code]](../../simplesecurity/filter.py#L22)
 
 ```python
-def lookupId(identifier: str) -> str:
+def lookupId(identifier: str) -> list[str]:
 ```
 
-Lookup an id in the id map
+Lookup an id in the id map.
 
 #### Arguments
 

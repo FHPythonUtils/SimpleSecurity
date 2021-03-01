@@ -2,7 +2,7 @@
 
 > Auto-generated documentation for [simplesecurity.types](../../simplesecurity/types.py) module.
 
-Types used by simplesecurity
+Types used by simplesecurity.
 
 - [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../README.md#simplesecurity-modules) / [simplesecurity](index.md#simplesecurity) / types
     - [Finding](#finding)
@@ -10,13 +10,13 @@ Types used by simplesecurity
 
 ## Finding
 
-[[find in source code]](../../simplesecurity/types.py#L10)
+[[find in source code]](../../simplesecurity/types.py#L12)
 
 ```python
 class Finding(typing.TypedDict):
 ```
 
-Finding type
+Finding type.
 
 {
  title: str
@@ -31,13 +31,13 @@ Finding type
 
 ## Line
 
-[[find in source code]](../../simplesecurity/types.py#L36)
+[[find in source code]](../../simplesecurity/types.py#L37)
 
 ```python
 class Line(typing.TypedDict):
 ```
 
-Line type
+Line type.
 
 {
  line: int

@@ -2,7 +2,7 @@
 
 > Auto-generated documentation for [simplesecurity.plugins](../../simplesecurity/plugins.py) module.
 
-Add plugins here
+Add plugins here.
 
 - [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../README.md#simplesecurity-modules) / [simplesecurity](index.md#simplesecurity) / plugins
     - [bandit](#bandit)
@@ -38,13 +38,13 @@ Functions return finding dictionary
 
 ## bandit
 
-[[find in source code]](../../simplesecurity/plugins.py#L78)
+[[find in source code]](../../simplesecurity/plugins.py#L81)
 
 ```python
 def bandit() -> list[Finding]:
 ```
 
-Wrapper for bandit. requires bandit on the system path
+Generate list of findings using bandit. requires bandit on the system path.
 
 #### Raises
 
@@ -57,13 +57,13 @@ error
 
 ## dlint
 
-[[find in source code]](../../simplesecurity/plugins.py#L224)
+[[find in source code]](../../simplesecurity/plugins.py#L229)
 
 ```python
 def dlint() -> list[Finding]:
 ```
 
-Wrapper for dlint. requires flake8 and dlint on the system path
+Generate list of findings using dlint. Requires flake8 and dlint on the system path.
 
 #### Raises
 
@@ -76,13 +76,13 @@ error
 
 ## dodgy
 
-[[find in source code]](../../simplesecurity/plugins.py#L196)
+[[find in source code]](../../simplesecurity/plugins.py#L201)
 
 ```python
 def dodgy() -> list[Finding]:
 ```
 
-Wrapper for dodgy. requires dodgy on the system path
+Generate list of findings using dodgy. Requires dodgy on the system path.
 
 #### Raises
 
@@ -95,13 +95,13 @@ error
 
 ## extractEvidence
 
-[[find in source code]](../../simplesecurity/plugins.py#L56)
+[[find in source code]](../../simplesecurity/plugins.py#L59)
 
 ```python
 def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 ```
 
-Grab evidence from the source file
+Grab evidence from the source file.
 
 #### Arguments
 
@@ -114,13 +114,13 @@ Grab evidence from the source file
 
 ## pygraudit
 
-[[find in source code]](../../simplesecurity/plugins.py#L256)
+[[find in source code]](../../simplesecurity/plugins.py#L261)
 
 ```python
 def pygraudit() -> list[Finding]:
 ```
 
-Wrapper for pygraudit. requires pygraudit on the system path
+Generate list of findings using pygraudit. Requires pygraudit on the system path.
 
 #### Raises
 
@@ -133,17 +133,17 @@ error
 
 ## safety
 
-[[find in source code]](../../simplesecurity/plugins.py#L132)
+[[find in source code]](../../simplesecurity/plugins.py#L138)
 
 ```python
 def safety() -> list[Finding]:
 ```
 
-Wrapper for safety. requires poetry and safety on the system path
+Generate list of findings using safety. requires poetry and safety on the system path.
 
 #### Raises
 
-- `RuntimeError` - if saftey is not on the system path, then throw this
+- `RuntimeError` - if safety is not on the system path, then throw this
 error
 
 #### Returns
@@ -152,17 +152,17 @@ error
 
 ## safetyFast
 
-[[find in source code]](../../simplesecurity/plugins.py#L179)
+[[find in source code]](../../simplesecurity/plugins.py#L185)
 
 ```python
 def safetyFast() -> list[Finding]:
 ```
 
-Wrapper for safety. requires safety on the system path
+Generate list of findings using safety. requires safety on the system path.
 
 #### Raises
 
-- `RuntimeError` - if saftey is not on the system path, then throw this
+- `RuntimeError` - if safety is not on the system path, then throw this
 error
 
 #### Returns
@@ -171,13 +171,15 @@ error
 
 ## semgrep
 
-[[find in source code]](../../simplesecurity/plugins.py#L284)
+[[find in source code]](../../simplesecurity/plugins.py#L290)
 
 ```python
 def semgrep() -> list[Finding]:
 ```
 
-Wrapper for semgrep. requires semgrep on the system path (wsl in windows)
+Generate list of findings using for semgrep...
+
+Requires semgrep on the system path (wsl in windows).
 
 #### Raises
 

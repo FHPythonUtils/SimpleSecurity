@@ -34,9 +34,9 @@ fast: bool) -> list[Finding]:
 	findings: list[Finding] = []
 	for plugin in pluginMap:
 		# Do optimisations
-		if (pluginMap[plugin]["max_severity"] >= severity and
-		pluginMap[plugin]["max_confidence"] >= confidence and
-		(not fast or pluginMap[plugin]["fast"])):
+		if (pluginMap[plugin]["max_severity"] >= severity
+		and pluginMap[plugin]["max_confidence"] >= confidence
+		and (not fast or pluginMap[plugin]["fast"])):
 			try:
 				findings.extend(pluginMap[plugin]["func"]())
 			except RuntimeError as error:
@@ -59,6 +59,8 @@ def cli():
 	parser.add_argument("--high-contrast", "-Z", help="High contrast colours", action="store_true")
 	parser.add_argument("--fast", "--skip", action="store_true",
 	help="Skip long running jobs. Will omit plugins with long run time (applies to -p all only)")
+	parser.add_argument("--zero", "-0",
+	help="Return non zero exit code if any security vulnerabilities are found", action="store_true")
 	# yapf: enable
 	args = parser.parse_args()
 	# File
@@ -103,12 +105,15 @@ def cli():
 		findings = []
 		if args.plugin is None or args.plugin == "all":
 			findings = runAllPlugins(pluginMap, args.level, args.confidence, args.fast)
-		elif (pluginMap[args.plugin]["max_severity"] >= args.level and
-		pluginMap[args.plugin]["max_confidence"] >= args.confidence):
+		elif (pluginMap[args.plugin]["max_severity"] >= args.level
+		and pluginMap[args.plugin]["max_confidence"] >= args.confidence):
 			findings = pluginMap[args.plugin]["func"]()
 		print(formatt(secfilter.filterSeverityAndConfidence(
 			secfilter.deduplicate(findings), args.level, args.confidence),
 			colourMode=colourMode), file=filename) # yapf: disable
 	else:
 		print(PLUGIN_HELP)
+		sysexit(2)
+	if len(findings) > 0 and args.zero:
 		sysexit(1)
+	sysexit(0)
