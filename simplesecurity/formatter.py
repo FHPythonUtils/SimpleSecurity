@@ -1,5 +1,4 @@
-"""
-Take our findings dictionary and give things a pretty format
+"""Take our findings dictionary and give things a pretty format.
 
 finding dictionary
 
@@ -35,7 +34,7 @@ from simplesecurity.types import Finding, Line
 
 
 def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
-	"""Format evidence to plaintext
+	"""Format evidence to plaintext.
 
 	Args:
 		evidence (list[Line]): list of lines of code
@@ -52,7 +51,7 @@ def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
 
 def markdown(findings: list[Finding], heading: Optional[str] = None,
 colourMode: int = 0) -> str:
-	"""Format to Markdown
+	"""Format to Markdown.
 
 	Args:
 		findings (list[Finding]): Findings to format
@@ -82,14 +81,14 @@ colourMode: int = 0) -> str:
 		f"## {finding['title']}", f"{finding['description']}",
 		f"\n\nFile: `{finding['file']}`",
 		f"### Severity\n\n{finding['severity']} (confidence: {finding['confidence']})",
-		f"### Evidence\n\nLine: {finding['line']}\n\n```python\n{formatEvidence(finding['evidence'])}\n```",
-		])
+		f"### Evidence\n\nLine: {finding['line']}\n",
+		f"```python\n{formatEvidence(finding['evidence'])}\n```", ])
 	return "\n".join(strBuf) + "\n"
 
 
 def json(findings: list[Finding], heading: Optional[str] = None,
 colourMode: int = 0) -> str:
-	"""Format to Json
+	"""Format to Json.
 
 	Args:
 		findings (list[Finding]): Findings to format
@@ -107,7 +106,7 @@ colourMode: int = 0) -> str:
 
 def csv(findings: list[Finding], heading: Optional[str] = None,
 colourMode: int = 0) -> str:
-	"""Format to CSV
+	"""Format to CSV.
 
 	Args:
 		findings (list[Finding]): Findings to format
@@ -134,7 +133,7 @@ colourMode: int = 0) -> str:
 
 def ansi(findings: list[Finding], heading: Optional[str] = None,
 colourMode: int = 0) -> str:
-	"""Format to ansi
+	"""Format to ansi.
 
 	Args:
 		findings (list[Finding]): Findings to format
@@ -144,45 +143,46 @@ colourMode: int = 0) -> str:
 		str: String to write to a file of stdout
 	"""
 	# pylint: disable=invalid-name
-	# pylint: disable=invalid-name
-	TXT = ""
-	BLD = ""
-	CLS = ""
-	UL = ""
-	CB = ""
-	CG = ""
-	CY = ""
-	CODE = f"{TXT}│"
+	FMT = {"TXT": "",
+		"BLD": "",
+		"CLS": "",
+		"UL": "",
+		"CB": "",
+		"CG": "",
+		"CY": "",
+		"CODE": "│",
+	} # yapf: disable
 	if colourMode == 1:
-		TXT = ""
-		BLD = "\033[01m"
-		CLS = "\033[00m"
-		UL = "\033[04m"
-		CB = "\033[36m"
-		CG = "\033[32m"
-		CY = "\033[33m"
-		CODE = f"{TXT}│\033[100m\033[93m"
+		FMT = {"TXT": "",
+			"BLD": "\033[01m",
+			"CLS": "\033[00m",
+			"UL": "\033[04m",
+			"CB": "\033[36m",
+			"CG": "\033[32m",
+			"CY": "\033[33m",
+			"CODE": "│\033[100m\033[93m",
+		} # yapf: disable
 	elif colourMode == 2:
-		TXT = "\033[97m"
-		BLD = "\033[01m"
-		CLS = "\033[00m"
-		UL = "\033[04m"
-		CB = "\033[96m"
-		CG = "\033[92m"
-		CY = "\033[93m"
-		CODE = f"{TXT}│\033[107m\033[90m"
-
+		FMT = {"TXT": "\033[97m",
+			"BLD": "\033[01m",
+			"CLS": "\033[00m",
+			"UL": "\033[04m",
+			"CB": "\033[96m",
+			"CG": "\033[92m",
+			"CY": "\033[93m",
+			"CODE": "\033[97m│\033[107m\033[90m",
+		} # yapf: disable
 	if len(findings) == 0:
-		return f"{BLD}{UL}{CB}No findings{CLS}"
+		return f"{FMT['BLD']}{FMT['UL']}{FMT['CB']}No findings{FMT['CLS']}"
 
 	# pylint: enable=invalid-name
-	heading = heading if heading is not None else \
- f"{BLD}{UL}{CB}Findings{CLS}\n\n{TXT}Find a list of findings below ordered by severity\n"
-	strBuf = [heading]
+	strBuf = [heading] if heading is not None else [
+	f"{FMT['BLD']}{FMT['UL']}{FMT['CB']}Findings{FMT['CLS']}\n",
+	f"{FMT['TXT']}Find a list of findings below ordered by severity\n"]
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 
 	# Summary Table
-	strBuf.append(f"{TXT}┌{'─'*10}┬{'─'*50}┐")
+	strBuf.append(f"{FMT['TXT']}┌{'─'*10}┬{'─'*50}┐")
 	strBuf.append("│Severity  │Finding                                           │") # yapf: disable
 	strBuf.append(f"├{'─'*10}┼{'─'*50}┤")
 	for finding in findings:
@@ -192,22 +192,25 @@ colourMode: int = 0) -> str:
 
 	# Details
 	for finding in findings:
-		evidence = [f"{TXT}┌{' ' + finding['file'] + ' ':─^85}┐"]
+		evidence = [f"{FMT['TXT']}┌{' ' + finding['file'] + ' ':─^85}┐"]
 		for line in finding['evidence']:
-			evidence.append((CODE if line["selected"] else f"{TXT}│") +
-			f"{str(line['line'])[:3]: >3}  {line['content'][:80]: <80}{CLS}{TXT}│")
+			evidence.append((FMT['CODE'] if line["selected"] else f"{FMT['TXT']}│")
+			+ f"{str(line['line'])[:3]: >3}  "
+			+ f"{line['content'][:80]: <80}{FMT['CLS']}{FMT['TXT']}│")
 		evidence.append(f"└{'─'*85}┘")
 		evidenceStr = '\n'.join(evidence)
 		strBuf.extend([
-		f"{BLD}{UL}{CG}{finding['title']}{CLS}", f"{TXT}{finding['description']}",
-		f"\n{UL}{CY}Severity: {finding['severity']} (confidence: {finding['confidence']}){CLS}\n",
-		f"{UL}{CY}Evidence{CLS}\n{evidenceStr}\n", ])
-	return "\n".join(strBuf) + f"{CLS}"
+		f"{FMT['BLD']}{FMT['UL']}{FMT['CG']}{finding['title']}{FMT['CLS']}",
+		f"{FMT['TXT']}{finding['description']}",
+		f"\n{FMT['UL']}{FMT['CY']}Severity: {finding['severity']} "
+		+ f"(confidence: {finding['confidence']}){FMT['CLS']}\n",
+		f"{FMT['UL']}{FMT['CY']}Evidence{FMT['CLS']}\n{evidenceStr}\n", ])
+	return "\n".join(strBuf) + f"{FMT['CLS']}"
 
 
 def sarif(findings: list[Finding], heading: Optional[str] = None,
 colourMode: int = 0) -> str:
-	"""Format to sarif https://sarifweb.azurewebsites.net/
+	"""Format to sarif https://sarifweb.azurewebsites.net/.
 
 	Args:
 		findings (list[Finding]): Findings to format

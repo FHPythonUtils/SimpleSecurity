@@ -1,4 +1,4 @@
-"""Some of our analysis tools overlap one-another so lets remove duplicates
+"""Some of our analysis tools overlap one-another so lets remove duplicates.
 """
 from __future__ import annotations
 
@@ -19,8 +19,8 @@ ID_MAP = {
 } # yapf: disable
 
 
-def lookupId(identifier: str) -> str:
-	"""Lookup an id in the id map
+def lookupId(identifier: str) -> list[str]:
+	"""Lookup an id in the id map.
 
 	Args:
 		id (str): id to look up
@@ -29,12 +29,12 @@ def lookupId(identifier: str) -> str:
 		str: id that it equals
 	"""
 	if identifier not in ID_MAP:
-		return "not found"
+		return ["not found"]
 	return ID_MAP[identifier]
 
 
 def findingsEqual(findingA: Finding, findingB: Finding) -> int:
-	"""Basically and __eq__ method for findings
+	"""Basically and __eq__ method for findings.
 
 	Args:
 		findingA (Finding): lhs
@@ -54,7 +54,7 @@ def findingsEqual(findingA: Finding, findingB: Finding) -> int:
 
 
 def deduplicate(findings: list[Finding]) -> list[Finding]:
-	"""Deduplicate the list of findings
+	"""Deduplicate the list of findings.
 
 	Args:
 		findings (list[Finding]): list of findings to deduplicate
@@ -75,7 +75,7 @@ def deduplicate(findings: list[Finding]) -> list[Finding]:
 
 def filterSeverityAndConfidence(findings: list[Finding], severity: int,
 confidence: int) -> list[Finding]:
-	"""filters the list of findings
+	"""Filter the list of findings.
 
 	Args:
 		findings (list[Finding]): list of findings to

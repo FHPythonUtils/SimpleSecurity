@@ -1,5 +1,6 @@
-"""Combine multiple popular python security tools and generate reports or output
-into different formats
+"""Combine multiple popular python security tools...
+
+and generate reports or output into different formats.
 """
 from __future__ import annotations
 
@@ -20,7 +21,7 @@ PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, pygraudit, se
 
 def runAllPlugins(pluginMap: dict[str, Any], severity: int, confidence: int,
 fast: bool) -> list[Finding]:
-	"""Run each plugin. Optimise as much as we can
+	"""Run each plugin. Optimise as much as we can.
 
 	Args:
 		pluginMap (dict[str, Any]): the plugin map
@@ -44,9 +45,9 @@ fast: bool) -> list[Finding]:
 
 
 def cli():
-	""" cli entry point """
+	"""Cli entry point."""
 	# yapf: disable
-	parser = argparse.ArgumentParser(description=__doc__ ,
+	parser = argparse.ArgumentParser(description=__doc__,
 	formatter_class=argparse.RawTextHelpFormatter)
 	parser.add_argument("--format", "-f", help=FORMAT_HELP)
 	parser.add_argument("--plugin", "-p", help=PLUGIN_HELP)

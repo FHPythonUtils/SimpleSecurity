@@ -1,4 +1,4 @@
-"""Add plugins here
+"""Add plugins here.
 
 - bandit
 - safety
@@ -39,7 +39,7 @@ THISDIR = str(Path(__file__).resolve().parent)
 
 
 def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
-	"""execute a command and check for errors
+	"""Execute a command and check for errors.
 
 	Args:
 		command (str): commands as a string
@@ -57,7 +57,7 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
 
 
 def extractEvidence(desiredLine: int, file: str) -> list[Line]:
-	"""Grab evidence from the source file
+	"""Grab evidence from the source file.
 
 	Args:
 		desiredLine (int): line to highlight
@@ -73,13 +73,13 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 			next(fileContents)
 		content = []
 		for line in range(start + 1, stop + 1):
-			content.append({"selected": line==desiredLine,"line": line,
+			content.append({"selected": line == desiredLine, "line": line,
 			"content": next(fileContents).rstrip().replace("\t", "    ")}) # yapf: disable
 	return content
 
 
 def bandit() -> list[Finding]:
-	"""Wrapper for bandit. requires bandit on the system path
+	"""Generate list of findings using bandit. requires bandit on the system path.
 
 	Raises:
 		RuntimeError: if bandit is not on the system path, then throw this
@@ -136,10 +136,10 @@ def _doPureSafety():
 
 
 def safety() -> list[Finding]:
-	"""Wrapper for safety. requires poetry and safety on the system path
+	"""Generate list of findings using safety. requires poetry and safety on the system path.
 
 	Raises:
-		RuntimeError: if saftey is not on the system path, then throw this
+		RuntimeError: if safety is not on the system path, then throw this
 		error
 
 	Returns:
@@ -183,10 +183,10 @@ def safety() -> list[Finding]:
 
 
 def safetyFast() -> list[Finding]:
-	"""Wrapper for safety. requires safety on the system path
+	"""Generate list of findings using safety. requires safety on the system path.
 
 	Raises:
-		RuntimeError: if saftey is not on the system path, then throw this
+		RuntimeError: if safety is not on the system path, then throw this
 		error
 
 	Returns:
@@ -199,7 +199,7 @@ def safetyFast() -> list[Finding]:
 
 
 def dodgy() -> list[Finding]:
-	"""Wrapper for dodgy. requires dodgy on the system path
+	"""Generate list of findings using dodgy. Requires dodgy on the system path.
 
 	Raises:
 		RuntimeError: if dodgy is not on the system path, then throw this
@@ -227,7 +227,7 @@ def dodgy() -> list[Finding]:
 
 
 def dlint() -> list[Finding]:
-	"""Wrapper for dlint. requires flake8 and dlint on the system path
+	"""Generate list of findings using dlint. Requires flake8 and dlint on the system path.
 
 	Raises:
 		RuntimeError: if flake8 is not on the system path, then throw this
@@ -259,7 +259,7 @@ def dlint() -> list[Finding]:
 
 
 def pygraudit() -> list[Finding]:
-	"""Wrapper for pygraudit. requires pygraudit on the system path
+	"""Generate list of findings using pygraudit. Requires pygraudit on the system path.
 
 	Raises:
 		RuntimeError: if pygraudit is not on the system path, then throw this
@@ -288,7 +288,9 @@ def pygraudit() -> list[Finding]:
 
 
 def semgrep() -> list[Finding]:
-	"""Wrapper for semgrep. requires semgrep on the system path (wsl in windows)
+	"""Generate list of findings using for semgrep...
+
+	Requires semgrep on the system path (wsl in windows).
 
 	Raises:
 		RuntimeError: if semgrep is not on the system path, then throw this
