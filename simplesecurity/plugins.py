@@ -108,7 +108,7 @@ def bandit() -> list[Finding]:
 		"HIGH": Level.HIGH,
 		"UNDEFINED": Level.UNKNOWN,
 	}
-	results = loads(_doSysExec("bandit -lirq -x ./**/test_*.py, ./**/test.py -f json .", False)[1])[
+	results = loads(_doSysExec("bandit -lirq -x ./**/test_*.py,./**/test.py -f json .", False)[1])[
 		"results"
 	]
 	for result in results:
