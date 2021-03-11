@@ -19,7 +19,7 @@ and generate reports or output into different formats.
 
 ## cli
 
-[[find in source code]](../../simplesecurity/__init__.py#L47)
+[[find in source code]](../../simplesecurity/__init__.py#L53)
 
 ```python
 def cli():
@@ -29,7 +29,7 @@ Cli entry point.
 
 ## runAllPlugins
 
-[[find in source code]](../../simplesecurity/__init__.py#L22)
+[[find in source code]](../../simplesecurity/__init__.py#L24)
 
 ```python
 def runAllPlugins(
@@ -47,6 +47,7 @@ Run each plugin. Optimise as much as we can.
 pluginMap (dict[str, Any]): the plugin map
 - `severity` *int* - the minimum severity to report on
 - `confidence` *int* - the minimum confidence to report on
+- `fast` *bool* - runAllPlugins with optimisations
 
 #### Returns
 

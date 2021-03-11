@@ -48,9 +48,14 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
 	Raises:
 		RuntimeWarning: throw a warning should there be a non exit code
 	"""
-	with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-	stderr=subprocess.STDOUT if errorAsOut else subprocess.PIPE,
-	encoding="utf-8", errors="ignore") as process: # yapf:disable
+	with subprocess.Popen(
+		command,
+		shell=True,
+		stdout=subprocess.PIPE,
+		stderr=subprocess.STDOUT if errorAsOut else subprocess.PIPE,
+		encoding="utf-8",
+		errors="ignore",
+	) as process:  # yapf:disable
 		out = process.communicate()[0]
 		exitCode = process.returncode
 	return exitCode, out
@@ -67,14 +72,20 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 		list[Line]: list of lines
 	"""
 	with open(file, "r", encoding="utf-8", errors="ignore") as fileContents:
-		start, stop = max(desiredLine - 3, 0), min(desiredLine + 2,
-		sum(1 for _i in open(file, 'rb')))
+		start, stop = max(desiredLine - 3, 0), min(
+			desiredLine + 2, sum(1 for _i in open(file, "rb"))
+		)
 		for line in range(start):
 			next(fileContents)
 		content = []
 		for line in range(start + 1, stop + 1):
-			content.append({"selected": line == desiredLine, "line": line,
-			"content": next(fileContents).rstrip().replace("\t", "    ")}) # yapf: disable
+			content.append(
+				{
+					"selected": line == desiredLine,
+					"line": line,
+					"content": next(fileContents).rstrip().replace("\t", "    "),
+				}
+			)
 	return content
 
 
@@ -91,38 +102,55 @@ def bandit() -> list[Finding]:
 	if _doSysExec("bandit -h")[0] != 0:
 		raise RuntimeError("bandit is not on the system path")
 	findings = []
-	levelMap = {"LOW": Level.LOW, "MEDIUM": Level.MED, "HIGH": Level.HIGH,
-	"UNDEFINED": Level.UNKNOWN} # yapf: disable
-	results = loads(
-	_doSysExec("bandit -lirq --exclude **/test_*.py --exclude **/test.py -f json .", False)
-	[1])["results"] # yapf: disable
+	levelMap = {
+		"LOW": Level.LOW,
+		"MEDIUM": Level.MED,
+		"HIGH": Level.HIGH,
+		"UNDEFINED": Level.UNKNOWN,
+	}
+	results = loads(_doSysExec("bandit -lirq -x ./**/test_*.py, ./**/test.py -f json .", False)[1])[
+		"results"
+	]
 	for result in results:
-		file = result['filename'].replace("\\", "/")
-		findings.append({"id": result['test_id'],
-		"title": f"{result['test_id']}: {result['test_name']}",
-		"description": result['issue_text'],
-		"file": file,
-		"evidence": extractEvidence(result["line_number"], file),
-		"severity": levelMap[result['issue_severity']],
-		"confidence": levelMap[result['issue_confidence']],
-		"line": result['line_number'],
-		"_other": {"more_info": result['more_info'], "line_range": result['line_range']}}) # yapf: disable
+		file = result["filename"].replace("\\", "/")
+		findings.append(
+			{
+				"id": result["test_id"],
+				"title": f"{result['test_id']}: {result['test_name']}",
+				"description": result["issue_text"],
+				"file": file,
+				"evidence": extractEvidence(result["line_number"], file),
+				"severity": levelMap[result["issue_severity"]],
+				"confidence": levelMap[result["issue_confidence"]],
+				"line": result["line_number"],
+				"_other": {"more_info": result["more_info"], "line_range": result["line_range"]},
+			}
+		)
 	return findings
 
 
 def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
 	findings = []
 	for result in results:
-		findings.append({"id": result[4],
-		"title": f"{result[4]}: {result[0]}",
-		"description": result[3],
-		"file": "Project Requirements",
-		"evidence": [{"selected": True, "line": 0,
-		"content": f"{result[0]} version={result[2]} affects{result[1]}"}],
-		"severity": Level.MED,
-		"confidence": Level.HIGH,
-		"line": "Unknown",
-		"_other": {"id": result[4], "affected": result[1]}}) # yapf: disable
+		findings.append(
+			{
+				"id": result[4],
+				"title": f"{result[4]}: {result[0]}",
+				"description": result[3],
+				"file": "Project Requirements",
+				"evidence": [
+					{
+						"selected": True,
+						"line": 0,
+						"content": f"{result[0]} version={result[2]} affects{result[1]}",
+					}
+				],
+				"severity": Level.MED,
+				"confidence": Level.HIGH,
+				"line": "Unknown",
+				"_other": {"id": result[4], "affected": result[1]},
+			}
+		)
 	return findings
 
 
@@ -214,15 +242,19 @@ def dodgy() -> list[Finding]:
 	results = loads(_doSysExec("dodgy")[1])["warnings"]
 	for result in results:
 		file = "./" + result["path"].replace("\\", "/")
-		findings.append({"id": result['code'],
-		"title": result["message"],
-		"description": result["message"],
-		"file": file,
-		"evidence": extractEvidence(result["line"], file),
-		"severity": Level.MED,
-		"confidence": Level.MED,
-		"line": result["line"],
-		"_other": {}}) # yapf: disable
+		findings.append(
+			{
+				"id": result["code"],
+				"title": result["message"],
+				"description": result["message"],
+				"file": file,
+				"evidence": extractEvidence(result["line"], file),
+				"severity": Level.MED,
+				"confidence": Level.MED,
+				"line": result["line"],
+				"_other": {},
+			}
+		)
 	return findings
 
 
@@ -239,22 +271,27 @@ def dlint() -> list[Finding]:
 	if _doSysExec("flake8 -h")[0] != 0:
 		raise RuntimeError("flake8 is not on the system path")
 	findings = []
-	results = _doSysExec("flake8 --select=DUO --format='%(path)s::%(row)d" +
-	"::%(col)d::%(code)s::%(text)s' .")[1].splitlines(False)# yapf: disable
+	results = _doSysExec(
+		"flake8 --select=DUO --format='%(path)s::%(row)d" + "::%(col)d::%(code)s::%(text)s' ."
+	)[1].splitlines(False)
 	for line in results:
 		if line[0] == "'":
 			line = line[1:-1]
 		result = line.split("::")
 		file = result[0].replace("\\", "/")
-		findings.append({"id": result[3],
-		"title": f"{result[3]}: {result[4]}",
-		"description": result[4],
-		"file": file,
-		"evidence": extractEvidence(int(result[1]), file),
-		"severity": Level.MED,
-		"confidence": Level.MED,
-		"line": int(result[1]),
-		"_other": {"col": result[2]}}) # yapf: disable
+		findings.append(
+			{
+				"id": result[3],
+				"title": f"{result[3]}: {result[4]}",
+				"description": result[4],
+				"file": file,
+				"evidence": extractEvidence(int(result[1]), file),
+				"severity": Level.MED,
+				"confidence": Level.MED,
+				"line": int(result[1]),
+				"_other": {"col": result[2]},
+			}
+		)
 	return findings
 
 
@@ -273,17 +310,21 @@ def pygraudit() -> list[Finding]:
 	findings = []
 	results = loads(_doSysExec("pygraudit -B -f json .")[1])["findings"]
 	for result in results:
-		findings.append({"id": result['id'],
-		"title": f"{result['id']}: {result['title']}",
-		"description": result['title'],
-		"file": result['file'],
-		"evidence": result["evidence"],
-		# The python database isn't the best tbh but the end user may want very
-		# verbose output
-		"severity": Level.LOW,
-		"confidence": Level.LOW,
-		"line": result['line'],
-		"_other": {"col": result['col']}}) # yapf: disable
+		findings.append(
+			{
+				"id": result["id"],
+				"title": f"{result['id']}: {result['title']}",
+				"description": result["title"],
+				"file": result["file"],
+				"evidence": result["evidence"],
+				# The python database isn't the best tbh but the end user may want very
+				# verbose output
+				"severity": Level.LOW,
+				"confidence": Level.LOW,
+				"line": result["line"],
+				"_other": {"col": result["col"]},
+			}
+		)
 	return findings
 
 
@@ -306,19 +347,33 @@ def semgrep() -> list[Finding]:
 			raise RuntimeError("semgrep is not installed in wsl")
 		raise RuntimeError("semgrep is not on the system path")
 	directory = THISDIR.replace("\\", "/").replace("C:", "/mnt/c")
-	results = loads(_doSysExec(prepend + "semgrep -f " + directory +
-	"/semgrep_sec.yaml -q --json --no-rewrite-rule-ids")[1])["results"] # yapf: disable
+	results = loads(
+		_doSysExec(
+			prepend
+			+ "semgrep -f "
+			+ directory
+			+ "/semgrep_sec.yaml -q --json --no-rewrite-rule-ids"
+		)[1]
+	)["results"]
 	levelMap = {"INFO": Level.LOW, "WARNING": Level.MED, "ERROR": Level.HIGH}
 	for result in results:
 		file = "./" + result["path"].replace("\\", "/")
-		findings.append({"id": result['check_id'],
-		"title": result['check_id'].split(".")[-1],
-		"description": result["extra"]["message"].strip(),
-		"file": file,
-		"evidence": extractEvidence(result["start"]["line"], file),
-		"severity": levelMap[result["extra"]["severity"]],
-		"confidence": Level.HIGH,
-		"line": result["start"]["line"],
-		"_other": {"col": result["start"]["col"], "start": result["start"],
-		"end": result["end"], "extra": result["extra"]}}) # yapf: disable
+		findings.append(
+			{
+				"id": result["check_id"],
+				"title": result["check_id"].split(".")[-1],
+				"description": result["extra"]["message"].strip(),
+				"file": file,
+				"evidence": extractEvidence(result["start"]["line"], file),
+				"severity": levelMap[result["extra"]["severity"]],
+				"confidence": Level.HIGH,
+				"line": result["start"]["line"],
+				"_other": {
+					"col": result["start"]["col"],
+					"start": result["start"],
+					"end": result["end"],
+					"extra": result["extra"],
+				},
+			}
+		)
 	return findings

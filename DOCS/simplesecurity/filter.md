@@ -12,7 +12,7 @@ Some of our analysis tools overlap one-another so lets remove duplicates.
 
 ## deduplicate
 
-[[find in source code]](../../simplesecurity/filter.py#L56)
+[[find in source code]](../../simplesecurity/filter.py#L58)
 
 ```python
 def deduplicate(findings: list[Finding]) -> list[Finding]:
@@ -30,7 +30,7 @@ Deduplicate the list of findings.
 
 ## filterSeverityAndConfidence
 
-[[find in source code]](../../simplesecurity/filter.py#L76)
+[[find in source code]](../../simplesecurity/filter.py#L78)
 
 ```python
 def filterSeverityAndConfidence(

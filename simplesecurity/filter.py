@@ -5,18 +5,18 @@ from __future__ import annotations
 from simplesecurity.types import Finding
 
 ID_MAP = {
-	"DUO105": ["B102"], # use of exec
-	"DUO109": ["B506"], # use of yaml.load
-	"DUO116": ["B602", "subprocess-shell-true"], # use of shell=True in subprocess
+	"DUO105": ["B102"],  # use of exec
+	"DUO109": ["B506"],  # use of yaml.load
+	"DUO116": ["B602", "subprocess-shell-true"],  # use of shell=True in subprocess
 	"B602": ["subprocess-shell-true"],
-	"DUO103": ["B402"], # use of pickle
-	"DUO120": ["B302"], # use of marshal
-	"DUO121": ["B306"], # use of mktemp
-	"DUO104": ["B307"], # use of eval
-	"DUO102": ["B311"], # use of random
-	"DUO108": ["B322"], # use of input, py<3
-	"DUO133": ["B413"], # use of pycrypto
-} # yapf: disable
+	"DUO103": ["B402"],  # use of pickle
+	"DUO120": ["B302"],  # use of marshal
+	"DUO121": ["B306"],  # use of mktemp
+	"DUO104": ["B307"],  # use of eval
+	"DUO102": ["B311"],  # use of random
+	"DUO108": ["B322"],  # use of input, py<3
+	"DUO133": ["B413"],  # use of pycrypto
+}
 
 
 def lookupId(identifier: str) -> list[str]:
@@ -44,8 +44,10 @@ def findingsEqual(findingA: Finding, findingB: Finding) -> int:
 		int: 0 if not equal. 1 if lookup(left) is equal to right - bin left.
 		-1 if lookup(right) is equal to left - bin right
 	"""
-	if (findingA["file"].replace("./", "") == findingB["file"].replace("./", "")
-	and findingA["line"] == findingB["line"]):
+	if (
+		findingA["file"].replace("./", "") == findingB["file"].replace("./", "")
+		and findingA["line"] == findingB["line"]
+	):
 		if findingB["id"] in lookupId(findingA["id"]):
 			return 1
 		if findingA["id"] in lookupId(findingB["id"]):
@@ -64,17 +66,18 @@ def deduplicate(findings: list[Finding]) -> list[Finding]:
 	"""
 	findings = findings.copy()
 	for indexA, findingA in enumerate(findings):
-		for _indexB, findingB in enumerate(findings[indexA + 1:]):
+		for _indexB, findingB in enumerate(findings[indexA + 1 :]):
 			equal = findingsEqual(findingA, findingB)
-			if equal == 1: # lookup(left) is equal to right - bin left.
+			if equal == 1:  # lookup(left) is equal to right - bin left.
 				findings.remove(findingA)
-			elif equal == -1: # lookup(right) is equal to left - bin right.
+			elif equal == -1:  # lookup(right) is equal to left - bin right.
 				findings.remove(findingB)
 	return findings
 
 
-def filterSeverityAndConfidence(findings: list[Finding], severity: int,
-confidence: int) -> list[Finding]:
+def filterSeverityAndConfidence(
+	findings: list[Finding], severity: int, confidence: int
+) -> list[Finding]:
 	"""Filter the list of findings.
 
 	Args:

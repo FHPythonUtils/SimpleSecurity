@@ -16,17 +16,21 @@ from simplesecurity.types import Finding
 stdout.reconfigure(encoding="utf-8")
 
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
-PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, pygraudit, semgrep, all, default=all"
+PLUGIN_HELP = (
+	"Plugin to use. One of bandit, safety, dodgy, dlint, pygraudit, semgrep, all, default=all"
+)
 
 
-def runAllPlugins(pluginMap: dict[str, Any], severity: int, confidence: int,
-fast: bool) -> list[Finding]:
+def runAllPlugins(
+	pluginMap: dict[str, Any], severity: int, confidence: int, fast: bool
+) -> list[Finding]:
 	"""Run each plugin. Optimise as much as we can.
 
 	Args:
 		pluginMap (dict[str, Any]): the plugin map
 		severity (int): the minimum severity to report on
 		confidence (int): the minimum confidence to report on
+		fast (bool): runAllPlugins with optimisations
 
 	Returns:
 		list[Finding]: list of findings
@@ -34,9 +38,11 @@ fast: bool) -> list[Finding]:
 	findings: list[Finding] = []
 	for plugin in pluginMap:
 		# Do optimisations
-		if (pluginMap[plugin]["max_severity"] >= severity
-		and pluginMap[plugin]["max_confidence"] >= confidence
-		and (not fast or pluginMap[plugin]["fast"])):
+		if (
+			pluginMap[plugin]["max_severity"] >= severity
+			and pluginMap[plugin]["max_confidence"] >= confidence
+			and (not fast or pluginMap[plugin]["fast"])
+		):
 			try:
 				findings.extend(pluginMap[plugin]["func"]())
 			except RuntimeError as error:
@@ -46,26 +52,27 @@ fast: bool) -> list[Finding]:
 
 def cli():
 	"""Cli entry point."""
-	# yapf: disable
+	# fmt: off
 	parser = argparse.ArgumentParser(description=__doc__,
-	formatter_class=argparse.RawTextHelpFormatter)
+		formatter_class=argparse.RawTextHelpFormatter)
 	parser.add_argument("--format", "-f", help=FORMAT_HELP)
 	parser.add_argument("--plugin", "-p", help=PLUGIN_HELP)
 	parser.add_argument("--file", "-o", help="Filename to write to (omit for stdout)")
 	# Let's use a low severity and medium confidence by default
-	parser.add_argument("--level", "-l", help="Minimum level/ severity to show", type=int, default=1)
-	parser.add_argument("--confidence", "-c", help="Minimum confidence to show", type=int, default=2)
+	parser.add_argument("--level", "-l", help="Minimum level/ severity to show",
+		type=int, default=1)
+	parser.add_argument("--confidence", "-c", help="Minimum confidence to show",
+		type=int, default=2)
 	parser.add_argument("--no-colour", "-z", help="No ANSI colours", action="store_true")
 	parser.add_argument("--high-contrast", "-Z", help="High contrast colours", action="store_true")
-	parser.add_argument("--fast", "--skip", action="store_true",
-	help="Skip long running jobs. Will omit plugins with long run time (applies to -p all only)")
-	parser.add_argument("--zero", "-0",
-	help="Return non zero exit code if any security vulnerabilities are found", action="store_true")
-	# yapf: enable
+	parser.add_argument("--fast","--skip",action="store_true",
+		help="Skip long running jobs. Will omit plugins with long run time (applies to -p all only)",)
+	parser.add_argument("--zero","-0", action="store_true",
+		help="Return non zero exit code if any security vulnerabilities are found",)
 	args = parser.parse_args()
+	# fmt: on
 	# File
-	filename = stdout if args.file is None else open(args.file, "w",
-	encoding="utf-8")
+	filename = stdout if args.file is None else open(args.file, "w", encoding="utf-8")
 	# Colour Mode
 	colourMode = 1
 	if args.no_colour:
@@ -74,8 +81,12 @@ def cli():
 		colourMode = 2
 	# Format
 	formatMap = {
-	"json": formatter.json, "markdown": formatter.markdown, "csv": formatter.csv,
-	"ansi": formatter.ansi, "sarif": formatter.sarif}
+		"json": formatter.json,
+		"markdown": formatter.markdown,
+		"csv": formatter.csv,
+		"ansi": formatter.ansi,
+		"sarif": formatter.sarif,
+	}
 	if args.format is None:
 		formatt = formatter.ansi
 	elif args.format in formatMap:
@@ -85,6 +96,7 @@ def cli():
 		sysexit(1)
 
 	# Plugin
+	# fmt: off
 	pluginMap: dict[str, Any] = {
 	"bandit": {"func": plugins.bandit, "max_severity": 3, "max_confidence": 3,
 	"fast": True},
@@ -110,10 +122,11 @@ def cli():
 			findings = pluginMap[args.plugin]["func"]()
 		print(formatt(secfilter.filterSeverityAndConfidence(
 			secfilter.deduplicate(findings), args.level, args.confidence),
-			colourMode=colourMode), file=filename) # yapf: disable
+			colourMode=colourMode), file=filename)
 	else:
 		print(PLUGIN_HELP)
 		sysexit(2)
 	if len(findings) > 0 and args.zero:
 		sysexit(1)
 	sysexit(0)
+	# fmt: on

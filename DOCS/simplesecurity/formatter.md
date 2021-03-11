@@ -36,7 +36,7 @@ Formats
 
 ## ansi
 
-[[find in source code]](../../simplesecurity/formatter.py#L134)
+[[find in source code]](../../simplesecurity/formatter.py#L154)
 
 ```python
 def ansi(
@@ -59,7 +59,7 @@ Format to ansi.
 
 ## csv
 
-[[find in source code]](../../simplesecurity/formatter.py#L107)
+[[find in source code]](../../simplesecurity/formatter.py#L115)
 
 ```python
 def csv(
@@ -101,7 +101,7 @@ Format evidence to plaintext.
 
 ## json
 
-[[find in source code]](../../simplesecurity/formatter.py#L89)
+[[find in source code]](../../simplesecurity/formatter.py#L95)
 
 ```python
 def json(
@@ -147,7 +147,7 @@ Format to Markdown.
 
 ## sarif
 
-[[find in source code]](../../simplesecurity/formatter.py#L211)
+[[find in source code]](../../simplesecurity/formatter.py#L245)
 
 ```python
 def sarif(

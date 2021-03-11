@@ -38,7 +38,7 @@ Functions return finding dictionary
 
 ## bandit
 
-[[find in source code]](../../simplesecurity/plugins.py#L81)
+[[find in source code]](../../simplesecurity/plugins.py#L92)
 
 ```python
 def bandit() -> list[Finding]:
@@ -57,7 +57,7 @@ error
 
 ## dlint
 
-[[find in source code]](../../simplesecurity/plugins.py#L229)
+[[find in source code]](../../simplesecurity/plugins.py#L261)
 
 ```python
 def dlint() -> list[Finding]:
@@ -76,7 +76,7 @@ error
 
 ## dodgy
 
-[[find in source code]](../../simplesecurity/plugins.py#L201)
+[[find in source code]](../../simplesecurity/plugins.py#L229)
 
 ```python
 def dodgy() -> list[Finding]:
@@ -95,7 +95,7 @@ error
 
 ## extractEvidence
 
-[[find in source code]](../../simplesecurity/plugins.py#L59)
+[[find in source code]](../../simplesecurity/plugins.py#L64)
 
 ```python
 def extractEvidence(desiredLine: int, file: str) -> list[Line]:
@@ -114,7 +114,7 @@ Grab evidence from the source file.
 
 ## pygraudit
 
-[[find in source code]](../../simplesecurity/plugins.py#L261)
+[[find in source code]](../../simplesecurity/plugins.py#L298)
 
 ```python
 def pygraudit() -> list[Finding]:
@@ -133,7 +133,7 @@ error
 
 ## safety
 
-[[find in source code]](../../simplesecurity/plugins.py#L138)
+[[find in source code]](../../simplesecurity/plugins.py#L166)
 
 ```python
 def safety() -> list[Finding]:
@@ -152,7 +152,7 @@ error
 
 ## safetyFast
 
-[[find in source code]](../../simplesecurity/plugins.py#L185)
+[[find in source code]](../../simplesecurity/plugins.py#L213)
 
 ```python
 def safetyFast() -> list[Finding]:
@@ -171,7 +171,7 @@ error
 
 ## semgrep
 
-[[find in source code]](../../simplesecurity/plugins.py#L290)
+[[find in source code]](../../simplesecurity/plugins.py#L331)
 
 ```python
 def semgrep() -> list[Finding]:

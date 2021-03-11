@@ -2,6 +2,10 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2021.2.1 - 2021/03/11
+- Fix bandit ignore paths.
+- Reformat with black + tabs
+
 ## 2021.2 - 2021/03/01
 - Added `--zero/-0` flag to return non-zero exit code if any security
   vulnerabilities are found

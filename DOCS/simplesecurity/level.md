@@ -32,7 +32,7 @@ HIGH = 3
 
 ### Level().\_\_repr\_\_
 
-[[find in source code]](../../simplesecurity/level.py#L24)
+[[find in source code]](../../simplesecurity/level.py#L25)
 
 ```python
 def __repr__() -> str:
@@ -46,7 +46,7 @@ __repr__ method.
 
 ### Level().\_\_str\_\_
 
-[[find in source code]](../../simplesecurity/level.py#L32)
+[[find in source code]](../../simplesecurity/level.py#L33)
 
 ```python
 def __str__() -> str:
@@ -60,7 +60,7 @@ __str__ method (tostring).
 
 ### Level().toSarif
 
-[[find in source code]](../../simplesecurity/level.py#L43)
+[[find in source code]](../../simplesecurity/level.py#L47)
 
 ```python
 def toSarif() -> str:
