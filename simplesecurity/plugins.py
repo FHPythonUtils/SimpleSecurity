@@ -4,7 +4,6 @@
 - safety
 - dodgy
 - dlint
-- pygraudit
 - semgrep
 
 Functions return finding dictionary
@@ -18,7 +17,7 @@ Functions return finding dictionary
 	severity: Level
 	confidence: Level
 	line: int
-	_other: {}
+	_other: dict[str, str]
 }
 ```
 """
@@ -210,22 +209,6 @@ def safety() -> list[Finding]:
 	return _doSafetyProcessing(results)
 
 
-def safetyFast() -> list[Finding]:
-	"""Generate list of findings using safety. requires safety on the system path.
-
-	Raises:
-		RuntimeError: if safety is not on the system path, then throw this
-		error
-
-	Returns:
-		list[Finding]: our findings dictionary
-	"""
-	if _doSysExec("safety --help")[0] != 0:
-		raise RuntimeError("safety is not on the system path")
-	# Use plain old safety (this will miss optional dependencies)
-	return _doSafetyProcessing(_doPureSafety())
-
-
 def dodgy() -> list[Finding]:
 	"""Generate list of findings using dodgy. Requires dodgy on the system path.
 
@@ -290,39 +273,6 @@ def dlint() -> list[Finding]:
 				"confidence": Level.MED,
 				"line": int(result[1]),
 				"_other": {"col": result[2]},
-			}
-		)
-	return findings
-
-
-def pygraudit() -> list[Finding]:
-	"""Generate list of findings using pygraudit. Requires pygraudit on the system path.
-
-	Raises:
-		RuntimeError: if pygraudit is not on the system path, then throw this
-		error
-
-	Returns:
-		list[Finding]: our findings dictionary
-	"""
-	if _doSysExec("pygraudit -h")[0] != 0:
-		raise RuntimeError("pygraudit is not on the system path")
-	findings = []
-	results = loads(_doSysExec("pygraudit -B -f json .")[1])["findings"]
-	for result in results:
-		findings.append(
-			{
-				"id": result["id"],
-				"title": f"{result['id']}: {result['title']}",
-				"description": result["title"],
-				"file": result["file"],
-				"evidence": result["evidence"],
-				# The python database isn't the best tbh but the end user may want very
-				# verbose output
-				"severity": Level.LOW,
-				"confidence": Level.LOW,
-				"line": result["line"],
-				"_other": {"col": result["col"]},
 			}
 		)
 	return findings

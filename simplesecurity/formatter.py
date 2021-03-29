@@ -25,7 +25,7 @@ Formats
 # pyright: reportConstantRedefinition=false
 from __future__ import annotations
 
-from csv import writer
+from csv import QUOTE_ALL, writer
 from io import StringIO
 from json import dumps
 from typing import Optional
@@ -124,7 +124,7 @@ def csv(findings: list[Finding], heading: Optional[str] = None, colourMode: int 
 	"""
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 	output = StringIO()
-	csvString = writer(output)
+	csvString = writer(output, quoting=QUOTE_ALL)
 	csvString.writerow(
 		[
 			heading
@@ -210,9 +210,7 @@ def ansi(findings: list[Finding], heading: Optional[str] = None, colourMode: int
 
 	# Summary Table
 	strBuf.append(f"{FMT['TXT']}┌{'─'*10}┬{'─'*50}┐")
-	strBuf.append(
-		"│Severity  │Finding                                           │"
-	)
+	strBuf.append("│Severity  │Finding                                           │")
 	strBuf.append(f"├{'─'*10}┼{'─'*50}┤")
 	for finding in findings:
 		strBuf.append(f"│{finding['severity']: <10}│{finding['title'][:50]: <50}│")

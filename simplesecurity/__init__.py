@@ -13,12 +13,8 @@ import simplesecurity.formatter as formatter
 import simplesecurity.plugins as plugins
 from simplesecurity.types import Finding
 
-stdout.reconfigure(encoding="utf-8")
-
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
-PLUGIN_HELP = (
-	"Plugin to use. One of bandit, safety, dodgy, dlint, pygraudit, semgrep, all, default=all"
-)
+PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, all, default=all"
 
 
 def runAllPlugins(
@@ -101,14 +97,10 @@ def cli():
 	"bandit": {"func": plugins.bandit, "max_severity": 3, "max_confidence": 3,
 	"fast": True},
 	"safety": {"func": plugins.safety, "max_severity": 2, "max_confidence": 3,
-	"fast": False},
-	"_PRIVATE_safety": {"func": plugins.safetyFast, "max_severity": 2, "max_confidence": 3,
 	"fast": True},
 	"dodgy": {"func": plugins.dodgy, "max_severity": 2, "max_confidence": 2,
 	"fast": True},
 	"dlint": {"func": plugins.dlint, "max_severity": 2, "max_confidence": 2,
-	"fast": True},
-	"pygraudit": {"func": plugins.pygraudit, "max_severity": 1, "max_confidence": 1,
 	"fast": True},
 	"semgrep": {"func": plugins.semgrep, "max_severity": 3, "max_confidence": 3,
 	"fast": False},

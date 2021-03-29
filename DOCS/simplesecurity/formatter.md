@@ -147,7 +147,7 @@ Format to Markdown.
 
 ## sarif
 
-[[find in source code]](../../simplesecurity/formatter.py#L245)
+[[find in source code]](../../simplesecurity/formatter.py#L243)
 
 ```python
 def sarif(

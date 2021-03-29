@@ -19,7 +19,7 @@ and generate reports or output into different formats.
 
 ## cli
 
-[[find in source code]](../../simplesecurity/__init__.py#L53)
+[[find in source code]](../../simplesecurity/__init__.py#L49)
 
 ```python
 def cli():
@@ -29,7 +29,7 @@ Cli entry point.
 
 ## runAllPlugins
 
-[[find in source code]](../../simplesecurity/__init__.py#L24)
+[[find in source code]](../../simplesecurity/__init__.py#L20)
 
 ```python
 def runAllPlugins(

@@ -26,12 +26,12 @@ Finding type.
  severity: Level
  confidence: Level
  line: int
- _other: {}
+ _other: dict[str, str]
 }
 
 ## Line
 
-[[find in source code]](../../simplesecurity/types.py#L37)
+[[find in source code]](../../simplesecurity/types.py#L38)
 
 ```python
 class Line(typing.TypedDict):

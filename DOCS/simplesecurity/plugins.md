@@ -9,16 +9,13 @@ Add plugins here.
     - [dlint](#dlint)
     - [dodgy](#dodgy)
     - [extractEvidence](#extractevidence)
-    - [pygraudit](#pygraudit)
     - [safety](#safety)
-    - [safetyFast](#safetyfast)
     - [semgrep](#semgrep)
 
 - bandit
 - safety
 - dodgy
 - dlint
-- pygraudit
 - semgrep
 
 Functions return finding dictionary
@@ -32,13 +29,13 @@ Functions return finding dictionary
  severity: Level
  confidence: Level
  line: int
- _other: {}
+ _other: dict[str, str]
 }
 ```
 
 ## bandit
 
-[[find in source code]](../../simplesecurity/plugins.py#L92)
+[[find in source code]](../../simplesecurity/plugins.py#L91)
 
 ```python
 def bandit() -> list[Finding]:
@@ -57,7 +54,7 @@ error
 
 ## dlint
 
-[[find in source code]](../../simplesecurity/plugins.py#L261)
+[[find in source code]](../../simplesecurity/plugins.py#L244)
 
 ```python
 def dlint() -> list[Finding]:
@@ -76,7 +73,7 @@ error
 
 ## dodgy
 
-[[find in source code]](../../simplesecurity/plugins.py#L229)
+[[find in source code]](../../simplesecurity/plugins.py#L212)
 
 ```python
 def dodgy() -> list[Finding]:
@@ -95,7 +92,7 @@ error
 
 ## extractEvidence
 
-[[find in source code]](../../simplesecurity/plugins.py#L64)
+[[find in source code]](../../simplesecurity/plugins.py#L63)
 
 ```python
 def extractEvidence(desiredLine: int, file: str) -> list[Line]:
@@ -112,28 +109,9 @@ Grab evidence from the source file.
 
 - `list[Line]` - list of lines
 
-## pygraudit
-
-[[find in source code]](../../simplesecurity/plugins.py#L298)
-
-```python
-def pygraudit() -> list[Finding]:
-```
-
-Generate list of findings using pygraudit. Requires pygraudit on the system path.
-
-#### Raises
-
-- `RuntimeError` - if pygraudit is not on the system path, then throw this
-error
-
-#### Returns
-
-- `list[Finding]` - our findings dictionary
-
 ## safety
 
-[[find in source code]](../../simplesecurity/plugins.py#L166)
+[[find in source code]](../../simplesecurity/plugins.py#L165)
 
 ```python
 def safety() -> list[Finding]:
@@ -150,28 +128,9 @@ error
 
 - `list[Finding]` - our findings dictionary
 
-## safetyFast
-
-[[find in source code]](../../simplesecurity/plugins.py#L213)
-
-```python
-def safetyFast() -> list[Finding]:
-```
-
-Generate list of findings using safety. requires safety on the system path.
-
-#### Raises
-
-- `RuntimeError` - if safety is not on the system path, then throw this
-error
-
-#### Returns
-
-- `list[Finding]` - our findings dictionary
-
 ## semgrep
 
-[[find in source code]](../../simplesecurity/plugins.py#L331)
+[[find in source code]](../../simplesecurity/plugins.py#L281)
 
 ```python
 def semgrep() -> list[Finding]:

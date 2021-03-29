@@ -2,6 +2,12 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2021.3 - 2021/03/29
+- Remove `pygraudit` due to lack of popularity and tendency to report false positives
+- Remove `safetyFast` due to tendency to report system-wide warnings (waiting a
+  few seconds for more reliable output is worth the trade off)
+- Cleanup
+
 ## 2021.2.1 - 2021/03/11
 - Fix bandit ignore paths.
 - Reformat with black + tabs

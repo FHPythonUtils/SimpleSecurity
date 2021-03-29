@@ -24,7 +24,6 @@ requires bandit to be in the system path...)
 - safety
 - dodgy
 - dlint
-- pygraudit
 - semgrep
 
 Formats
@@ -45,17 +44,18 @@ See below for the output if you run `simplesecurity` in this directory
 
 ```txt
 usage: __main__.py [-h] [--format FORMAT] [--plugin PLUGIN] [--file FILE] [--level LEVEL] [--confidence CONFIDENCE]
-                   [--no-colour] [--high-contrast] [--fast]
+                   [--no-colour] [--high-contrast] [--fast] [--zero]
 
-Combine multiple popular python security tools and generate reports or output
-into different formats
+Combine multiple popular python security tools...
+
+and generate reports or output into different formats.
 
 optional arguments:
   -h, --help            show this help message and exit
   --format FORMAT, -f FORMAT
                         Output format. One of ansi, json, markdown, csv. default=ansi
   --plugin PLUGIN, -p PLUGIN
-                        Plugin to use. One of bandit, safety, dodgy, dlint, pygraudit, semgrep, all, default=all
+                        Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, all, default=all
   --file FILE, -o FILE  Filename to write to (omit for stdout)
   --level LEVEL, -l LEVEL
                         Minimum level/ severity to show
@@ -64,6 +64,7 @@ optional arguments:
   --no-colour, -z       No ANSI colours
   --high-contrast, -Z   High contrast colours
   --fast, --skip        Skip long running jobs. Will omit plugins with long run time (applies to -p all only)
+  --zero, -0            Return non zero exit code if any security vulnerabilities are found
 ```
 
 You can also import this into your own project and use any of the functions

@@ -20,9 +20,10 @@ class Finding(typing.TypedDict):
 		severity: Level
 		confidence: Level
 		line: int
-		_other: {}
+		_other: dict[str, str]
 	}
 	"""
+
 	id: str
 	title: str
 	description: str
@@ -43,6 +44,7 @@ class Line(typing.TypedDict):
 		selected: bool
 	}
 	"""
+
 	line: int
 	content: str
 	selected: bool
