@@ -23,7 +23,7 @@ def lookupId(identifier: str) -> list[str]:
 	"""Lookup an id in the id map.
 
 	Args:
-		id (str): id to look up
+		identifier (str): id to look up
 
 	Returns:
 		str: id that it equals

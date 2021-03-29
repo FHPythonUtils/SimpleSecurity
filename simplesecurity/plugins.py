@@ -46,6 +46,9 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
 
 	Raises:
 		RuntimeWarning: throw a warning should there be a non exit code
+
+	Returns:
+		tuple[int, str]: tuple of return code (int) and stdout (str)
 	"""
 	with subprocess.Popen(
 		command,

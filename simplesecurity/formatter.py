@@ -55,10 +55,13 @@ def markdown(findings: list[Finding], heading: Optional[str] = None, colourMode:
 	Args:
 		findings (list[Finding]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
+		colourMode (int, optional): Output with a given colour mode 0: no colour,
+			1: default, 2: high contrast. Defaults to 0.
 
 	Returns:
 		str: String to write to a file of stdout
 	"""
+	_ = colourMode  # silence pylint
 	if len(findings) == 0:
 		return "No findings"
 
@@ -98,10 +101,13 @@ def json(findings: list[Finding], heading: Optional[str] = None, colourMode: int
 	Args:
 		findings (list[Finding]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
+		colourMode (int, optional): Output with a given colour mode 0: no colour,
+			1: default, 2: high contrast. Defaults to 0.
 
 	Returns:
 		str: String to write to a file of stdout
 	"""
+	_ = colourMode  # silence pylint
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 	out = {
 		"heading": heading
@@ -118,10 +124,13 @@ def csv(findings: list[Finding], heading: Optional[str] = None, colourMode: int 
 	Args:
 		findings (list[Finding]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
+		colourMode (int, optional): Output with a given colour mode 0: no colour,
+			1: default, 2: high contrast. Defaults to 0.
 
 	Returns:
 		str: String to write to a file of stdout
 	"""
+	_ = colourMode  # silence pylint
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 	output = StringIO()
 	csvString = writer(output, quoting=QUOTE_ALL)
@@ -157,6 +166,8 @@ def ansi(findings: list[Finding], heading: Optional[str] = None, colourMode: int
 	Args:
 		findings (list[Finding]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
+		colourMode (int, optional): Output with a given colour mode 0: no colour,
+			1: default, 2: high contrast. Defaults to 0.
 
 	Returns:
 		str: String to write to a file of stdout
@@ -246,13 +257,19 @@ def sarif(findings: list[Finding], heading: Optional[str] = None, colourMode: in
 	Args:
 		findings (list[Finding]): Findings to format
 		heading (str, optional): Optional heading to include. Defaults to None.
+		colourMode (int, optional): Output with a given colour mode 0: no colour,
+			1: default, 2: high contrast. Defaults to 0.
 
 	Returns:
 		str: String to write to a file of stdout
 	"""
+	_, _ = colourMode, heading  # silence pylint
 	out = {
 		"version": "2.1.0",
-		"$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+		"$schema": (
+			"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/"
+			"master/Schemata/sarif-schema-2.1.0.json"
+		),
 		"runs": [
 			{
 				"tool": {
