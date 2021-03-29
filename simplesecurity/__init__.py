@@ -13,6 +13,7 @@ import simplesecurity.formatter as formatter
 import simplesecurity.plugins as plugins
 from simplesecurity.types import Finding
 
+stdout.reconfigure(encoding="utf-8")
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
 PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, all, default=all"
 
