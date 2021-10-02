@@ -2,7 +2,8 @@
 
 > Auto-generated documentation for [simplesecurity](../../simplesecurity/__init__.py) module.
 
-Combine multiple popular python security tools...
+Combine multiple popular python security tools and generate reports or output
+into different formats
 
 - [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../README.md#simplesecurity-modules) / simplesecurity
     - [cli](#cli)
@@ -15,11 +16,26 @@ Combine multiple popular python security tools...
         - [plugins](plugins.md#plugins)
         - [types](types.md#types)
 
-and generate reports or output into different formats.
+Plugins (these require the plugin executable in the system path. e.g. bandit
+requires bandit to be in the system path...)
+
+- bandit
+- safety
+- dodgy
+- dlint
+- semgrep
+
+Formats
+
+- ansi (for terminal)
+- json
+- markdown
+- csv
+- sarif
 
 ## cli
 
-[[find in source code]](../../simplesecurity/__init__.py#L50)
+[[find in source code]](../../simplesecurity/__init__.py#L67)
 
 ```python
 def cli():
@@ -29,7 +45,7 @@ Cli entry point.
 
 ## runAllPlugins
 
-[[find in source code]](../../simplesecurity/__init__.py#L21)
+[[find in source code]](../../simplesecurity/__init__.py#L38)
 
 ```python
 def runAllPlugins(

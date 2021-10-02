@@ -23,9 +23,8 @@ Functions return finding dictionary
 """
 from __future__ import annotations
 
-import platform
 import subprocess
-import warnings
+from io import TextIOWrapper
 from json import loads
 from os import remove
 from pathlib import Path
@@ -41,14 +40,14 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
 	"""Execute a command and check for errors.
 
 	Args:
-		command (str): commands as a string
-		errorAsOut (bool, optional): redirect errors to stdout
+			command (str): commands as a string
+			errorAsOut (bool, optional): redirect errors to stdout
 
 	Raises:
-		RuntimeWarning: throw a warning should there be a non exit code
+			RuntimeWarning: throw a warning should there be a non exit code
 
 	Returns:
-		tuple[int, str]: tuple of return code (int) and stdout (str)
+			tuple[int, str]: tuple of return code (int) and stdout (str)
 	"""
 	with subprocess.Popen(
 		command,
@@ -57,7 +56,7 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
 		stderr=subprocess.STDOUT if errorAsOut else subprocess.PIPE,
 		encoding="utf-8",
 		errors="ignore",
-	) as process:  # yapf:disable
+	) as process:
 		out = process.communicate()[0]
 		exitCode = process.returncode
 	return exitCode, out
@@ -74,20 +73,16 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 		list[Line]: list of lines
 	"""
 	with open(file, "r", encoding="utf-8", errors="ignore") as fileContents:
-		start, stop = max(desiredLine - 3, 0), min(
-			desiredLine + 2, sum(1 for _i in open(file, "rb"))
-		)
+		start = max(desiredLine - 3, 0)
 		for line in range(start):
 			next(fileContents)
 		content = []
-		for line in range(start + 1, stop + 1):
-			content.append(
-				{
-					"selected": line == desiredLine,
-					"line": line,
-					"content": next(fileContents).rstrip().replace("\t", "    "),
-				}
-			)
+		for line in range(start + 1, desiredLine + 3):
+			try:
+				lineContent = next(fileContents).rstrip().replace("\t", "    ")
+			except StopIteration:
+				break
+			content.append({"selected": line == desiredLine, "line": line, "content": lineContent})
 	return content
 
 
@@ -125,7 +120,10 @@ def bandit() -> list[Finding]:
 				"severity": levelMap[result["issue_severity"]],
 				"confidence": levelMap[result["issue_confidence"]],
 				"line": result["line_number"],
-				"_other": {"more_info": result["more_info"], "line_range": result["line_range"]},
+				"_other": {
+					"more_info": result["more_info"],
+					"line_range": result["line_range"],
+				},
 			}
 		)
 	return findings
@@ -166,7 +164,7 @@ def _doPureSafety():
 
 
 def safety() -> list[Finding]:
-	"""Generate list of findings using safety. requires poetry and safety on the system path.
+	"""Generate list of findings using safety.
 
 	Raises:
 		RuntimeError: if safety is not on the system path, then throw this
@@ -175,35 +173,23 @@ def safety() -> list[Finding]:
 	Returns:
 		list[Finding]: our findings dictionary
 	"""
-	poetryInstalled = True
-	pipreqsInstalled = True
-	if _doSysExec("poetry -h")[0] != 0:
-		poetryInstalled = False
-		warnings.warn(RuntimeWarning("poetry is not on the system path"))
-	if not poetryInstalled and _doSysExec("pipreqs -h")[0] != 0:
-		pipreqsInstalled = False
-		warnings.warn(RuntimeWarning("pipreqs is not on the system path"))
 	if _doSysExec("safety --help")[0] != 0:
 		raise RuntimeError("safety is not on the system path")
-	if poetryInstalled:
-		# Use poetry show to get dependents of dependencies
-		lines = _doSysExec("poetry show")[1].splitlines(False)
+	pShow = _doSysExec("poetry show")
+	if not pShow[0]:
+		lines = pShow[1].splitlines(False)
 		data = []
 		for line in lines:
-			parts = line.split()
+			parts = line.replace("(!)", "").split()
 			if len(parts) > 1:
-				if "(!)" in parts[1] and len(parts) > 2:
-					data.append(f"{parts[0]}=={parts[2]}")
-				else:
-					data.append(f"{parts[0]}=={parts[1]}")
+				data.append(f"{parts[0]}=={parts[1]}")
 			else:
 				data.append(f"{parts[0]}")
 		with open("reqs.txt", "w", encoding="utf-8", errors="ignore") as reqs:
 			reqs.write("\n".join(data))
 		results = loads(_doSysExec("safety check -r reqs.txt --json")[1])
 		remove("reqs.txt")
-	elif pipreqsInstalled:
-		_doSysExec("pipreqs --savepath reqs.txt --encoding utf-8")
+	elif not _doSysExec("pipreqs --savepath reqs.txt --encoding utf-8")[0]:
 		results = loads(_doSysExec("safety check -r reqs.txt --json")[1])
 		remove("reqs.txt")
 	else:
@@ -282,9 +268,8 @@ def dlint() -> list[Finding]:
 
 
 def semgrep() -> list[Finding]:
-	"""Generate list of findings using for semgrep...
-
-	Requires semgrep on the system path (wsl in windows).
+	"""Generate list of findings using for semgrep. Requires semgrep on the
+	system path (wsl in windows).
 
 	Raises:
 		RuntimeError: if semgrep is not on the system path, then throw this
@@ -294,19 +279,13 @@ def semgrep() -> list[Finding]:
 		list[Finding]: our findings dictionary
 	"""
 	findings = []
-	prepend = "wsl " if platform.system() == "Windows" else ""
-	if _doSysExec(prepend + "semgrep -h")[0] != 0:
-		if platform.system() == "Windows":
-			raise RuntimeError("semgrep is not installed in wsl")
+	if _doSysExec("semgrep --help")[0] != 0:
 		raise RuntimeError("semgrep is not on the system path")
 	directory = THISDIR.replace("\\", "/").replace("C:", "/mnt/c")
 	results = loads(
-		_doSysExec(
-			prepend
-			+ "semgrep -f "
-			+ directory
-			+ "/semgrep_sec.yaml -q --json --no-rewrite-rule-ids"
-		)[1]
+		_doSysExec("semgrep -f " + directory + "/semgrep_sec.yaml -q --json --no-rewrite-rule-ids")[
+			1
+		]
 	)["results"]
 	levelMap = {"INFO": Level.LOW, "WARNING": Level.MED, "ERROR": Level.HIGH}
 	for result in results:

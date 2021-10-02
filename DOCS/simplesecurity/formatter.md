@@ -36,7 +36,7 @@ Formats
 
 ## ansi
 
-[[find in source code]](../../simplesecurity/formatter.py#L154)
+[[find in source code]](../../simplesecurity/formatter.py#L163)
 
 ```python
 def ansi(
@@ -52,6 +52,8 @@ Format to ansi.
 
 - `findings` *list[Finding]* - Findings to format
 - `heading` *str, optional* - Optional heading to include. Defaults to None.
+- `colourMode` *int, optional* - Output with a given colour mode 0: no colour,
+ - `1` - default, 2: high contrast. Defaults to 0.
 
 #### Returns
 
@@ -59,7 +61,7 @@ Format to ansi.
 
 ## csv
 
-[[find in source code]](../../simplesecurity/formatter.py#L115)
+[[find in source code]](../../simplesecurity/formatter.py#L121)
 
 ```python
 def csv(
@@ -75,6 +77,8 @@ Format to CSV.
 
 - `findings` *list[Finding]* - Findings to format
 - `heading` *str, optional* - Optional heading to include. Defaults to None.
+- `colourMode` *int, optional* - Output with a given colour mode 0: no colour,
+ - `1` - default, 2: high contrast. Defaults to 0.
 
 #### Returns
 
@@ -101,7 +105,7 @@ Format evidence to plaintext.
 
 ## json
 
-[[find in source code]](../../simplesecurity/formatter.py#L95)
+[[find in source code]](../../simplesecurity/formatter.py#L98)
 
 ```python
 def json(
@@ -117,6 +121,8 @@ Format to Json.
 
 - `findings` *list[Finding]* - Findings to format
 - `heading` *str, optional* - Optional heading to include. Defaults to None.
+- `colourMode` *int, optional* - Output with a given colour mode 0: no colour,
+ - `1` - default, 2: high contrast. Defaults to 0.
 
 #### Returns
 
@@ -140,6 +146,8 @@ Format to Markdown.
 
 - `findings` *list[Finding]* - Findings to format
 - `heading` *str, optional* - Optional heading to include. Defaults to None.
+- `colourMode` *int, optional* - Output with a given colour mode 0: no colour,
+ - `1` - default, 2: high contrast. Defaults to 0.
 
 #### Returns
 
@@ -147,7 +155,7 @@ Format to Markdown.
 
 ## sarif
 
-[[find in source code]](../../simplesecurity/formatter.py#L243)
+[[find in source code]](../../simplesecurity/formatter.py#L254)
 
 ```python
 def sarif(
@@ -163,6 +171,8 @@ Format to sarif https://sarifweb.azurewebsites.net/.
 
 - `findings` *list[Finding]* - Findings to format
 - `heading` *str, optional* - Optional heading to include. Defaults to None.
+- `colourMode` *int, optional* - Output with a given colour mode 0: no colour,
+ - `1` - default, 2: high contrast. Defaults to 0.
 
 #### Returns
 

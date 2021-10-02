@@ -13,7 +13,6 @@
 
 <img src="readme-assets/icons/name.png" alt="Project Icon" width="750">
 
-
 Combine multiple popular python security tools and generate reports or output
 into different formats
 
@@ -72,6 +71,7 @@ in the DOCS
 
 <!-- omit in toc -->
 ## Table of Contents
+
 - [Example Use](#example-use)
 	- [Help](#help)
 - [Developer Notes](#developer-notes)
@@ -102,7 +102,6 @@ in the DOCS
 	- [Support](#support)
 	- [Rationale](#rationale)
 
-
 ## Developer Notes
 
 ### Generate semgrep_sec.yaml
@@ -110,14 +109,15 @@ in the DOCS
 1. Clone https://github.com/returntocorp/semgrep-rules
 2. cd to project/python
 3. do
+
    ```bash
-   $ cat **/security/**/*.yaml >> semgrep_sec.yaml
-   $ cat **/security/*.yaml >> semgrep_sec.yaml
+   cat **/security/**/*.yaml >> semgrep_sec.yaml
+   cat **/security/*.yaml >> semgrep_sec.yaml
    ```
+
 4. Find and replace `rules:` with `` apart from the first instance
 5. Reformat with `ctrl+shift+i`
 6. replace simplesecurity/semgrep_sec.yaml with the new one
-
 
 ## Documentation
 See the [Docs](/DOCS/) for more information.
@@ -131,6 +131,7 @@ pip install simplesecurity
 ```
 
 **Otherwise:**
+
 ```python
 pip install simplesecurity[full]
 ```
@@ -144,26 +145,32 @@ Python version 3.9.0 <https://www.python.org/downloads/release/python-380/>.
 
 ## Install Python on Windows
 ### Chocolatey
+
 ```powershell
 choco install python
 ```
+
 ### Download
 To install Python, go to <https://www.python.org/> and download the latest
 version.
 
 ## Install Python on Linux
 ### Apt
+
 ```bash
 sudo apt install python3.9
 ```
 
 ## How to run
 ### With VSCode
+
 1. Open the .py file in vscode
 2. Ensure a python 3.9 interpreter is selected (Ctrl+Shift+P > Python:Select
 Interpreter > Python 3.9)
 3. Run by pressing Ctrl+F5 (if you are prompted to install any modules, accept)
+
 ### From the Terminal
+
 ```bash
 ./[file].py
 ```
@@ -171,19 +178,22 @@ Interpreter > Python 3.9)
 ## Download Project
 ### Clone
 #### Using The Command Line
+
 1. Press the Clone or download button in the top right
 2. Copy the URL (link)
 3. Open the command line and change directory to where you wish to
 clone to
 4. Type 'git clone' followed by URL in step 2
-```bash
-$ git clone https://github.com/FHPythonUtils/SimpleSecurity
-```
+
+	```bash
+	git clone https://github.com/FHPythonUtils/SimpleSecurity
+	```
 
 More information can be found at
 <https://help.github.com/en/articles/cloning-a-repository>
 
 #### Using GitHub Desktop
+
 1. Press the Clone or download button in the top right
 2. Click open in desktop
 3. Choose the path for where you want and click Clone

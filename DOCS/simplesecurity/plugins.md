@@ -35,7 +35,7 @@ Functions return finding dictionary
 
 ## bandit
 
-[[find in source code]](../../simplesecurity/plugins.py#L91)
+[[find in source code]](../../simplesecurity/plugins.py#L89)
 
 ```python
 def bandit() -> list[Finding]:
@@ -54,7 +54,7 @@ error
 
 ## dlint
 
-[[find in source code]](../../simplesecurity/plugins.py#L244)
+[[find in source code]](../../simplesecurity/plugins.py#L233)
 
 ```python
 def dlint() -> list[Finding]:
@@ -73,7 +73,7 @@ error
 
 ## dodgy
 
-[[find in source code]](../../simplesecurity/plugins.py#L212)
+[[find in source code]](../../simplesecurity/plugins.py#L201)
 
 ```python
 def dodgy() -> list[Finding]:
@@ -92,7 +92,7 @@ error
 
 ## extractEvidence
 
-[[find in source code]](../../simplesecurity/plugins.py#L63)
+[[find in source code]](../../simplesecurity/plugins.py#L65)
 
 ```python
 def extractEvidence(desiredLine: int, file: str) -> list[Line]:
@@ -111,13 +111,13 @@ Grab evidence from the source file.
 
 ## safety
 
-[[find in source code]](../../simplesecurity/plugins.py#L165)
+[[find in source code]](../../simplesecurity/plugins.py#L166)
 
 ```python
 def safety() -> list[Finding]:
 ```
 
-Generate list of findings using safety. requires poetry and safety on the system path.
+Generate list of findings using safety.
 
 #### Raises
 
@@ -130,15 +130,14 @@ error
 
 ## semgrep
 
-[[find in source code]](../../simplesecurity/plugins.py#L281)
+[[find in source code]](../../simplesecurity/plugins.py#L270)
 
 ```python
 def semgrep() -> list[Finding]:
 ```
 
-Generate list of findings using for semgrep...
-
-Requires semgrep on the system path (wsl in windows).
+Generate list of findings using for semgrep. Requires semgrep on the
+system path (wsl in windows).
 
 #### Raises
 

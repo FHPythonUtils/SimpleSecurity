@@ -88,7 +88,7 @@ Lookup an id in the id map.
 
 #### Arguments
 
-- `id` *str* - id to look up
+- `identifier` *str* - id to look up
 
 #### Returns
 

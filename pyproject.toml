@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "simplesecurity"
-version = "2021.3.1"
+version = "2021.3.2"
 description = "Combine multiple popular python security tools and generate reports or output into different formats"
 authors = ["FredHappyface"]
 classifiers = [
@@ -32,47 +32,49 @@ simplesecurity = 'simplesecurity:cli'
 
 [tool.poetry.dependencies]
 python = "^3.7"
-poetry = {version = "<3,>=1.1.2", optional = true}
-bandit = {version = "<3,>=1.6.2", optional = true}
-safety = {version = "<3,>=1.9.0", optional = true}
-dodgy = {version = "<2,>=0.2.1", optional = true}
-dlint = {version = "<2,>=0.10.3", optional = true}
-semgrep = {version = "<2,>=0.27.0", optional = true}
+poetry = { version = "<2,>=1.1.10", optional = true }
+bandit = { version = "<2,>=1.7.0", optional = true }
+safety = { version = "<2,>=1.10.3", optional = true }
+dodgy = { version = "<2,>=0.2.1", optional = true }
+dlint = { version = "<2,>=0.11.0", optional = true }
+semgrep = { version = "<2,>=0.67.0", optional = true }
 
 [tool.poetry.extras]
-full = ["bandit", "dlint", "dodgy", "poetry", "safety", "pygraudit", "semgrep"]
+full = ["poetry", "bandit", "safety", "dodgy", "dlint", "semgrep"]
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-# Pylint
 [tool.pylint.basic]
-argument-naming-style ="camelCase"
-attr-naming-style ="camelCase"
-function-naming-style ="camelCase"
-method-naming-style ="camelCase"
-variable-naming-style ="camelCase"
+argument-naming-style = "camelCase"
+attr-naming-style = "camelCase"
+function-naming-style = "camelCase"
+method-naming-style = "camelCase"
+variable-naming-style = "camelCase"
 
 [tool.pylint.format]
-indent-string ="\t"
+indent-string = "\t"
 
 [tool.pylint.master]
-ignore-patterns ="test_.*?py"
+ignore-patterns = "test_.*?py"
 
 [tool.pylint.messages_control]
-enable = [
-	'F',  # Fatal
-	'E',  # Error
-	'W',  # Warning
-	'R',  # Refactor
-	'C',  # Convention
-]
-disable=[
+enable = ['F', 'E', 'W', 'R', 'C']
+disable = [
 	"pointless-string-statement",
 	"superfluous-parens",
 	"bad-continuation",
-	"wrong-import-position",
-	"unsubscriptable-object",
 	"python3",
 ]
+
+[tool.black]
+line-length = 100
+target-version = "py37"
+
+[tool.isort]
+profile = "black"
+
+[tool.pydocstyle]
+convention = "google"
+ignore = "D205,D415"
