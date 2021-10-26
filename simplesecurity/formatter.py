@@ -28,7 +28,6 @@ from __future__ import annotations
 from csv import QUOTE_ALL, writer
 from io import StringIO
 from json import dumps
-from typing import Optional
 
 from simplesecurity.types import Finding, Line
 
@@ -49,7 +48,7 @@ def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
 	return "\\n".join(evidenceText)
 
 
-def markdown(findings: list[Finding], heading: Optional[str] = None, colourMode: int = 0) -> str:
+def markdown(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
 	"""Format to Markdown.
 
 	Args:
@@ -95,7 +94,7 @@ def markdown(findings: list[Finding], heading: Optional[str] = None, colourMode:
 	return "\n".join(strBuf) + "\n"
 
 
-def json(findings: list[Finding], heading: Optional[str] = None, colourMode: int = 0) -> str:
+def json(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
 	"""Format to Json.
 
 	Args:
@@ -118,7 +117,7 @@ def json(findings: list[Finding], heading: Optional[str] = None, colourMode: int
 	return dumps(out, indent="\t")
 
 
-def csv(findings: list[Finding], heading: Optional[str] = None, colourMode: int = 0) -> str:
+def csv(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
 	"""Format to CSV.
 
 	Args:
@@ -160,7 +159,7 @@ def csv(findings: list[Finding], heading: Optional[str] = None, colourMode: int 
 	return output.getvalue()
 
 
-def ansi(findings: list[Finding], heading: Optional[str] = None, colourMode: int = 0) -> str:
+def ansi(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
 	"""Format to ansi.
 
 	Args:
@@ -251,7 +250,7 @@ def ansi(findings: list[Finding], heading: Optional[str] = None, colourMode: int
 	return "\n".join(strBuf) + f"{FMT['CLS']}"
 
 
-def sarif(findings: list[Finding], heading: Optional[str] = None, colourMode: int = 0) -> str:
+def sarif(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
 	"""Format to sarif https://sarifweb.azurewebsites.net/.
 
 	Args:

@@ -72,7 +72,7 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 	Returns:
 		list[Line]: list of lines
 	"""
-	with open(file, "r", encoding="utf-8", errors="ignore") as fileContents:
+	with open(file, encoding="utf-8", errors="ignore") as fileContents:
 		start = max(desiredLine - 3, 0)
 		for line in range(start):
 			next(fileContents)
@@ -281,11 +281,10 @@ def semgrep() -> list[Finding]:
 	findings = []
 	if _doSysExec("semgrep --help")[0] != 0:
 		raise RuntimeError("semgrep is not on the system path")
-	directory = THISDIR.replace("\\", "/").replace("C:", "/mnt/c")
 	results = loads(
-		_doSysExec("semgrep -f " + directory + "/semgrep_sec.yaml -q --json --no-rewrite-rule-ids")[
+		_doSysExec("semgrep -f " + THISDIR + "/semgrep_sec.yaml -q --json --no-rewrite-rule-ids")[
 			1
-		]
+		].strip()
 	)["results"]
 	levelMap = {"INFO": Level.LOW, "WARNING": Level.MED, "ERROR": Level.HIGH}
 	for result in results:

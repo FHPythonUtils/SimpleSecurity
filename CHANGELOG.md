@@ -2,6 +2,13 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2021.3.3 - 2021/10/26
+
+- Use pre-commit to enforce reasonable standards + consistency
+- Update readme with improved docs on installing and running python (fairly generic)
+- Remove classifiers for license + python versions and rely on poetry to generate these
+- Update tooling config (pyproject.toml)
+
 ## 2021.3.2 - 2021/10/02
 
 - bugfixes and code improvements
@@ -10,7 +17,7 @@ patch-level version changes can be found in [commit messages](../../commits/mast
 
 - Remove `pygraudit` due to lack of popularity and tendency to report false positives
 - Remove `safetyFast` due to tendency to report system-wide warnings (waiting a
-  few seconds for more reliable output is worth the trade off)
+	few seconds for more reliable output is worth the trade off)
 - Cleanup
 
 ## 2021.2.1 - 2021/03/11
@@ -21,7 +28,7 @@ patch-level version changes can be found in [commit messages](../../commits/mast
 ## 2021.2 - 2021/03/01
 
 - Added `--zero/-0` flag to return non-zero exit code if any security
-  vulnerabilities are found
+	vulnerabilities are found
 
 ## 2021.1.1 - 2021/02/27
 
@@ -31,7 +38,7 @@ patch-level version changes can be found in [commit messages](../../commits/mast
 
 - Fix `_doSafetyProcessing` findings/evidence
 - Update semgrep rules 2021/01/19 e74345b
-  https://github.com/returntocorp/semgrep-rules/tree/e74345bda4b1e080a7c72d383d06f1d110dedbce
+	https://github.com/returntocorp/semgrep-rules/tree/e74345bda4b1e080a7c72d383d06f1d110dedbce
 
 ## 2021 - 2021/01/04
 
@@ -48,17 +55,17 @@ patch-level version changes can be found in [commit messages](../../commits/mast
 ## 2020.4 - 2020/10/16
 
 - Add PyGraudit https://github.com/FHPythonUtils/PyGraudit
-  - Pretty fast
-  - Not particularly accurate - lots of false negatives
+	- Pretty fast
+	- Not particularly accurate - lots of false negatives
 - semgrep https://github.com/returntocorp/semgrep
-  - Pretty slow (looking at 30s to run 110 tests)
-  - Pretty good (probably on par with bandit)
+	- Pretty slow (looking at 30s to run 110 tests)
+	- Pretty good (probably on par with bandit)
 - Added `--fast/--skip` to skip past slow plugins when running all plugins
-  - This will skip `semgrep` (saving 30s of 35s in tests)
-  - This will run a less reliable instance of `dodgy` (saving 3s of 5s in tests)
-  - ...so runtime is taken down from around 35s to 2s
+	- This will skip `semgrep` (saving 30s of 35s in tests)
+	- This will run a less reliable instance of `dodgy` (saving 3s of 5s in tests)
+	- ...so runtime is taken down from around 35s to 2s
 - Using semgrep rules 2020/10/16 52d7424
-  https://github.com/returntocorp/semgrep-rules/commit/52d74240dd3ece8d54a626aae89cb13af4b4d224
+	https://github.com/returntocorp/semgrep-rules/commit/52d74240dd3ece8d54a626aae89cb13af4b4d224
 
 ## 2020.3.1 - 2020/10/15
 
@@ -67,25 +74,25 @@ patch-level version changes can be found in [commit messages](../../commits/mast
 ## 2020.3 - 2020/10/14
 
 - Deduplicator has moved to filter - Use
-  `from simplesecurity.filter import deduplicate` to use the deduplicator
+	`from simplesecurity.filter import deduplicate` to use the deduplicator
 - Added `filterSeverityAndConfidence` to `simplesecurity.filter`
-  - Filter level/ severity and confidence from the command line with -l INT
-    and -s INT
+	- Filter level/ severity and confidence from the command line with -l INT
+		and -s INT
 - Added colour modes: 0 for no colour, 1 for colour, 2 for high contrast
-  - Use -Z from the command line for high contrast and -z for no colour
+	- Use -Z from the command line for high contrast and -z for no colour
 - Minor tweaks
 
 ## 2020.2 - 2020/10/13
 
 - New deduplication engine - So no more duplicates when running from the command
-  line! Use `from simplesecurity.deduplicate import deduplicate` to use the
-  deduplicator downstream.
+	line! Use `from simplesecurity.deduplicate import deduplicate` to use the
+	deduplicator downstream.
 - `id`s are now included in findings and are included in json and csv output
 
 ## 2020.1.4 - 2020/10/13
 
 - Utf8 is not always the answer. But it is most of the time so use
-  `errors="ignore"` for chars that we can't decode
+	`errors="ignore"` for chars that we can't decode
 
 ## 2020.1.2/3 - 2020/10/13
 
@@ -102,15 +109,15 @@ patch-level version changes can be found in [commit messages](../../commits/mast
 - extract evidence from the source file using the desired line number
 - use utf-8 encoding in files
 - update to ansi formatting
-  - reduce redundancy and therefore save scrolling
-  - use box drawing chars to make nice pretty tables
-  - update code snippet formatting
+	- reduce redundancy and therefore save scrolling
+	- use box drawing chars to make nice pretty tables
+	- update code snippet formatting
 - update to csv formatting
-  - integrate with new evidence type
+	- integrate with new evidence type
 - update to markdown formatting
-  - integrate with new evidence type
+	- integrate with new evidence type
 - update to md formatting
-  - integrate with new evidence type
+	- integrate with new evidence type
 
 ## 2020.0.5 - 2020/10/10
 

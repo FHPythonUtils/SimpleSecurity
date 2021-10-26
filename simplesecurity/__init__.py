@@ -125,7 +125,11 @@ def cli():
 	)
 	args = parser.parse_args()
 	# File
-	filename = stdout if args.file is None else open(args.file, "w", encoding="utf-8")
+	filename = (
+		stdout
+		if args.file is None
+		else open(args.file, "w", encoding="utf-8")  # pylint: disable=consider-using-with
+	)
 	# Colour Mode
 	colourMode = 1
 	if args.no_colour:

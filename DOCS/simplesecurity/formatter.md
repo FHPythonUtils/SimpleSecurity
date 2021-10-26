@@ -36,12 +36,12 @@ Formats
 
 ## ansi
 
-[[find in source code]](../../simplesecurity/formatter.py#L163)
+[[find in source code]](../../simplesecurity/formatter.py#L162)
 
 ```python
 def ansi(
     findings: list[Finding],
-    heading: Optional[str] = None,
+    heading: str | None = None,
     colourMode: int = 0,
 ) -> str:
 ```
@@ -61,12 +61,12 @@ Format to ansi.
 
 ## csv
 
-[[find in source code]](../../simplesecurity/formatter.py#L121)
+[[find in source code]](../../simplesecurity/formatter.py#L120)
 
 ```python
 def csv(
     findings: list[Finding],
-    heading: Optional[str] = None,
+    heading: str | None = None,
     colourMode: int = 0,
 ) -> str:
 ```
@@ -86,7 +86,7 @@ Format to CSV.
 
 ## formatEvidence
 
-[[find in source code]](../../simplesecurity/formatter.py#L36)
+[[find in source code]](../../simplesecurity/formatter.py#L35)
 
 ```python
 def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
@@ -105,12 +105,12 @@ Format evidence to plaintext.
 
 ## json
 
-[[find in source code]](../../simplesecurity/formatter.py#L98)
+[[find in source code]](../../simplesecurity/formatter.py#L97)
 
 ```python
 def json(
     findings: list[Finding],
-    heading: Optional[str] = None,
+    heading: str | None = None,
     colourMode: int = 0,
 ) -> str:
 ```
@@ -130,12 +130,12 @@ Format to Json.
 
 ## markdown
 
-[[find in source code]](../../simplesecurity/formatter.py#L52)
+[[find in source code]](../../simplesecurity/formatter.py#L51)
 
 ```python
 def markdown(
     findings: list[Finding],
-    heading: Optional[str] = None,
+    heading: str | None = None,
     colourMode: int = 0,
 ) -> str:
 ```
@@ -155,12 +155,12 @@ Format to Markdown.
 
 ## sarif
 
-[[find in source code]](../../simplesecurity/formatter.py#L254)
+[[find in source code]](../../simplesecurity/formatter.py#L253)
 
 ```python
 def sarif(
     findings: list[Finding],
-    heading: Optional[str] = None,
+    heading: str | None = None,
     colourMode: int = 0,
 ) -> str:
 ```
