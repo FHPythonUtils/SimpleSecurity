@@ -17,7 +17,7 @@ HIGH = 3
 
 ## Level
 
-[[find in source code]](../../simplesecurity/level.py#L11)
+[[find in source code]](../../simplesecurity/level.py#L13)
 
 ```python
 class Level(IntEnum):
@@ -32,7 +32,7 @@ HIGH = 3
 
 ### Level().\_\_repr\_\_
 
-[[find in source code]](../../simplesecurity/level.py#L25)
+[[find in source code]](../../simplesecurity/level.py#L27)
 
 ```python
 def __repr__() -> str:
@@ -46,7 +46,7 @@ __repr__ method.
 
 ### Level().\_\_str\_\_
 
-[[find in source code]](../../simplesecurity/level.py#L33)
+[[find in source code]](../../simplesecurity/level.py#L35)
 
 ```python
 def __str__() -> str:
@@ -60,7 +60,7 @@ __str__ method (tostring).
 
 ### Level().toSarif
 
-[[find in source code]](../../simplesecurity/level.py#L47)
+[[find in source code]](../../simplesecurity/level.py#L49)
 
 ```python
 def toSarif() -> str:

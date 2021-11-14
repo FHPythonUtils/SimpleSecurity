@@ -5,6 +5,8 @@ LOW = 1
 MED = 2
 HIGH = 3
 """
+from __future__ import annotations
+
 from enum import IntEnum
 
 
