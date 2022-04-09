@@ -3,6 +3,13 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2022 - 2022/04/09
+
+- Move docs
+- Exclude env/venv etc per https://github.com/FHPythonUtils/SimpleSecurity/issues/1
+- `semgrep` no longer works on windows so output message
+- Update pre-commit
+
 ## 2021.3.3 - 2021/10/26
 
 - Use pre-commit to enforce reasonable standards + consistency

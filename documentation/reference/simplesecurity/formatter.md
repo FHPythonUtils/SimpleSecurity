@@ -1,10 +1,10 @@
-# formatter
+# Formatter
 
-> Auto-generated documentation for [simplesecurity.formatter](../../simplesecurity/formatter.py) module.
+> Auto-generated documentation for [simplesecurity.formatter](../../../simplesecurity/formatter.py) module.
 
 Take our findings dictionary and give things a pretty format.
 
-- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../README.md#simplesecurity-modules) / [simplesecurity](index.md#simplesecurity) / formatter
+- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../MODULES.md#simplesecurity-modules) / [Simplesecurity](index.md#simplesecurity) / Formatter
     - [ansi](#ansi)
     - [csv](#csv)
     - [formatEvidence](#formatevidence)
@@ -36,7 +36,7 @@ Formats
 
 ## ansi
 
-[[find in source code]](../../simplesecurity/formatter.py#L162)
+[[find in source code]](../../../simplesecurity/formatter.py#L162)
 
 ```python
 def ansi(
@@ -59,9 +59,13 @@ Format to ansi.
 
 - `str` - String to write to a file of stdout
 
+#### See also
+
+- [Finding](types.md#finding)
+
 ## csv
 
-[[find in source code]](../../simplesecurity/formatter.py#L120)
+[[find in source code]](../../../simplesecurity/formatter.py#L120)
 
 ```python
 def csv(
@@ -84,9 +88,13 @@ Format to CSV.
 
 - `str` - String to write to a file of stdout
 
+#### See also
+
+- [Finding](types.md#finding)
+
 ## formatEvidence
 
-[[find in source code]](../../simplesecurity/formatter.py#L35)
+[[find in source code]](../../../simplesecurity/formatter.py#L35)
 
 ```python
 def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
@@ -103,9 +111,13 @@ Format evidence to plaintext.
 
 - `str` - string representation of this
 
+#### See also
+
+- [Line](types.md#line)
+
 ## json
 
-[[find in source code]](../../simplesecurity/formatter.py#L97)
+[[find in source code]](../../../simplesecurity/formatter.py#L97)
 
 ```python
 def json(
@@ -128,9 +140,13 @@ Format to Json.
 
 - `str` - String to write to a file of stdout
 
+#### See also
+
+- [Finding](types.md#finding)
+
 ## markdown
 
-[[find in source code]](../../simplesecurity/formatter.py#L51)
+[[find in source code]](../../../simplesecurity/formatter.py#L51)
 
 ```python
 def markdown(
@@ -153,9 +169,13 @@ Format to Markdown.
 
 - `str` - String to write to a file of stdout
 
+#### See also
+
+- [Finding](types.md#finding)
+
 ## sarif
 
-[[find in source code]](../../simplesecurity/formatter.py#L253)
+[[find in source code]](../../../simplesecurity/formatter.py#L253)
 
 ```python
 def sarif(
@@ -177,3 +197,7 @@ Format to sarif https://sarifweb.azurewebsites.net/.
 #### Returns
 
 - `str` - String to write to a file of stdout
+
+#### See also
+
+- [Finding](types.md#finding)

@@ -1,10 +1,10 @@
-# plugins
+# Plugins
 
-> Auto-generated documentation for [simplesecurity.plugins](../../simplesecurity/plugins.py) module.
+> Auto-generated documentation for [simplesecurity.plugins](../../../simplesecurity/plugins.py) module.
 
 Add plugins here.
 
-- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../README.md#simplesecurity-modules) / [simplesecurity](index.md#simplesecurity) / plugins
+- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../MODULES.md#simplesecurity-modules) / [Simplesecurity](index.md#simplesecurity) / Plugins
     - [bandit](#bandit)
     - [dlint](#dlint)
     - [dodgy](#dodgy)
@@ -35,7 +35,7 @@ Functions return finding dictionary
 
 ## bandit
 
-[[find in source code]](../../simplesecurity/plugins.py#L89)
+[[find in source code]](../../../simplesecurity/plugins.py#L100)
 
 ```python
 def bandit() -> list[Finding]:
@@ -52,9 +52,13 @@ error
 
 - `list[Finding]` - our findings dictionary
 
+#### See also
+
+- [Finding](types.md#finding)
+
 ## dlint
 
-[[find in source code]](../../simplesecurity/plugins.py#L233)
+[[find in source code]](../../../simplesecurity/plugins.py#L244)
 
 ```python
 def dlint() -> list[Finding]:
@@ -71,9 +75,13 @@ error
 
 - `list[Finding]` - our findings dictionary
 
+#### See also
+
+- [Finding](types.md#finding)
+
 ## dodgy
 
-[[find in source code]](../../simplesecurity/plugins.py#L201)
+[[find in source code]](../../../simplesecurity/plugins.py#L212)
 
 ```python
 def dodgy() -> list[Finding]:
@@ -90,9 +98,13 @@ error
 
 - `list[Finding]` - our findings dictionary
 
+#### See also
+
+- [Finding](types.md#finding)
+
 ## extractEvidence
 
-[[find in source code]](../../simplesecurity/plugins.py#L65)
+[[find in source code]](../../../simplesecurity/plugins.py#L76)
 
 ```python
 def extractEvidence(desiredLine: int, file: str) -> list[Line]:
@@ -109,9 +121,13 @@ Grab evidence from the source file.
 
 - `list[Line]` - list of lines
 
+#### See also
+
+- [Line](types.md#line)
+
 ## safety
 
-[[find in source code]](../../simplesecurity/plugins.py#L166)
+[[find in source code]](../../../simplesecurity/plugins.py#L177)
 
 ```python
 def safety() -> list[Finding]:
@@ -128,9 +144,13 @@ error
 
 - `list[Finding]` - our findings dictionary
 
+#### See also
+
+- [Finding](types.md#finding)
+
 ## semgrep
 
-[[find in source code]](../../simplesecurity/plugins.py#L270)
+[[find in source code]](../../../simplesecurity/plugins.py#L282)
 
 ```python
 def semgrep() -> list[Finding]:
@@ -147,3 +167,7 @@ error
 #### Returns
 
 - `list[Finding]` - our findings dictionary
+
+#### See also
+
+- [Finding](types.md#finding)

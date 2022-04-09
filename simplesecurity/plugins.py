@@ -23,8 +23,8 @@ Functions return finding dictionary
 """
 from __future__ import annotations
 
+import platform
 import subprocess
-from io import TextIOWrapper
 from json import loads
 from os import remove
 from pathlib import Path
@@ -34,6 +34,17 @@ from simplesecurity.level import Level
 from simplesecurity.types import Finding, Line
 
 THISDIR = str(Path(__file__).resolve().parent)
+
+EXCLUDED = [
+	"./.env",
+	"./tests",
+	"./.venv",
+	"./env/",
+	"./venv/",
+	"./ENV/",
+	"./env.bak/",
+	"./venv.bak/",
+]
 
 
 def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
@@ -105,7 +116,7 @@ def bandit() -> list[Finding]:
 		"HIGH": Level.HIGH,
 		"UNDEFINED": Level.UNKNOWN,
 	}
-	results = loads(_doSysExec("bandit -lirq -x ./**/test_*.py,./**/test.py -f json .", False)[1])[
+	results = loads(_doSysExec(f"bandit -lirq -x {','.join(EXCLUDED)} -f json .", False)[1])[
 		"results"
 	]
 	for result in results:
@@ -211,7 +222,7 @@ def dodgy() -> list[Finding]:
 	if _doSysExec("dodgy -h")[0] != 0:
 		raise RuntimeError("dodgy is not on the system path")
 	findings = []
-	results = loads(_doSysExec("dodgy")[1])["warnings"]
+	results = loads(_doSysExec(f"dodgy -i {' '.join(EXCLUDED)}")[1])["warnings"]
 	for result in results:
 		file = "./" + result["path"].replace("\\", "/")
 		findings.append(
@@ -244,7 +255,8 @@ def dlint() -> list[Finding]:
 		raise RuntimeError("flake8 is not on the system path")
 	findings = []
 	results = _doSysExec(
-		"flake8 --select=DUO --format='%(path)s::%(row)d" + "::%(col)d::%(code)s::%(text)s' ."
+		f"flake8 --select=DUO --exclude {','.join(EXCLUDED)} --format='%(path)s"
+		"::%(row)d::%(col)d::%(code)s::%(text)s' ."
 	)[1].splitlines(False)
 	for line in results:
 		if line[0] == "'":
@@ -279,12 +291,16 @@ def semgrep() -> list[Finding]:
 		list[Finding]: our findings dictionary
 	"""
 	findings = []
+	if platform.system() == "Windows":
+		raise RuntimeError("semgrep is not supported on windows")
 	if _doSysExec("semgrep --help")[0] != 0:
 		raise RuntimeError("semgrep is not on the system path")
+	sgExclude = ["--exclude {x}" for x in EXCLUDED]
 	results = loads(
-		_doSysExec("semgrep -f " + THISDIR + "/semgrep_sec.yaml -q --json --no-rewrite-rule-ids")[
-			1
-		].strip()
+		_doSysExec(
+			f"semgrep -f {THISDIR}/semgrep_sec.yaml {' '.join(sgExclude)} "
+			"-q --json --no-rewrite-rule-ids"
+		)[1].strip()
 	)["results"]
 	levelMap = {"INFO": Level.LOW, "WARNING": Level.MED, "ERROR": Level.HIGH}
 	for result in results:

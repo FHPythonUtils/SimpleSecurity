@@ -1,20 +1,20 @@
-# simplesecurity
+# Simplesecurity
 
-> Auto-generated documentation for [simplesecurity](../../simplesecurity/__init__.py) module.
+> Auto-generated documentation for [simplesecurity](../../../simplesecurity/__init__.py) module.
 
 Combine multiple popular python security tools and generate reports or output
 into different formats
 
-- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../README.md#simplesecurity-modules) / simplesecurity
+- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../MODULES.md#simplesecurity-modules) / Simplesecurity
     - [cli](#cli)
     - [runAllPlugins](#runallplugins)
     - Modules
-        - [\_\_main\_\_](module.md#__main__)
-        - [filter](filter.md#filter)
-        - [formatter](formatter.md#formatter)
-        - [level](level.md#level)
-        - [plugins](plugins.md#plugins)
-        - [types](types.md#types)
+        - [Module](module.md#module)
+        - [Filter](filter.md#filter)
+        - [Formatter](formatter.md#formatter)
+        - [Level](level.md#level)
+        - [Plugins](plugins.md#plugins)
+        - [Types](types.md#types)
 
 Plugins (these require the plugin executable in the system path. e.g. bandit
 requires bandit to be in the system path...)
@@ -35,7 +35,7 @@ Formats
 
 ## cli
 
-[[find in source code]](../../simplesecurity/__init__.py#L67)
+[[find in source code]](../../../simplesecurity/__init__.py#L67)
 
 ```python
 def cli():
@@ -45,11 +45,11 @@ Cli entry point.
 
 ## runAllPlugins
 
-[[find in source code]](../../simplesecurity/__init__.py#L38)
+[[find in source code]](../../../simplesecurity/__init__.py#L38)
 
 ```python
 def runAllPlugins(
-    pluginMap: dict[(str, Any)],
+    pluginMap: dict[str, Any],
     severity: int,
     confidence: int,
     fast: bool,
@@ -68,3 +68,7 @@ pluginMap (dict[str, Any]): the plugin map
 #### Returns
 
 - `list[Finding]` - list of findings
+
+#### See also
+
+- [Finding](types.md#finding)

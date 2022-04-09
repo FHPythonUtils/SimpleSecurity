@@ -1,10 +1,10 @@
-# filter
+# Filter
 
-> Auto-generated documentation for [simplesecurity.filter](../../simplesecurity/filter.py) module.
+> Auto-generated documentation for [simplesecurity.filter](../../../simplesecurity/filter.py) module.
 
 Some of our analysis tools overlap one-another so lets remove duplicates.
 
-- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../README.md#simplesecurity-modules) / [simplesecurity](index.md#simplesecurity) / filter
+- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../MODULES.md#simplesecurity-modules) / [Simplesecurity](index.md#simplesecurity) / Filter
     - [deduplicate](#deduplicate)
     - [filterSeverityAndConfidence](#filterseverityandconfidence)
     - [findingsEqual](#findingsequal)
@@ -12,7 +12,7 @@ Some of our analysis tools overlap one-another so lets remove duplicates.
 
 ## deduplicate
 
-[[find in source code]](../../simplesecurity/filter.py#L58)
+[[find in source code]](../../../simplesecurity/filter.py#L58)
 
 ```python
 def deduplicate(findings: list[Finding]) -> list[Finding]:
@@ -28,9 +28,13 @@ Deduplicate the list of findings.
 
 - `list[Finding]` - new deduplicated list
 
+#### See also
+
+- [Finding](types.md#finding)
+
 ## filterSeverityAndConfidence
 
-[[find in source code]](../../simplesecurity/filter.py#L78)
+[[find in source code]](../../../simplesecurity/filter.py#L78)
 
 ```python
 def filterSeverityAndConfidence(
@@ -52,9 +56,13 @@ Filter the list of findings.
 
 - `list[Finding]` - new deduplicated list
 
+#### See also
+
+- [Finding](types.md#finding)
+
 ## findingsEqual
 
-[[find in source code]](../../simplesecurity/filter.py#L36)
+[[find in source code]](../../../simplesecurity/filter.py#L36)
 
 ```python
 def findingsEqual(findingA: Finding, findingB: Finding) -> int:
@@ -78,7 +86,7 @@ Basically and __eq__ method for findings.
 
 ## lookupId
 
-[[find in source code]](../../simplesecurity/filter.py#L22)
+[[find in source code]](../../../simplesecurity/filter.py#L22)
 
 ```python
 def lookupId(identifier: str) -> list[str]:
