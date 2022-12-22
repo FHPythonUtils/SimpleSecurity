@@ -184,6 +184,12 @@ def cli():
 			"max_confidence": 3,
 			"fast": False,
 		},
+		"trivy": {
+			"func": plugins.trivy,
+			"max_severity": 3,
+			"max_confidence": 3,
+			"fast": False,
+		},
 	}
 
 	if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
