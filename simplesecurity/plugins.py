@@ -99,7 +99,7 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
     return content
 
 
-def bandit() -> list[Finding]:
+def bandit(scan_dir) -> list[Finding]:
     """Generate list of findings using bandit. requires bandit on the system path.
 
 	Raises:
@@ -177,7 +177,7 @@ def _doPureSafety():
     return loads(safe)
 
 
-def safety() -> list[Finding]:
+def safety(scan_dir: str) -> list[Finding]:
     """Generate list of findings using safety.
 
 	Raises:
@@ -212,7 +212,7 @@ def safety() -> list[Finding]:
     return _doSafetyProcessing(results)
 
 
-def dodgy() -> list[Finding]:
+def dodgy(scan_dir: str) -> list[Finding]:
     """Generate list of findings using dodgy. Requires dodgy on the system path.
 
 	Raises:
@@ -244,7 +244,7 @@ def dodgy() -> list[Finding]:
     return findings
 
 
-def dlint() -> list[Finding]:
+def dlint(scan_dir: str) -> list[Finding]:
     """Generate list of findings using dlint. Requires flake8 and dlint on the system path.
 
 	Raises:
@@ -282,7 +282,7 @@ def dlint() -> list[Finding]:
     return findings
 
 
-def semgrep() -> list[Finding]:
+def semgrep(scan_dir: str) -> list[Finding]:
     """Generate list of findings using for semgrep. Requires semgrep on the
 	system path (wsl in windows).
 
@@ -329,7 +329,7 @@ def semgrep() -> list[Finding]:
     return findings
 
 
-def trivy() -> list[Finding]:
+def trivy(scan_dir: str) -> list[Finding]:
     """Generate list of findings using for semgrep. Requires semgrep on the
 	system path (wsl in windows).
 

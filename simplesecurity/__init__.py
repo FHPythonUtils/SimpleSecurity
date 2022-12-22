@@ -32,8 +32,8 @@ from simplesecurity.types import Finding
 
 stdout.reconfigure(encoding="utf-8")  # type:ignore
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
-PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, all, default=all"
-
+PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, trivy or all, default=all"
+SCAN_PATH = "Define Path that should be scannend, default path is root of CLI tool"
 
 def runAllPlugins(
 	pluginMap: dict[str, Any], severity: int, confidence: int, fast: bool
@@ -58,7 +58,7 @@ def runAllPlugins(
 			and (not fast or pluginMap[plugin]["fast"])
 		):
 			try:
-				findings.extend(pluginMap[plugin]["func"]())
+				findings.extend(pluginMap[plugin]["func"](scan_dir = "."))
 			except RuntimeError as error:
 				print(error)
 	return findings
@@ -68,6 +68,11 @@ def cli():
 	"""Cli entry point."""
 	parser = argparse.ArgumentParser(
 		description=__doc__, formatter_class=argparse.RawTextHelpFormatter
+	)
+	parser.add_argument(
+		"--scan_path",
+		"-s",
+		help=SCAN_PATH,
 	)
 	parser.add_argument(
 		"--format",
@@ -195,12 +200,12 @@ def cli():
 	if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
 		findings = []
 		if args.plugin is None or args.plugin == "all":
-			findings = runAllPlugins(pluginMap, args.level, args.confidence, args.fast)
+			findings = runAllPlugins(pluginMap, args.level, args.confidence, args.fast, args.scan_path)
 		elif (
 			pluginMap[args.plugin]["max_severity"] >= args.level
 			and pluginMap[args.plugin]["max_confidence"] >= args.confidence
 		):
-			findings = pluginMap[args.plugin]["func"]()
+			findings = pluginMap[args.plugin]["func"](scan_dir = ".")
 		print(
 			formatt(
 				secfilter.filterSeverityAndConfidence(
