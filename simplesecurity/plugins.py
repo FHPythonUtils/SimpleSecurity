@@ -31,6 +31,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+
 from simplesecurity.level import Level
 from simplesecurity.types import Finding, Line
 
@@ -52,23 +53,23 @@ EXCLUDED = [
 def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
     """Execute a command and check for errors.
 
-	Args:
-			command (str): commands as a string
-			errorAsOut (bool, optional): redirect errors to stdout
+    Args:
+                    command (str): commands as a string
+                    errorAsOut (bool, optional): redirect errors to stdout
 
-	Raises:
-			RuntimeWarning: throw a warning should there be a non exit code
+    Raises:
+                    RuntimeWarning: throw a warning should there be a non exit code
 
-	Returns:
-			tuple[int, str]: tuple of return code (int) and stdout (str)
-	"""
+    Returns:
+                    tuple[int, str]: tuple of return code (int) and stdout (str)
+    """
     with subprocess.Popen(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT if errorAsOut else subprocess.PIPE,
-            encoding="utf-8",
-            errors="ignore",
+        command,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT if errorAsOut else subprocess.PIPE,
+        encoding="utf-8",
+        errors="ignore",
     ) as process:
         out = process.communicate()[0]
         exitCode = process.returncode
@@ -78,13 +79,13 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
 def extractEvidence(desiredLine: int, file: str) -> list[Line]:
     """Grab evidence from the source file.
 
-	Args:
-		desiredLine (int): line to highlight
-		file (str): file to extract evidence from
+    Args:
+            desiredLine (int): line to highlight
+            file (str): file to extract evidence from
 
-	Returns:
-		list[Line]: list of lines
-	"""
+    Returns:
+            list[Line]: list of lines
+    """
     with open(file, encoding="utf-8", errors="ignore") as fileContents:
         start = max(desiredLine - 3, 0)
         for line in range(start):
@@ -102,13 +103,13 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 def bandit(scan_dir) -> list[Finding]:
     """Generate list of findings using bandit. requires bandit on the system path.
 
-	Raises:
-		RuntimeError: if bandit is not on the system path, then throw this
-		error
+    Raises:
+            RuntimeError: if bandit is not on the system path, then throw this
+            error
 
-	Returns:
-		list[Finding]: our findings dictionary
-	"""
+    Returns:
+            list[Finding]: our findings dictionary
+    """
     if _doSysExec("bandit -h")[0] != 0:
         raise RuntimeError("bandit is not on the system path")
     findings = []
@@ -180,13 +181,13 @@ def _doPureSafety():
 def safety(scan_dir: str) -> list[Finding]:
     """Generate list of findings using safety.
 
-	Raises:
-		RuntimeError: if safety is not on the system path, then throw this
-		error
+    Raises:
+            RuntimeError: if safety is not on the system path, then throw this
+            error
 
-	Returns:
-		list[Finding]: our findings dictionary
-	"""
+    Returns:
+            list[Finding]: our findings dictionary
+    """
     if _doSysExec("safety --help")[0] != 0:
         raise RuntimeError("safety is not on the system path")
     pShow = _doSysExec("poetry show")
@@ -215,13 +216,13 @@ def safety(scan_dir: str) -> list[Finding]:
 def dodgy(scan_dir: str) -> list[Finding]:
     """Generate list of findings using dodgy. Requires dodgy on the system path.
 
-	Raises:
-		RuntimeError: if dodgy is not on the system path, then throw this
-		error
+    Raises:
+            RuntimeError: if dodgy is not on the system path, then throw this
+            error
 
-	Returns:
-		list[Finding]: our findings dictionary
-	"""
+    Returns:
+            list[Finding]: our findings dictionary
+    """
     if _doSysExec("dodgy -h")[0] != 0:
         raise RuntimeError("dodgy is not on the system path")
     findings = []
@@ -247,13 +248,13 @@ def dodgy(scan_dir: str) -> list[Finding]:
 def dlint(scan_dir: str) -> list[Finding]:
     """Generate list of findings using dlint. Requires flake8 and dlint on the system path.
 
-	Raises:
-		RuntimeError: if flake8 is not on the system path, then throw this
-		error
+    Raises:
+            RuntimeError: if flake8 is not on the system path, then throw this
+            error
 
-	Returns:
-		list[Finding]: our findings dictionary
-	"""
+    Returns:
+            list[Finding]: our findings dictionary
+    """
     if _doSysExec("flake8 -h")[0] != 0:
         raise RuntimeError("flake8 is not on the system path")
     findings = []
@@ -284,15 +285,15 @@ def dlint(scan_dir: str) -> list[Finding]:
 
 def semgrep(scan_dir: str) -> list[Finding]:
     """Generate list of findings using for semgrep. Requires semgrep on the
-	system path (wsl in windows).
+    system path (wsl in windows).
 
-	Raises:
-		RuntimeError: if semgrep is not on the system path, then throw this
-		error
+    Raises:
+            RuntimeError: if semgrep is not on the system path, then throw this
+            error
 
-	Returns:
-		list[Finding]: our findings dictionary
-	"""
+    Returns:
+            list[Finding]: our findings dictionary
+    """
     findings = []
     if platform.system() == "Windows":
         raise RuntimeError("semgrep is not supported on windows")
@@ -331,39 +332,41 @@ def semgrep(scan_dir: str) -> list[Finding]:
 
 def trivy(scan_dir: str) -> list[Finding]:
     """Generate list of findings using for semgrep. Requires semgrep on the
-	system path (wsl in windows).
+    system path (wsl in windows).
 
-	Raises:
-		RuntimeError: if semgrep is not on the system path, then throw this
-		error
+    Raises:
+            RuntimeError: if semgrep is not on the system path, then throw this
+            error
 
-	Returns:
-		list[Finding]: our findings dictionary
-	"""
+    Returns:
+            list[Finding]: our findings dictionary
+    """
     findings = []
     if platform.system() == "Windows":
         raise RuntimeError("trivy is not supported on windows")
     if _doSysExec("trivy --help")[0] != 0:
         raise RuntimeError("trivy is not on the system path")
     # sgExclude = ["--exclude {x}" for x in EXCLUDED]
-    payload = loads(
-        _doSysExec(
-            f"trivy fs . "
-            " --format json -q"
-        )[1].strip()
-    )
-    if 'Results' in payload.keys():
+    payload = loads(_doSysExec(f"trivy fs . " " --format json -q")[1].strip())
+    if "Results" in payload.keys():
         results = payload["Results"]
-        levelMap = {"LOW": Level.LOW, "MEDIUM": Level.MED, "HIGH": Level.HIGH, "CRITICAL": Level.HIGH}
+        levelMap = {
+            "LOW": Level.LOW,
+            "MEDIUM": Level.MED,
+            "HIGH": Level.HIGH,
+            "CRITICAL": Level.HIGH,
+        }
         for result in results:
             file = "./" + result["Target"].replace("\\", "/")
-            for vulnerability in result['Vulnerabilities']:
+            for vulnerability in result["Vulnerabilities"]:
                 findings.append(
                     {
                         "id": vulnerability["VulnerabilityID"],
                         "title": vulnerability["VulnerabilityID"] + ": " + vulnerability["Title"],
-                        "description": vulnerability["Description"] + " " + vulnerability[
-                            "PrimaryURL"] + " - scannend by Trivy",
+                        "description": vulnerability["Description"]
+                        + " "
+                        + vulnerability["PrimaryURL"]
+                        + " - scannend by Trivy",
                         "file": file,
                         "evidence": extractEvidence(0, file),  # TODO write a file-scanner
                         "severity": levelMap[vulnerability["Severity"]],

@@ -26,6 +26,7 @@ from sys import exit as sysexit
 from sys import stdout
 from typing import Any
 
+from github import Github
 from simplesecurity import filter as secfilter
 from simplesecurity import formatter, plugins
 from simplesecurity.types import Finding
@@ -35,6 +36,21 @@ FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
 PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, trivy or all, default=all"
 SCAN_PATH = "Define Path that should be scannend, default path is root of CLI tool"
 
+
+def comment_in_pr(github_access_token, github_repository, github_pr_number, findings):
+	"""Annotate a PR with a comment."""
+	github_session = Github(github_access_token)
+	repo = github_session.get_repo(github_repository)
+	pull_request = repo.get_pull(int(github_pr_number))
+	commits = pull_request.get_commits()
+
+	for find in findings:
+		pull_request.create_comment(
+			body=f"Title: {find['title']}; \nDescription: {find['description']}",
+			commit_id=commits.reversed[0],
+			path=find['file'],
+			position=find['line'],
+		)
 def runAllPlugins(
 	pluginMap: dict[str, Any], severity: int, confidence: int, fast: bool
 ) -> list[Finding]:
@@ -200,7 +216,7 @@ def cli():
 	if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
 		findings = []
 		if args.plugin is None or args.plugin == "all":
-			findings = runAllPlugins(pluginMap, args.level, args.confidence, args.fast, args.scan_path)
+			findings = runAllPlugins(pluginMap, args.level, args.confidence, args.fast) # args.scan_path)
 		elif (
 			pluginMap[args.plugin]["max_severity"] >= args.level
 			and pluginMap[args.plugin]["max_confidence"] >= args.confidence
@@ -215,6 +231,14 @@ def cli():
 			),
 			file=filename,
 		)
+
+		if args.send_to_git:
+		# TODO, click arguments are like argparse convert
+
+		@click.argument("github_access_token")
+		@click.argument("github_repository")
+		@click.argument("github_pr_number")
+
 	else:
 		print(PLUGIN_HELP)
 		sysexit(2)
