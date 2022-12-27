@@ -395,11 +395,13 @@ def trivy(scan_dir: str) -> list[Finding]:
                     else:
                         title = ""
 
+                    # Description contains a lot of additional new lines that are replaced with single new line.
+                    simplified_description = vulnerability['Description'].replace('\n\n', '\n')
                     findings.append(
                         {
                             "id": vulnerability["VulnerabilityID"],
                             "title": f"{vulnerability['VulnerabilityID']} : {title}",
-                            "description": f"{vulnerability['Description']} {vulnerability['PrimaryURL']}",
+                            "description": f"{simplified_description} {vulnerability['PrimaryURL']}",
                             "file": file,
                             "evidence": extractEvidence(0, file),  # TODO write a file-scanner
                             "severity": levelMap[vulnerability["Severity"]],
