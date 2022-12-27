@@ -30,7 +30,7 @@ from json import loads
 import os
 from pathlib import Path
 from typing import Any
-
+import re
 
 from simplesecurity.level import Level
 from simplesecurity.types import Finding, Line
@@ -74,8 +74,18 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
         exitCode = process.returncode
     return exitCode, out
 
-
-def extractEvidence(desiredLine: int, file: str) -> list[Line]:
+def string_matches_in_file(file: str, pattern: str):
+    """Search for the given string in file and return lines containing that string,
+    along with line numbers"""
+    line_number = 0
+    list_of_results = []
+    with open(file, 'r') as read_obj:
+        for line in read_obj:
+            line_number += 1
+            if pattern in line:
+                list_of_results.append(line_number)
+    return list_of_results
+def extractEvidence(LineNrOrWord: [int, str], file: str) -> list[Line]:
     """Grab evidence from the source file.
 
     Args:
@@ -85,17 +95,24 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
     Returns:
             list[Line]: list of lines
     """
-    with open(file, encoding="utf-8", errors="ignore") as fileContents:
-        start = max(desiredLine - 3, 0)
-        for line in range(start):
-            next(fileContents)
-        content = []
-        for line in range(start + 1, desiredLine + 3):
-            try:
-                lineContent = next(fileContents).rstrip().replace("\t", "    ")
-            except StopIteration:
-                break
-            content.append({"selected": line == desiredLine, "line": line, "content": lineContent})
+    if type(LineNrOrWord) == str:
+        line_nrs = string_matches_in_file(file=file, pattern=LineNrOrWord)
+
+    elif type(LineNrOrWord) == int:
+        line_nrs = [LineNrOrWord]
+
+    for line_nr in line_nrs:
+        with open(file, encoding="utf-8", errors="ignore") as fileContents:
+            start = max(line_nr - 3, 0)
+            for line in range(start):
+                next(fileContents)
+            content = []
+            for line in range(start + 1, line_nr + 3):
+                try:
+                    lineContent = next(fileContents).rstrip().replace("\t", "    ")
+                except StopIteration:
+                    break
+                content.append({"selected": line == line_nr, "line": line, "content": lineContent})
     return content
 
 
@@ -366,6 +383,7 @@ def trivy(scan_dir: str) -> list[Finding]:
 
     if "Results" in payload.keys():
         results = payload["Results"]
+        print(f"results are {len(results)}")
         for result in results:
             file = scan_dir + "/" + result["Target"].replace("\\", "/")
             # Title key is not always present in JSON, e.g. with secret scanning.
@@ -376,6 +394,7 @@ def trivy(scan_dir: str) -> list[Finding]:
                         title = vulnerability["Title"]
                     else:
                         title = ""
+
                     findings.append(
                         {
                             "id": vulnerability["VulnerabilityID"],
@@ -386,13 +405,6 @@ def trivy(scan_dir: str) -> list[Finding]:
                             "severity": levelMap[vulnerability["Severity"]],
                             "confidence": Level.HIGH,
                             "line": 0,  # TODO, evaluate what to do when we do not have a line to address
-                            "_other": {
-                                # Not needed?
-                                # "col": result["start"]["col"],
-                                # "start": result["start"],
-                                # "end": result["end"],
-                                # "extra": result["extra"],
-                            },
                         }
                     )
             elif result['Class'] == "secret": # When dealing with secrets
@@ -406,19 +418,12 @@ def trivy(scan_dir: str) -> list[Finding]:
                             "evidence": extractEvidence(secret["StartLine"], file),
                             "severity": levelMap[secret["Severity"]],
                             "confidence": Level.HIGH,
-                            "line": secret["StartLine"],  # TODO, evaluate what to do when we do not have a line to address
-                            "_other": {
-                                # Not needed?
-                                # "col": result["start"]["col"],
-                                # "start": result["start"],
-                                # "end": result["end"],
-                                # "extra": result["extra"],
-                            },
+                            "line": secret["StartLine"],
                         }
                     )
             else:
-                print("Unhandled type of class")
+                print("Unhandled type of class: ")
                 print(result)
-        else: # Handling no results.
-            findings = []
+    else: # Handling no results.
+        findings = []
     return findings
