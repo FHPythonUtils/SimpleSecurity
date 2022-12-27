@@ -25,6 +25,7 @@ import argparse
 from sys import exit as sysexit
 from sys import stdout
 from typing import Any
+import os
 
 from github import Github
 from simplesecurity import filter as secfilter
@@ -182,7 +183,6 @@ def cli():
         if args.file is None
         else open(args.file, "w", encoding="utf-8")  # pylint: disable=consider-using-with
     )
-
     # Colour Mode
     colourMode = 1
     if args.no_colour:
@@ -245,7 +245,8 @@ def cli():
         },
     }
 
-
+    assert type(args.scan_path) == str, "Please define scanning path"
+    assert (os.path.exists(args.scan_path) or os.path.exists(os.path.join(os.getcwd(), args.scan_path))) == True, "Scanning path not found.."
 
     if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
         findings = []
