@@ -278,6 +278,7 @@ def cli():
             ), "Error, please provide github_repository provided"
             assert args.github_pr_number != None, "Error, please provide github_pr_number provided"
 
+            comment_in_pr(github_access_token=args.github_access_token, github_repository=args.github_repository, github_pr_number=args.github_pr_number)
     else:
         print(PLUGIN_HELP)
         sysexit(2)
