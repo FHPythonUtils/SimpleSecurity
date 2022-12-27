@@ -6,6 +6,7 @@
 - dlint
 - semgrep
 - trivy
+- black
 
 Functions return finding dictionary
 
@@ -50,17 +51,12 @@ EXCLUDED = [
 
 
 def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
-    """Execute a command and check for errors.
-
-    Args:
-                    command (str): commands as a string
-                    errorAsOut (bool, optional): redirect errors to stdout
-
-    Raises:
-                    RuntimeWarning: throw a warning should there be a non exit code
-
-    Returns:
-                    tuple[int, str]: tuple of return code (int) and stdout (str)
+    """
+    Helper function for executing commandline commands.
+    :Raises:  RuntimeWarning: throw a warning should there be a non exit code
+    :param str command: commands as a string
+    :param bool errorAsOut: optional, redirect errors to stdout
+    :return tuple[int, str]: tuple of return code (int) and stdout (str)
     """
     with subprocess.Popen(
         command,
@@ -76,8 +72,13 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
 
 
 def stringMatchesinFile(file: str, pattern: str) -> list:
-    """Search for the given string in file and return lines containing that string,
-    along with line numbers"""
+    """
+    Search for the given string in file and return lines containing that string,
+    along with line numbers
+    :param str file: string that outlines the exact line or keyword that should be scanned.
+    :param str pattern: string that provides the keyword for the search
+    :return list: returns a list of matches
+    """
     line_number = 0
     list_of_results = []
     with open(file, "r") as read_obj:
@@ -89,14 +90,11 @@ def stringMatchesinFile(file: str, pattern: str) -> list:
 
 
 def extractEvidence(LineNrOrWord: [int, str], file: str) -> dict:
-    """Grab evidence from the source file.
-
-    Args:
-            desiredLine (int): line to highlight
-            file (str): file to extract evidence from
-
-    Returns:
-            list[Line]: list of lines
+    """
+    Grab evidence from the source file.
+    :param [int, str] LineNrOrWord: This can be an integer or string that outlines the exact line or keyword that should be scanned.
+    :param str file: A string that point to the file that should be interrogated for annotation
+    :return dict: This function returns a dictionary that contains the linenrs of where the matches were found, and content, that shows the bodies of text where the matches were found in.
     """
     results = {}
     if type(LineNrOrWord) == str:
@@ -126,14 +124,13 @@ def extractEvidence(LineNrOrWord: [int, str], file: str) -> dict:
 
 
 def bandit(scan_dir: str) -> list[Finding]:
-    """Generate list of findings using bandit. requires bandit on the system path.
+    """
+    bandit plugin for generating list of findings using for bandit. Requires bandit on the system path.
 
-    Raises:
-            RuntimeError: if bandit is not on the system path, then throw this
-            error
+    Raises: RuntimeError: if bandit is not on the system path, then throw this error
 
-    Returns:
-            list[Finding]: our findings dictionary
+    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return list[Findings]: empty list as it does not return results.
     """
     if _doSysExec("bandit -h")[0] != 0:
         raise RuntimeError("bandit is not on the system path")
@@ -204,14 +201,13 @@ def _doPureSafety():
 
 
 def safety(scan_dir: str) -> list[Finding]:
-    """Generate list of findings using safety.
+    """
+    safety plugin for generating list of findings using for safety. Requires dodgy on the system path.
 
-    Raises:
-            RuntimeError: if safety is not on the system path, then throw this
-            error
+    Raises: RuntimeError: if safety is not on the system path, then throw this error
 
-    Returns:
-            list[Finding]: our findings dictionary
+    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return list[Findings]: empty list as it does not return results.
     """
     if _doSysExec("safety --help")[0] != 0:
         raise RuntimeError("safety is not on the system path")
@@ -240,14 +236,13 @@ def safety(scan_dir: str) -> list[Finding]:
 
 
 def dodgy(scan_dir: str) -> list[Finding]:
-    """Generate list of findings using dodgy. Requires dodgy on the system path.
+    """
+    dodgy plugin for generating list of findings using for dodgy. Requires dodgy on the system path.
 
-    Raises:
-            RuntimeError: if dodgy is not on the system path, then throw this
-            error
+    Raises: RuntimeError: if dodgy is not on the system path, then throw this error
 
-    Returns:
-            list[Finding]: our findings dictionary
+    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return list[Findings]: empty list as it does not return results.
     """
     if _doSysExec("dodgy -h")[0] != 0:
         raise RuntimeError("dodgy is not on the system path")
@@ -272,6 +267,15 @@ def dodgy(scan_dir: str) -> list[Finding]:
 
 
 def dlint(scan_dir: str) -> list[Finding]:
+    """
+    dlint plugin for generating list of findings using for dlint. Requires flake8 and dlint on the system path.
+
+    Raises: RuntimeError: if flake8 is not on the system path, then throw this error
+
+    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return list[Findings]: empty list as it does not return results.
+    """
+
     """Generate list of findings using dlint. Requires flake8 and dlint on the system path.
 
     Raises:
@@ -323,15 +327,13 @@ def dlint(scan_dir: str) -> list[Finding]:
 
 
 def semgrep(scan_dir: str) -> list[Finding]:
-    """Generate list of findings using for semgrep. Requires semgrep on the
-    system path (wsl in windows).
+    """
+    Semgrep plugin for generating list of findings using for semgrep. Requires Semgrep on the system path (wsl in windows).
 
-    Raises:
-            RuntimeError: if semgrep is not on the system path, then throw this
-            error
+    Raises: RuntimeError: if black cant be found
 
-    Returns:
-            list[Finding]: our findings dictionary
+    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return list[Findings]: empty list as it does not return results.
     """
     findings = []
     if platform.system() == "Windows":
@@ -370,6 +372,15 @@ def semgrep(scan_dir: str) -> list[Finding]:
 
 
 def trivy(scan_dir: str) -> list[Finding]:
+    """
+    Trivy plugin for generating list of findings using for trivy. Requires trivy on the system path (wsl in windows).
+
+    Raises: RuntimeError: if trivy cant be found
+
+    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return list[Findings]: empty list as it does not return results.
+    """
+
     """Generate list of findings using for semgrep. Requires semgrep on the
     system path (wsl in windows).
 
@@ -450,15 +461,13 @@ def trivy(scan_dir: str) -> list[Finding]:
 
 
 def black(scan_dir: str) -> list[Finding]:
-    """Generate list of findings using for semgrep. Requires semgrep on the
-    system path (wsl in windows).
+    """
+    Black plugin for reformatting the code. This plugin doesnt return scanning results but just reformat code.
 
-    Raises:
-            RuntimeError: if semgrep is not on the system path, then throw this
-            error
+    Raises: RuntimeError: if black cant be found
 
-    Returns:
-            list[Finding]: our findings dictionary
+    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return list[Findings]: empty list as it does not return results.
     """
     findings = []
     if platform.system() == "Windows":

@@ -40,8 +40,17 @@ PLUGIN_HELP = (
 SCAN_PATH = "Define Path that should be scannend, default path is root of CLI tool"
 
 
-def comment_in_pr(github_access_token, github_repository, github_pr_number, findings):
-    """Annotate a PR with a comment."""
+def comment_in_pr(
+    github_access_token: str, github_repository: str, github_pr_number: int, findings: list[Finding]
+):
+    """
+    This Function uses a list of findings that are found with code scanner and annotates a GitHub PR. It therefore
+    requires GitHub credentials to send the annotations.
+    :param str github_access_token: GitHub Access token, ideally provided within environment of execution.
+    :param str github_repository: GitHub Repo, is provided within a GitHub Action environment.
+    :param str github_pr_number: GitHub PR number, is provided within a Github Action environment.
+    :param list[Findings] findings: List of Findings objects (dicts) that detail findings of the scanners.
+    """
     github_session = Github(github_access_token)
     repo = github_session.get_repo(github_repository)
     pull_request = repo.get_pull(int(github_pr_number))
@@ -59,16 +68,14 @@ def comment_in_pr(github_access_token, github_repository, github_pr_number, find
 def runAllPlugins(
     scan_path: str, pluginMap: dict[str, Any], severity: int, confidence: int, fast: bool
 ) -> list[Finding]:
-    """Run each plugin. Optimise as much as we can.
-
-    Args:
-            pluginMap (dict[str, Any]): the plugin map
-            severity (int): the minimum severity to report on
-            confidence (int): the minimum confidence to report on
-            fast (bool): runAllPlugins with optimisations
-
-    Returns:
-            list[Finding]: list of findings
+    """
+    This helper function triggers als scans if no specific scan is requested. It triggers the scans chronologically.
+    :param str scan_path: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :param dict pluginMap: A map of all the plugins, or scans, that are iterated over when scanning everything.
+    :param int severity: Level of Severity helps you filter through the results and is denoted as a integer.
+    :param int confidence: Level of Confidence helps you filter through the results and is denoted as a integer.
+    :param bool fast: A Boolean indicator to enable fast scanning when available.
+    :return list[Finding]: A list findings that the list of scans have returned.
     """
     findings: list[Finding] = []
     for plugin in pluginMap:
