@@ -253,7 +253,8 @@ def cli():
         scanning_path = os.path.join(os.getcwd(), args.scan_path)
     else:
         assert (
-            os.path.exists(args.scan_path) or os.path.exists(os.path.join(os.getcwd(), args.scan_path))
+            os.path.exists(args.scan_path)
+            or os.path.exists(os.path.join(os.getcwd(), args.scan_path))
         ) == True, "Scanning path not found.."
 
     if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:

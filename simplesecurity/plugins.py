@@ -74,17 +74,20 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
         exitCode = process.returncode
     return exitCode, out
 
+
 def stringMatchesinFile(file: str, pattern: str) -> list:
     """Search for the given string in file and return lines containing that string,
     along with line numbers"""
     line_number = 0
     list_of_results = []
-    with open(file, 'r') as read_obj:
+    with open(file, "r") as read_obj:
         for line in read_obj:
             line_number += 1
             if pattern in line:
                 list_of_results.append(line_number)
     return list_of_results
+
+
 def extractEvidence(LineNrOrWord: [int, str], file: str) -> dict:
     """Grab evidence from the source file.
 
@@ -101,7 +104,6 @@ def extractEvidence(LineNrOrWord: [int, str], file: str) -> dict:
     elif type(LineNrOrWord) == int:
         line_nrs = [LineNrOrWord]
 
-
     for line_nr in line_nrs:
         with open(file, encoding="utf-8", errors="ignore") as fileContents:
             start = max(line_nr - 3, 0)
@@ -114,7 +116,7 @@ def extractEvidence(LineNrOrWord: [int, str], file: str) -> dict:
                 except StopIteration:
                     break
                 content.append({"selected": line == line_nr, "line": line, "content": lineContent})
-    return {'linenrs': line_nrs, 'content': content}
+    return {"linenrs": line_nrs, "content": content}
 
 
 def bandit(scan_dir: str) -> list[Finding]:
@@ -282,7 +284,13 @@ def dlint(scan_dir: str) -> list[Finding]:
         f"flake8 --select=DUO --exclude {','.join(EXCLUDED)} --format=codeclimate {scan_dir}"
     )[1].splitlines(False)
     json_results = loads(results[0])
-    levelMap = {"info": Level.LOW, "minor": Level.MED, "major": Level.HIGH, "critical": Level.HIGH, "blocker": Level.HIGH}
+    levelMap = {
+        "info": Level.LOW,
+        "minor": Level.MED,
+        "major": Level.HIGH,
+        "critical": Level.HIGH,
+        "blocker": Level.HIGH,
+    }
     for path_of_file, scan_results in json_results.items():
         for scan_result in scan_results:
             findings.append(
@@ -400,7 +408,7 @@ def trivy(scan_dir: str) -> list[Finding]:
                     else:
                         evidence = extractEvidence(0, file)
                     # Description contains a lot of additional new lines that are replaced with single new line.
-                    simplified_description = vulnerability['Description'].replace('\n\n', '\n')
+                    simplified_description = vulnerability["Description"].replace("\n\n", "\n")
                     findings.append(
                         {
                             "id": vulnerability["VulnerabilityID"],
@@ -410,10 +418,10 @@ def trivy(scan_dir: str) -> list[Finding]:
                             "evidence": evidence["content"],
                             "severity": levelMap[vulnerability["Severity"]],
                             "confidence": Level.HIGH,
-                            "line": 0,  # TODO, evaluate what to do when we do not have a line to address
+                            "line": 0,
                         }
                     )
-            elif result['Class'] == "secret": # When dealing with secrets
+            elif result["Class"] == "secret":  # When dealing with secrets
                 for secret in result["Secrets"]:
                     findings.append(
                         {
@@ -421,7 +429,7 @@ def trivy(scan_dir: str) -> list[Finding]:
                             "title": f"{secret['RuleID']} : {secret['Title']}",
                             "description": f"secrets issue",
                             "file": file,
-                            "evidence": extractEvidence(secret["StartLine"], file)['content'],
+                            "evidence": extractEvidence(secret["StartLine"], file)["content"],
                             "severity": levelMap[secret["Severity"]],
                             "confidence": Level.HIGH,
                             "line": secret["StartLine"],
@@ -430,6 +438,6 @@ def trivy(scan_dir: str) -> list[Finding]:
             else:
                 print("Unhandled type of class: ")
                 print(result)
-    else: # Handling no results.
+    else:  # Handling no results.
         findings = []
     return findings
