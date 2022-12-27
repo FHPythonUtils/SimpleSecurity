@@ -100,7 +100,7 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
     return content
 
 
-def bandit(scan_dir) -> list[Finding]:
+def bandit(scan_dir: str) -> list[Finding]:
     """Generate list of findings using bandit. requires bandit on the system path.
 
     Raises:
@@ -119,9 +119,9 @@ def bandit(scan_dir) -> list[Finding]:
         "HIGH": Level.HIGH,
         "UNDEFINED": Level.UNKNOWN,
     }
-    results = loads(_doSysExec(f"bandit -lirq -x {','.join(EXCLUDED)} -f json .", False)[1])[
-        "results"
-    ]
+    results = loads(
+        _doSysExec(f"bandit -lirq -x {','.join(EXCLUDED)} -f json {scan_dir}", False)[1]
+    )["results"]
     for result in results:
         file = result["filename"].replace("\\", "/")
         findings.append(
@@ -190,6 +190,7 @@ def safety(scan_dir: str) -> list[Finding]:
     """
     if _doSysExec("safety --help")[0] != 0:
         raise RuntimeError("safety is not on the system path")
+    # TODO Do we need to run poetry lock before commiting to poetry show? when using just venv it doesnt produce the poetry.lock file, which is required for scanning with poetry show.
     pShow = _doSysExec("poetry show")
     if not pShow[0]:
         lines = pShow[1].splitlines(False)
@@ -226,7 +227,7 @@ def dodgy(scan_dir: str) -> list[Finding]:
     if _doSysExec("dodgy -h")[0] != 0:
         raise RuntimeError("dodgy is not on the system path")
     findings = []
-    results = loads(_doSysExec(f"dodgy -i {' '.join(EXCLUDED)}")[1])["warnings"]
+    results = loads(_doSysExec(f"dodgy {scan_dir} -i {' '.join(EXCLUDED)}")[1])["warnings"]
     for result in results:
         file = "./" + result["path"].replace("\\", "/")
         findings.append(
@@ -259,9 +260,11 @@ def dlint(scan_dir: str) -> list[Finding]:
         raise RuntimeError("flake8 is not on the system path")
     findings = []
     results = _doSysExec(
-        f"flake8 --select=DUO --exclude {','.join(EXCLUDED)} --format='%(path)s"
+        f"flake8 --select=DUO --exclude {','.join(EXCLUDED)} --format=json {scan_dir}"
         "::%(row)d::%(col)d::%(code)s::%(text)s' ."
     )[1].splitlines(False)
+    print(results)
+    print("got his far")
     for line in results:
         if line[0] == "'":
             line = line[1:-1]

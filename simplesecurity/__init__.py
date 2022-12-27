@@ -57,7 +57,7 @@ def comment_in_pr(github_access_token, github_repository, github_pr_number, find
 
 
 def runAllPlugins(
-    pluginMap: dict[str, Any], severity: int, confidence: int, fast: bool
+    scan_path: str, pluginMap: dict[str, Any], severity: int, confidence: int, fast: bool
 ) -> list[Finding]:
     """Run each plugin. Optimise as much as we can.
 
@@ -79,7 +79,7 @@ def runAllPlugins(
             and (not fast or pluginMap[plugin]["fast"])
         ):
             try:
-                findings.extend(pluginMap[plugin]["func"](scan_dir="."))
+                findings.extend(pluginMap[plugin]["func"](scan_dir=scan_path))
             except RuntimeError as error:
                 print(error)
     return findings
@@ -254,8 +254,12 @@ def cli():
         findings = []
         if args.plugin is None or args.plugin == "all":
             findings = runAllPlugins(
-                pluginMap, args.level, args.confidence, args.fast
-            )  # args.scan_path)
+                scan_path=args.scan_path,
+                pluginMap=pluginMap,
+                severity=args.level,
+                confidence=args.confidence,
+                fast=args.fast,
+            )
         elif (
             pluginMap[args.plugin]["max_severity"] >= args.level
             and pluginMap[args.plugin]["max_confidence"] >= args.confidence
