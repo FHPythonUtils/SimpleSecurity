@@ -441,3 +441,25 @@ def trivy(scan_dir: str) -> list[Finding]:
     else:  # Handling no results.
         findings = []
     return findings
+
+
+def black(scan_dir: str) -> list[Finding]:
+    """Generate list of findings using for semgrep. Requires semgrep on the
+    system path (wsl in windows).
+
+    Raises:
+            RuntimeError: if semgrep is not on the system path, then throw this
+            error
+
+    Returns:
+            list[Finding]: our findings dictionary
+    """
+    findings = []
+    if platform.system() == "Windows":
+        raise RuntimeError("black is not supported on windows")
+    if _doSysExec("black --help")[0] != 0:
+        raise RuntimeError("black is not on the system path")
+    results = _doSysExec(f"black {scan_dir}")
+    print("##################  Reformatting  #########################")
+    print(f"Black results: {results[1]}")
+    return []

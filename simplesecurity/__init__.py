@@ -243,6 +243,12 @@ def cli():
             "max_confidence": 3,
             "fast": False,
         },
+        "black": {
+            "func": plugins.black,
+            "max_severity": 3,
+            "max_confidence": 3,
+            "fast": False,
+        },
     }
 
     assert type(args.scan_path) != None, "Please define scanning path"
@@ -272,6 +278,8 @@ def cli():
             and pluginMap[args.plugin]["max_confidence"] >= args.confidence
         ):
             findings = pluginMap[args.plugin]["func"](scan_dir=scanning_path)
+
+        print("##################    Scanning    #########################")
         print(
             formatt(
                 secfilter.filterSeverityAndConfidence(
