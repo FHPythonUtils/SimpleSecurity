@@ -249,6 +249,7 @@ def cli():
     assert (
         os.path.exists(args.scan_path) or os.path.exists(os.path.join(os.getcwd(), args.scan_path))
     ) == True, "Scanning path not found.."
+    # TODO, we might need to validate whether it make sense to parse a absolute path as scan_path by default for robustness.
 
     if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
         findings = []
@@ -264,7 +265,7 @@ def cli():
             pluginMap[args.plugin]["max_severity"] >= args.level
             and pluginMap[args.plugin]["max_confidence"] >= args.confidence
         ):
-            findings = pluginMap[args.plugin]["func"](scan_dir=".")
+            findings = pluginMap[args.plugin]["func"](scan_dir=args.scan_path)
         print(
             formatt(
                 secfilter.filterSeverityAndConfidence(

@@ -259,30 +259,35 @@ def dlint(scan_dir: str) -> list[Finding]:
     if _doSysExec("flake8 -h")[0] != 0:
         raise RuntimeError("flake8 is not on the system path")
     findings = []
+
+    # Using codeclimate format instead of json as it supports serverity indicators
     results = _doSysExec(
-        f"flake8 --select=DUO --exclude {','.join(EXCLUDED)} --format=json {scan_dir}"
-        "::%(row)d::%(col)d::%(code)s::%(text)s' ."
+        f"flake8 --select=DUO --exclude {','.join(EXCLUDED)} --format=codeclimate {scan_dir}"
     )[1].splitlines(False)
-    print(results)
-    print("got his far")
-    for line in results:
-        if line[0] == "'":
-            line = line[1:-1]
-        result = line.split("::")
-        file = result[0].replace("\\", "/")
-        findings.append(
-            {
-                "id": result[3],
-                "title": f"{result[3]}: {result[4]}",
-                "description": result[4],
-                "file": file,
-                "evidence": extractEvidence(int(result[1]), file),
-                "severity": Level.MED,
-                "confidence": Level.MED,
-                "line": int(result[1]),
-                "_other": {"col": result[2]},
-            }
-        )
+    json_results = loads(results[0])
+    levelMap = {"info": Level.LOW, "minor": Level.MED, "major": Level.HIGH, "critical": Level.HIGH, "blocker": Level.HIGH}
+    for path_of_file, scan_results in json_results.items():
+        for scan_result in scan_results:
+            findings.append(
+                {
+                    "id": scan_result["check_name"],
+                    "title": f"{scan_result['check_name']}: {scan_result['description']}",
+                    "description": f"{scan_result['check_name']}: {scan_result['description']}",
+                    "file": path_of_file,
+                    "evidence": extractEvidence(
+                        scan_result["location"]["positions"]["begin"]["line"], path_of_file
+                    ),
+                    "severity": levelMap[scan_result["severity"]],
+                    "confidence": Level.MED,
+                    "line": scan_result["location"]["positions"]["begin"]["line"],
+                    "_other": {
+                        "col": scan_result["location"]["positions"]["begin"]["column"],
+                        "start": scan_result["location"]["positions"]["begin"]["line"],
+                        "end": scan_result["location"]["positions"]["end"]["line"],
+                        "fingerprint": scan_result["fingerprint"],
+                    },
+                }
+            )
     return findings
 
 
@@ -305,7 +310,7 @@ def semgrep(scan_dir: str) -> list[Finding]:
     sgExclude = ["--exclude {x}" for x in EXCLUDED]
     results = loads(
         _doSysExec(
-            f"semgrep -f {THISDIR}/semgrep_sec.yaml {' '.join(sgExclude)} "
+            f"semgrep -f {THISDIR}/semgrep_sec.yaml {scan_dir} {' '.join(sgExclude)} "
             "-q --json --no-rewrite-rule-ids"
         )[1].strip()
     )["results"]
@@ -350,7 +355,7 @@ def trivy(scan_dir: str) -> list[Finding]:
     if _doSysExec("trivy --help")[0] != 0:
         raise RuntimeError("trivy is not on the system path")
     # sgExclude = ["--exclude {x}" for x in EXCLUDED]
-    payload = loads(_doSysExec(f"trivy fs . " " --format json -q")[1].strip())
+    payload = loads(_doSysExec(f"trivy fs {scan_dir} " " --format json -q")[1].strip())
     if "Results" in payload.keys():
         results = payload["Results"]
         levelMap = {
