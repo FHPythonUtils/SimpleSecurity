@@ -246,7 +246,9 @@ def cli():
     }
 
     assert type(args.scan_path) == str, "Please define scanning path"
-    assert (os.path.exists(args.scan_path) or os.path.exists(os.path.join(os.getcwd(), args.scan_path))) == True, "Scanning path not found.."
+    assert (
+        os.path.exists(args.scan_path) or os.path.exists(os.path.join(os.getcwd(), args.scan_path))
+    ) == True, "Scanning path not found.."
 
     if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
         findings = []
@@ -278,7 +280,11 @@ def cli():
             ), "Error, please provide github_repository provided"
             assert args.github_pr_number != None, "Error, please provide github_pr_number provided"
 
-            comment_in_pr(github_access_token=args.github_access_token, github_repository=args.github_repository, github_pr_number=args.github_pr_number)
+            comment_in_pr(
+                github_access_token=args.github_access_token,
+                github_repository=args.github_repository,
+                github_pr_number=args.github_pr_number,
+            )
     else:
         print(PLUGIN_HELP)
         sysexit(2)
