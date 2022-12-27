@@ -35,7 +35,6 @@ from typing import Any
 from simplesecurity.level import Level
 from simplesecurity.types import Finding, Line
 
-# TODO Change this
 THISDIR = str(Path(__file__).resolve().parent)
 
 EXCLUDED = [
