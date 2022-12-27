@@ -252,16 +252,11 @@ def cli():
     }
 
     assert type(args.scan_path) != None, "Please define scanning path"
+    assert (
+        os.path.exists(args.scan_path) or os.path.exists(os.path.join(os.getcwd(), args.scan_path))
+    ) == True, "Scanning path not found.."
 
-    if os.path.exists(args.scan_path):
-        scanning_path = args.scan_path
-    elif os.path.exists(os.path.join(os.getcwd(), args.scan_path)):
-        scanning_path = os.path.join(os.getcwd(), args.scan_path)
-    else:
-        assert (
-            os.path.exists(args.scan_path)
-            or os.path.exists(os.path.join(os.getcwd(), args.scan_path))
-        ) == True, "Scanning path not found.."
+    scanning_path = os.path.abspath(args.scan_path)
 
     if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
         findings = []

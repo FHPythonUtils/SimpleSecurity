@@ -104,18 +104,24 @@ def extractEvidence(LineNrOrWord: [int, str], file: str) -> dict:
     elif type(LineNrOrWord) == int:
         line_nrs = [LineNrOrWord]
 
+    content = []
     for line_nr in line_nrs:
         with open(file, encoding="utf-8", errors="ignore") as fileContents:
             start = max(line_nr - 3, 0)
             for line in range(start):
                 next(fileContents)
-            content = []
+            # content = []
             for line in range(start + 1, line_nr + 3):
                 try:
                     lineContent = next(fileContents).rstrip().replace("\t", "    ")
                 except StopIteration:
                     break
                 content.append({"selected": line == line_nr, "line": line, "content": lineContent})
+
+    if len(content) > 20:
+        matches = f"Found many more matches: {len(line_nrs)}, cut-off printout to 20 items \n consult linenrs for full trace"
+        content = content[0:20]
+        content.append({"selected": True, "line": 99999, "content": matches})
     return {"linenrs": line_nrs, "content": content}
 
 
@@ -341,7 +347,7 @@ def semgrep(scan_dir: str) -> list[Finding]:
     )["results"]
     levelMap = {"INFO": Level.LOW, "WARNING": Level.MED, "ERROR": Level.HIGH}
     for result in results:
-        file = "./" + result["path"].replace("\\", "/")
+        file = scan_dir + "/" + result["Target"].replace("\\", "/")
         findings.append(
             {
                 "id": result["check_id"],
