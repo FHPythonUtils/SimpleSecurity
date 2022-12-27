@@ -11,14 +11,14 @@ Functions return finding dictionary
 
 ```json
 {
-	title: str
-	description: str
-	file: str
-	evidence: list[Line]
-	severity: Level
-	confidence: Level
-	line: int
-	_other: dict[str, str]
+    title: str
+    description: str
+    file: str
+    evidence: list[Line]
+    severity: Level
+    confidence: Level
+    line: int
+    _other: dict[str, str]
 }
 ```
 """
@@ -356,39 +356,70 @@ def trivy(scan_dir: str) -> list[Finding]:
         raise RuntimeError("trivy is not on the system path")
     # sgExclude = ["--exclude {x}" for x in EXCLUDED]
     payload = loads(_doSysExec(f"trivy fs {scan_dir} " " --format json -q")[1].strip())
+
+    levelMap = {
+        "UNKNOWN": Level.UNKNOWN,
+        "LOW": Level.LOW,
+        "MEDIUM": Level.MED,
+        "HIGH": Level.HIGH,
+        "CRITICAL": Level.HIGH,
+    }
+
     if "Results" in payload.keys():
         results = payload["Results"]
-        levelMap = {
-            "LOW": Level.LOW,
-            "MEDIUM": Level.MED,
-            "HIGH": Level.HIGH,
-            "CRITICAL": Level.HIGH,
-        }
         for result in results:
-            file = "./" + result["Target"].replace("\\", "/")
-            for vulnerability in result["Vulnerabilities"]:
-                findings.append(
-                    {
-                        "id": vulnerability["VulnerabilityID"],
-                        "title": vulnerability["VulnerabilityID"] + ": " + vulnerability["Title"],
-                        "description": vulnerability["Description"]
-                        + " "
-                        + vulnerability["PrimaryURL"]
-                        + " - scannend by Trivy",
-                        "file": file,
-                        "evidence": extractEvidence(0, file),  # TODO write a file-scanner
-                        "severity": levelMap[vulnerability["Severity"]],
-                        "confidence": Level.HIGH,
-                        "line": 0,  # TODO, evaluate what to do when we do not have a line to address
-                        "_other": {
-                            # Not needed?
-                            # "col": result["start"]["col"],
-                            # "start": result["start"],
-                            # "end": result["end"],
-                            # "extra": result["extra"],
-                        },
-                    }
-                )
-        else:
+            file = scan_dir + "/" + result["Target"].replace("\\", "/")
+            # Title key is not always present in JSON, e.g. with secret scanning.
+            if "Vulnerabilities" in result.keys():
+                for vulnerability in result["Vulnerabilities"]:
+                    # Title key is not always present in JSON
+                    if "Title" in vulnerability.keys():
+                        title = vulnerability["Title"]
+                    else:
+                        title = ""
+                    findings.append(
+                        {
+                            "id": vulnerability["VulnerabilityID"],
+                            "title": f"{vulnerability['VulnerabilityID']} : {title}",
+                            "description": f"{vulnerability['Description']} {vulnerability['PrimaryURL']}",
+                            "file": file,
+                            "evidence": extractEvidence(0, file),  # TODO write a file-scanner
+                            "severity": levelMap[vulnerability["Severity"]],
+                            "confidence": Level.HIGH,
+                            "line": 0,  # TODO, evaluate what to do when we do not have a line to address
+                            "_other": {
+                                # Not needed?
+                                # "col": result["start"]["col"],
+                                # "start": result["start"],
+                                # "end": result["end"],
+                                # "extra": result["extra"],
+                            },
+                        }
+                    )
+            elif result['Class'] == "secret": # When dealing with secrets
+                for secret in result["Secrets"]:
+                    findings.append(
+                        {
+                            "id": secret["RuleID"],
+                            "title": f"{secret['RuleID']} : {secret['Title']}",
+                            "description": f"secrets issue",
+                            "file": file,
+                            "evidence": extractEvidence(secret["StartLine"], file),
+                            "severity": levelMap[secret["Severity"]],
+                            "confidence": Level.HIGH,
+                            "line": secret["StartLine"],  # TODO, evaluate what to do when we do not have a line to address
+                            "_other": {
+                                # Not needed?
+                                # "col": result["start"]["col"],
+                                # "start": result["start"],
+                                # "end": result["end"],
+                                # "extra": result["extra"],
+                            },
+                        }
+                    )
+            else:
+                print("Unhandled type of class")
+                print(result)
+        else: # Handling no results.
             findings = []
     return findings
