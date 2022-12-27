@@ -29,7 +29,7 @@ import subprocess
 from json import loads
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List
 import re
 
 from simplesecurity.level import Level
@@ -74,7 +74,7 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
         exitCode = process.returncode
     return exitCode, out
 
-def string_matches_in_file(file: str, pattern: str):
+def stringMatchesinFile(file: str, pattern: str) -> list:
     """Search for the given string in file and return lines containing that string,
     along with line numbers"""
     line_number = 0
@@ -85,7 +85,7 @@ def string_matches_in_file(file: str, pattern: str):
             if pattern in line:
                 list_of_results.append(line_number)
     return list_of_results
-def extractEvidence(LineNrOrWord: [int, str], file: str) -> list[Line]:
+def extractEvidence(LineNrOrWord: [int, str], file: str) -> dict:
     """Grab evidence from the source file.
 
     Args:
@@ -95,12 +95,12 @@ def extractEvidence(LineNrOrWord: [int, str], file: str) -> list[Line]:
     Returns:
             list[Line]: list of lines
     """
-
+    results = {}
     if type(LineNrOrWord) == str:
-        line_nrs = string_matches_in_file(file=file, pattern=LineNrOrWord)
-
+        line_nrs = stringMatchesinFile(file=file, pattern=LineNrOrWord)
     elif type(LineNrOrWord) == int:
         line_nrs = [LineNrOrWord]
+
 
     for line_nr in line_nrs:
         with open(file, encoding="utf-8", errors="ignore") as fileContents:
@@ -114,7 +114,7 @@ def extractEvidence(LineNrOrWord: [int, str], file: str) -> list[Line]:
                 except StopIteration:
                     break
                 content.append({"selected": line == line_nr, "line": line, "content": lineContent})
-    return content
+    return {'linenrs': line_nrs, 'content': content}
 
 
 def bandit(scan_dir: str) -> list[Finding]:
@@ -147,7 +147,7 @@ def bandit(scan_dir: str) -> list[Finding]:
                 "title": f"{result['test_id']}: {result['test_name']}",
                 "description": result["issue_text"],
                 "file": file,
-                "evidence": extractEvidence(result["line_number"], file),
+                "evidence": extractEvidence(result["line_number"], file)["content"],
                 "severity": levelMap[result["issue_severity"]],
                 "confidence": levelMap[result["issue_confidence"]],
                 "line": result["line_number"],
@@ -253,7 +253,7 @@ def dodgy(scan_dir: str) -> list[Finding]:
                 "title": result["message"],
                 "description": result["message"],
                 "file": file,
-                "evidence": extractEvidence(result["line"], file),
+                "evidence": extractEvidence(result["line"], file)["content"],
                 "severity": Level.MED,
                 "confidence": Level.MED,
                 "line": result["line"],
@@ -293,7 +293,7 @@ def dlint(scan_dir: str) -> list[Finding]:
                     "file": path_of_file,
                     "evidence": extractEvidence(
                         scan_result["location"]["positions"]["begin"]["line"], path_of_file
-                    ),
+                    )["content"],
                     "severity": levelMap[scan_result["severity"]],
                     "confidence": Level.MED,
                     "line": scan_result["location"]["positions"]["begin"]["line"],
@@ -340,7 +340,7 @@ def semgrep(scan_dir: str) -> list[Finding]:
                 "title": result["check_id"].split(".")[-1],
                 "description": result["extra"]["message"].strip(),
                 "file": file,
-                "evidence": extractEvidence(result["start"]["line"], file),
+                "evidence": extractEvidence(result["start"]["line"], file)["content"],
                 "severity": levelMap[result["extra"]["severity"]],
                 "confidence": Level.HIGH,
                 "line": result["start"]["line"],
@@ -407,7 +407,7 @@ def trivy(scan_dir: str) -> list[Finding]:
                             "title": f"{vulnerability['VulnerabilityID']} : {title}",
                             "description": f"{simplified_description} {vulnerability['PrimaryURL']}",
                             "file": file,
-                            "evidence": evidence,
+                            "evidence": evidence["content"],
                             "severity": levelMap[vulnerability["Severity"]],
                             "confidence": Level.HIGH,
                             "line": 0,  # TODO, evaluate what to do when we do not have a line to address
@@ -421,7 +421,7 @@ def trivy(scan_dir: str) -> list[Finding]:
                             "title": f"{secret['RuleID']} : {secret['Title']}",
                             "description": f"secrets issue",
                             "file": file,
-                            "evidence": extractEvidence(secret["StartLine"], file),
+                            "evidence": extractEvidence(secret["StartLine"], file)['content'],
                             "severity": levelMap[secret["Severity"]],
                             "confidence": Level.HIGH,
                             "line": secret["StartLine"],
