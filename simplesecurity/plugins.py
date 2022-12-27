@@ -95,6 +95,7 @@ def extractEvidence(LineNrOrWord: [int, str], file: str) -> list[Line]:
     Returns:
             list[Line]: list of lines
     """
+
     if type(LineNrOrWord) == str:
         line_nrs = string_matches_in_file(file=file, pattern=LineNrOrWord)
 
@@ -383,7 +384,6 @@ def trivy(scan_dir: str) -> list[Finding]:
 
     if "Results" in payload.keys():
         results = payload["Results"]
-        print(f"results are {len(results)}")
         for result in results:
             file = scan_dir + "/" + result["Target"].replace("\\", "/")
             # Title key is not always present in JSON, e.g. with secret scanning.
@@ -395,6 +395,10 @@ def trivy(scan_dir: str) -> list[Finding]:
                     else:
                         title = ""
 
+                    if "PkgName" in vulnerability.keys():
+                        evidence = extractEvidence(vulnerability["PkgName"], file)
+                    else:
+                        evidence = extractEvidence(0, file)
                     # Description contains a lot of additional new lines that are replaced with single new line.
                     simplified_description = vulnerability['Description'].replace('\n\n', '\n')
                     findings.append(
@@ -403,7 +407,7 @@ def trivy(scan_dir: str) -> list[Finding]:
                             "title": f"{vulnerability['VulnerabilityID']} : {title}",
                             "description": f"{simplified_description} {vulnerability['PrimaryURL']}",
                             "file": file,
-                            "evidence": extractEvidence(0, file),  # TODO write a file-scanner
+                            "evidence": evidence,
                             "severity": levelMap[vulnerability["Severity"]],
                             "confidence": Level.HIGH,
                             "line": 0,  # TODO, evaluate what to do when we do not have a line to address
