@@ -2,9 +2,6 @@
    sphinx-quickstart on Wed Dec 28 09:18:45 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
-
-Welcome to SimpleSecurity's documentation!
-==========================================
 .. image:: https://img.shields.io/github/languages/top/FHPythonUtils/SimpleSecurity.svg?style=for-the-badge)](../../)
    :alt: GitHub top language
 
@@ -40,32 +37,43 @@ Overview
 ========
 
 Combine multiple popular python security tools and generate reports or output
-into different formats
+into different formats. Each tool is organized around the idea of a plugin. Plugins (these require the plugin
+executable in the system path. e.g. bandit requires bandit to be in the system path...) Current plugins include:
 
-Plugins (these require the plugin executable in the system path. e.g. bandit
-requires bandit to be in the system path...)
    - bandit
    - safety
    - dodgy
    - dlint
    - semgrep
+   - Trivy
+   - Black (for code formatting
+The output of the scans is standardized and the tool can print to stdOut as well as write the results to a file. Output
+formats include:
 
-Formats
    - ansi (for terminal)
    - json
    - markdown
    - csv
    - sarif
 
+Lastly, this tool enables annotations for PR in GitHub. This means that code-checking can be done easily and that the
+results are written as annotations in the GitHub PR. Example GitHub Actions are also provided.
+
+Contents
+========
 .. toctree::
    :maxdepth: 3
-   :caption: Contents:
 
-   _apidocs/modules
+   index
+   modules
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+
+
 
 
 Getting Started
