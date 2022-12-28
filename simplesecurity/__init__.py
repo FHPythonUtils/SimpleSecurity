@@ -1,24 +1,3 @@
-"""
-Combine multiple popular python security tools and generate reports or output
-into different formats
-
-Plugins (these require the plugin executable in the system path. e.g. bandit
-requires bandit to be in the system path...)
-
-- bandit
-- safety
-- dodgy
-- dlint
-- semgrep
-
-Formats
-
-- ansi (for terminal)
-- json
-- markdown
-- csv
-- sarif
-"""
 from __future__ import annotations
 
 import argparse
@@ -43,13 +22,15 @@ SCAN_PATH = "Define Path that should be scannend, default path is root of CLI to
 def comment_in_pr(
     github_access_token: str, github_repository: str, github_pr_number: int, findings: list[Finding]
 ):
+
     """
     This Function uses a list of findings that are found with code scanner and annotates a GitHub PR. It therefore
     requires GitHub credentials to send the annotations.
-    :param str github_access_token: GitHub Access token, ideally provided within environment of execution.
-    :param str github_repository: GitHub Repo, is provided within a GitHub Action environment.
-    :param str github_pr_number: GitHub PR number, is provided within a Github Action environment.
-    :param list[Findings] findings: List of Findings objects (dicts) that detail findings of the scanners.
+
+    :param github_access_token: GitHub Access token, ideally provided within environment of execution.
+    :param github_repository: GitHub Repo, is provided within a GitHub Action environment.
+    :param github_pr_number: GitHub PR number, is provided within a Github Action environment.
+    :param findings: List of Findings objects (dicts) that detail findings of the scanners.
     """
     github_session = Github(github_access_token)
     repo = github_session.get_repo(github_repository)
@@ -70,12 +51,13 @@ def runAllPlugins(
 ) -> list[Finding]:
     """
     This helper function triggers als scans if no specific scan is requested. It triggers the scans chronologically.
-    :param str scan_path: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :param dict pluginMap: A map of all the plugins, or scans, that are iterated over when scanning everything.
-    :param int severity: Level of Severity helps you filter through the results and is denoted as a integer.
-    :param int confidence: Level of Confidence helps you filter through the results and is denoted as a integer.
-    :param bool fast: A Boolean indicator to enable fast scanning when available.
-    :return list[Finding]: A list findings that the list of scans have returned.
+
+    :param scan_path: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :param pluginMap: A map of all the plugins, or scans, that are iterated over when scanning everything.
+    :param severity: Level of Severity helps you filter through the results and is denoted as a integer.
+    :param confidence: Level of Confidence helps you filter through the results and is denoted as a integer.
+    :param fast: A Boolean indicator to enable fast scanning when available.
+    :return: A list findings that the list of scans have returned.
     """
     findings: list[Finding] = []
     for plugin in pluginMap:

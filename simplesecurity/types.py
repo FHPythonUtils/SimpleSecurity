@@ -10,19 +10,7 @@ from simplesecurity.level import Level
 
 
 class Finding(typing.TypedDict):
-    """Finding type.
-
-    {
-            title: str
-            description: str
-            file: str
-            evidence: list[Line]
-            severity: Level
-            confidence: Level
-            line: int
-            _other: dict[str, str]
-    }
-    """
+    """Finding type """
 
     id: str
     title: str
@@ -36,14 +24,7 @@ class Finding(typing.TypedDict):
 
 
 class Line(typing.TypedDict):
-    """Line type.
-
-    {
-            line: int
-            content: str
-            selected: bool
-    }
-    """
+    """Line type"""
 
     line: int
     content: str

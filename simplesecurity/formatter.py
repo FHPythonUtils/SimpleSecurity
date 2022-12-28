@@ -1,26 +1,25 @@
-"""Take our findings dictionary and give things a pretty format.
+"""
+Take our findings dictionary and give things a pretty format. The findings dictionary is formatted as below:
 
-finding dictionary
+.. highlight:: python
+.. code-block:: python
 
-```json
-{
-	title: str
-	description: str
-	file: str
-	evidence: list[Line]
-	severity: Level
-	confidence: Level
-	line: int
-	_other: {}
-}
-```
+    {
+        title: str
+        description: str
+        file: str
+        evidence: list[Line]
+        severity: Level
+        confidence: Level
+        line: int
+        _other: dict[str, str]
+    }
 
-Formats
-
-- markdown
-- json
-- csv
-- ansi
+Serveral types of outputs are supported. These include:
+    - markdown
+    - json
+    - csv
+    - ansi
 """
 # pyright: reportConstantRedefinition=false
 from __future__ import annotations
@@ -33,14 +32,12 @@ from simplesecurity.types import Finding, Line
 
 
 def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
-    """Format evidence to plaintext.
+    """
+    Format evidence to plaintext
 
-    Args:
-            evidence (list[Line]): list of lines of code
-            newlineChar (bool, optional): use newline char. Defaults to true
-
-    Returns:
-            str: string representation of this
+    :param evidence: list of lines of code
+    :param newlineChar: use newline char. Defaults to true
+    :return: string representation of this
     """
     evidenceText = [line["content"] for line in evidence]
     if newlineChar:
@@ -49,16 +46,13 @@ def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
 
 
 def markdown(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    """Format to Markdown.
+    """
+    Format to Markdown
 
-    Args:
-            findings (list[Finding]): Findings to format
-            heading (str, optional): Optional heading to include. Defaults to None.
-            colourMode (int, optional): Output with a given colour mode 0: no colour,
-                    1: default, 2: high contrast. Defaults to 0.
-
-    Returns:
-            str: String to write to a file of stdout
+    :param findings: list of findings
+    :param heading: Optional heading to include. Defaults to None
+    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
+    :return: String to write to a file of stdout
     """
     _ = colourMode  # silence pylint
     if len(findings) == 0:
@@ -95,16 +89,13 @@ def markdown(findings: list[Finding], heading: str | None = None, colourMode: in
 
 
 def json(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    """Format to Json.
+    """
+    Format to Json
 
-    Args:
-            findings (list[Finding]): Findings to format
-            heading (str, optional): Optional heading to include. Defaults to None.
-            colourMode (int, optional): Output with a given colour mode 0: no colour,
-                    1: default, 2: high contrast. Defaults to 0.
-
-    Returns:
-            str: String to write to a file of stdout
+    :param findings: list of findings
+    :param heading: Optional heading to include. Defaults to None
+    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
+    :return: String to write to a file of stdout
     """
     _ = colourMode  # silence pylint
     findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
@@ -118,16 +109,13 @@ def json(findings: list[Finding], heading: str | None = None, colourMode: int = 
 
 
 def csv(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    """Format to CSV.
+    """
+    Format to CSV
 
-    Args:
-            findings (list[Finding]): Findings to format
-            heading (str, optional): Optional heading to include. Defaults to None.
-            colourMode (int, optional): Output with a given colour mode 0: no colour,
-                    1: default, 2: high contrast. Defaults to 0.
-
-    Returns:
-            str: String to write to a file of stdout
+    :param findings: list of findings
+    :param heading: Optional heading to include. Defaults to None
+    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
+    :return: String to write to a file of stdout
     """
     _ = colourMode  # silence pylint
     findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
@@ -160,17 +148,15 @@ def csv(findings: list[Finding], heading: str | None = None, colourMode: int = 0
 
 
 def ansi(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    """Format to ansi.
-
-    Args:
-            findings (list[Finding]): Findings to format
-            heading (str, optional): Optional heading to include. Defaults to None.
-            colourMode (int, optional): Output with a given colour mode 0: no colour,
-                    1: default, 2: high contrast. Defaults to 0.
-
-    Returns:
-            str: String to write to a file of stdout
     """
+    Format to ansi
+
+    :param findings: list of findings
+    :param heading: Optional heading to include. Defaults to None
+    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
+    :return: String to write to a file of stdout
+    """
+
     # pylint: disable=invalid-name
     FMT = {
         "TXT": "",
@@ -219,12 +205,12 @@ def ansi(findings: list[Finding], heading: str | None = None, colourMode: int = 
     findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 
     # Summary Table
-    strBuf.append(f"{FMT['TXT']}┌{'─'*10}┬{'─'*50}┐")
+    strBuf.append(f"{FMT['TXT']}┌{'─' * 10}┬{'─' * 50}┐")
     strBuf.append("│Severity  │Finding                                           │")
-    strBuf.append(f"├{'─'*10}┼{'─'*50}┤")
+    strBuf.append(f"├{'─' * 10}┼{'─' * 50}┤")
     for finding in findings:
         strBuf.append(f"│{finding['severity']: <10}│{finding['title'][:50]: <50}│")
-    strBuf.append(f"└{'─'*10}┴{'─'*50}┘")
+    strBuf.append(f"└{'─' * 10}┴{'─' * 50}┘")
     strBuf.append("")
 
     # Details
@@ -236,7 +222,7 @@ def ansi(findings: list[Finding], heading: str | None = None, colourMode: int = 
                 + f"{str(line['line'])[:3]: >3}  "
                 + f"{line['content'][:80]: <80}{FMT['CLS']}{FMT['TXT']}│"
             )
-        evidence.append(f"└{'─'*85}┘")
+        evidence.append(f"└{'─' * 85}┘")
         evidenceStr = "\n".join(evidence)
         strBuf.extend(
             [
@@ -251,16 +237,13 @@ def ansi(findings: list[Finding], heading: str | None = None, colourMode: int = 
 
 
 def sarif(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    """Format to sarif https://sarifweb.azurewebsites.net/.
+    """
+    Format to sarif https://sarifweb.azurewebsites.net/
 
-    Args:
-            findings (list[Finding]): Findings to format
-            heading (str, optional): Optional heading to include. Defaults to None.
-            colourMode (int, optional): Output with a given colour mode 0: no colour,
-                    1: default, 2: high contrast. Defaults to 0.
-
-    Returns:
-            str: String to write to a file of stdout
+    :param findings: list of findings
+    :param heading: Optional heading to include. Defaults to None
+    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
+    :return: String to write to a file of stdout
     """
     _, _ = colourMode, heading  # silence pylint
     out = {
@@ -293,21 +276,27 @@ def sarif(findings: list[Finding], heading: str | None = None, colourMode: int =
                                             "text": "".join(
                                                 [
                                                     line["content"]
-                                                    for line in finding["evidence"]
-                                                    if line["selected"]
+                                                    for line in
+                                                    finding["evidence"]
+                                                    if
+                                                    line["selected"]
                                                 ]
                                             )
+                                            },
+                                                },
+                                        "contextRegion": {
+                                            "startLine": finding["evidence"][0][
+                                                    "line"],
+                                            "endLine": finding["evidence"][-1][
+                                                    "line"],
+                                            "snippet": {
+                                                "text": "\n".join(
+                                                    [line["content"] for
+                                                     line in
+                                                     finding["evidence"]]
+                                                )
+                                            },
                                         },
-                                    },
-                                    "contextRegion": {
-                                        "startLine": finding["evidence"][0]["line"],
-                                        "endLine": finding["evidence"][-1]["line"],
-                                        "snippet": {
-                                            "text": "\n".join(
-                                                [line["content"] for line in finding["evidence"]]
-                                            )
-                                        },
-                                    },
                                 }
                             }
                         ],

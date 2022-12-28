@@ -1,7 +1,0 @@
-bandit<2,>=1.7.0
-dlint<2,>=0.11.0
-dodgy<2,>=0.2.1
-poetry<2,>=1.1.10
-safety<2,>=1.10.3
-semgrep<2,>=0.67.0
-flake8-json >= 21.7.0

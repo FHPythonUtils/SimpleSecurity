@@ -20,13 +20,11 @@ ID_MAP = {
 
 
 def lookupId(identifier: str) -> list[str]:
-    """Lookup an id in the id map.
+    """
+    Lookup an id in the id map
 
-    Args:
-            identifier (str): id to look up
-
-    Returns:
-            str: id that it equals
+    :param identifier: id to look up
+    :return: id that it equals
     """
     if identifier not in ID_MAP:
         return ["not found"]
@@ -34,16 +32,15 @@ def lookupId(identifier: str) -> list[str]:
 
 
 def findingsEqual(findingA: Finding, findingB: Finding) -> int:
-    """Basically and __eq__ method for findings.
+    """
+    Basically and __eq__ method for findings
 
-    Args:
-            findingA (Finding): lhs
-            findingB (Finding): rhs
-
-    Returns:
-            int: 0 if not equal. 1 if lookup(left) is equal to right - bin left.
+    :param findingA: lhs
+    :param findingB: rhs
+    :return: 0 if not equal. 1 if lookup(left) is equal to right - bin left.
             -1 if lookup(right) is equal to left - bin right
     """
+
     if (
         findingA["file"].replace("./", "") == findingB["file"].replace("./", "")
         and findingA["line"] == findingB["line"]
@@ -56,13 +53,11 @@ def findingsEqual(findingA: Finding, findingB: Finding) -> int:
 
 
 def deduplicate(findings: list[Finding]) -> list[Finding]:
-    """Deduplicate the list of findings.
+    """
+    Deduplicate the list of findings
 
-    Args:
-            findings (list[Finding]): list of findings to deduplicate
-
-    Returns:
-            list[Finding]: new deduplicated list
+    :param findings: list of findings to deduplicate
+    :return: new deduplicated list
     """
     findings = findings.copy()
     for indexA, findingA in enumerate(findings):
@@ -78,15 +73,13 @@ def deduplicate(findings: list[Finding]) -> list[Finding]:
 def filterSeverityAndConfidence(
     findings: list[Finding], severity: int, confidence: int
 ) -> list[Finding]:
-    """Filter the list of findings.
+    """
+    Filter the list of findings
 
-    Args:
-            findings (list[Finding]): list of findings to
-            severity (int): min severity
-            confidence (int): min confidence
-
-    Returns:
-            list[Finding]: new deduplicated list
+    :param findings: list of findings to filter
+    :param severity: min severity
+    :param confidence: min confidence
+    :return: new deduplicated list
     """
     if severity == 0 and confidence == 0:
         return findings

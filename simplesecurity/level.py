@@ -11,13 +11,7 @@ from enum import IntEnum
 
 
 class Level(IntEnum):
-    """Levels for confidence and severity.
-
-    UNKNOWN = 0
-    LOW = 1
-    MED = 2
-    HIGH = 3
-    """
+    """Levels for confidence and severity"""
 
     UNKNOWN = 0
     LOW = 1
