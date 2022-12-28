@@ -4,6 +4,15 @@ simplesecurity package
 Submodules
 ----------
 
+simplesecurity.\_\_main\_\_ module
+----------------------------------
+
+.. automodule:: simplesecurity.__main__
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :private-members:
+
 simplesecurity.filter module
 ----------------------------
 
@@ -11,6 +20,7 @@ simplesecurity.filter module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 simplesecurity.formatter module
 -------------------------------
@@ -19,6 +29,7 @@ simplesecurity.formatter module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 simplesecurity.level module
 ---------------------------
@@ -27,6 +38,7 @@ simplesecurity.level module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 simplesecurity.plugins module
 -----------------------------
@@ -35,6 +47,7 @@ simplesecurity.plugins module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 simplesecurity.types module
 ---------------------------
@@ -43,6 +56,7 @@ simplesecurity.types module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 Module contents
 ---------------
@@ -51,3 +65,4 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

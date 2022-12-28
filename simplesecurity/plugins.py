@@ -85,8 +85,7 @@ def stringMatchesinFile(file: str, pattern: str) -> list:
     return list_of_results
 
 
-def extractEvidence(LineNrOrWord: Union[int, str], file: str) -> dict:
-
+def extractEvidence(LineNrOrWord: int | str, file: str) -> dict:
     """
     Grab evidence from the source file.
 
