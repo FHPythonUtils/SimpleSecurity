@@ -18,6 +18,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           poetry install
+      - name: Install Trivy
+        run: /bin/bash install_trivy.sh
       - name: run scans
         run: |
           poetry run simplesecurity --scan_path .
