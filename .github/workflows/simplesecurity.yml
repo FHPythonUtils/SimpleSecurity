@@ -9,15 +9,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: 3.10
+          cache: poetry
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
-          poetry install
+          poetry install --no-root
       - name: Install Trivy
         run: |
           /bin/bash install_trivy.sh
