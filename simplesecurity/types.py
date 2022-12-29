@@ -10,7 +10,7 @@ from simplesecurity.level import Level
 
 
 class Finding(typing.TypedDict):
-    """Finding type """
+    """Finding type"""
 
     id: str
     title: str

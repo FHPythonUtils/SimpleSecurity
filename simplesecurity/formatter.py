@@ -276,27 +276,21 @@ def sarif(findings: list[Finding], heading: str | None = None, colourMode: int =
                                             "text": "".join(
                                                 [
                                                     line["content"]
-                                                    for line in
-                                                    finding["evidence"]
-                                                    if
-                                                    line["selected"]
+                                                    for line in finding["evidence"]
+                                                    if line["selected"]
                                                 ]
                                             )
-                                            },
-                                                },
-                                        "contextRegion": {
-                                            "startLine": finding["evidence"][0][
-                                                    "line"],
-                                            "endLine": finding["evidence"][-1][
-                                                    "line"],
-                                            "snippet": {
-                                                "text": "\n".join(
-                                                    [line["content"] for
-                                                     line in
-                                                     finding["evidence"]]
-                                                )
-                                            },
                                         },
+                                    },
+                                    "contextRegion": {
+                                        "startLine": finding["evidence"][0]["line"],
+                                        "endLine": finding["evidence"][-1]["line"],
+                                        "snippet": {
+                                            "text": "\n".join(
+                                                [line["content"] for line in finding["evidence"]]
+                                            )
+                                        },
+                                    },
                                 }
                             }
                         ],
