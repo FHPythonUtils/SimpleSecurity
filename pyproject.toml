@@ -27,7 +27,7 @@ readme = "README.md"
 simplesecurity = 'simplesecurity:cli'
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 poetry = "^1.1.10"
 black = "^22.6.0"
 flake8 = "^4.0.1"
