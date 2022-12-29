@@ -1,4 +1,3 @@
-simplesecurity~=2022
 PyGithub~=1.57
 sphinx==5.3
 docutils==0.17 #Otherwise there are issues with generating the parameters
