@@ -1,1 +1,13 @@
-
+PyGithub~=1.57
+sphinx==5.3
+docutils==0.17 #Otherwise there are issues with generating the parameters
+sphinx-rtd-theme==1.1.1
+livereload
+sphinx-autodoc-typehints
+bandit<2,>=1.7.0
+dlint<2,>=0.11.0
+dodgy<2,>=0.2.1
+poetry<2,>=1.1.10
+safety<2,>=1.10.3
+semgrep<2,>=0.67.0
+flake8-json >= 21.7.0
