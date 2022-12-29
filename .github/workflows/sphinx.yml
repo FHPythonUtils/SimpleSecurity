@@ -10,14 +10,8 @@ jobs:
     - uses: actions/checkout@v1
     - uses: ammaraskar/sphinx-action@master
       with:
+        build-command: "sphinx-build -b html . _build"
         docs-folder: "docs/"
-    - name: create dir
-      run: |
-        ls
-        cd docs
-        ls
-        cd _build
-        ls
     - uses: actions/upload-artifact@v1
       with:
         name: DocumentationHTML
