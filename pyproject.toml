@@ -73,7 +73,22 @@ disable = [
 
 [tool.black]
 line-length = 100
-target-version = ["py37"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | tests/.*/setup.py
+)/
+'''
 
 [tool.isort]
 profile = "black"
