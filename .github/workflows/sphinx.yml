@@ -11,6 +11,13 @@ jobs:
     - uses: ammaraskar/sphinx-action@master
       with:
         docs-folder: "docs/"
+    - name: create dir
+      run: |
+        ls
+        cd docs
+        ls
+        cd _build
+        ls
     - uses: actions/upload-artifact@v1
       with:
         name: DocumentationHTML
