@@ -19,13 +19,13 @@ The structure of the findings object is shown below:
 """
 from __future__ import annotations
 
+import os
 import platform
+import re
 import subprocess
 from json import loads
-import os
 from pathlib import Path
 from typing import Any, Dict, List
-import re
 
 from simplesecurity.level import Level
 from simplesecurity.types import Finding, Line
@@ -465,6 +465,81 @@ def black(scan_dir: str) -> list[Finding]:
     if _doSysExec("black --help")[0] != 0:
         raise RuntimeError("black is not on the system path")
     results = _doSysExec(f"black {scan_dir}")
+    print("##################  Reformatting  #########################")
+    print(f"Black results: {results[1]}")
+    return []
+
+
+def mypy(scan_dir: str) -> list[Finding]:
+    """
+    Semgrep plugin for generating list of findings using for semgrep. Requires Semgrep on the system path (wsl in windows).
+
+    :raises: RuntimeError: if black cant be found
+    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return: empty list as it does not return results.
+    """
+    findings = []
+    if platform.system() == "Windows":
+        raise RuntimeError("mypy is not supported on windows")
+    if _doSysExec("mypy --help")[0] != 0:
+        raise RuntimeError("semgrep is not on the system path")
+    sgExclude = ["--exclude {x}" for x in EXCLUDED]
+
+    results = _doSysExec(f"mypy {scan_dir} --strict  {' '.join(sgExclude)}")[1].strip().split("\n")
+    print(results)
+    levelMap = {"note": Level.LOW, "error": Level.HIGH}
+
+    counter = 0
+    for item in results[:-1]:
+        correction = 0
+        chunks = item.split(":")
+        print(chunks)
+        if chunks[1].isdigit():
+            print("found line correcting with +1")
+            correction += 1
+            linenr = int(chunks[1])
+        else:
+            linenr = 0
+        if chunks[2].isdigit():
+            print("found column, correcting with +1")
+            correction += 1
+            columnnr = int(chunks[2])
+        else:
+            columnnr = 0
+
+        findings.append(
+            {
+                "id": f"mypy issue {counter}",
+                "title": f"mypy: {chunks[correction + 1].strip()}",
+                "description": " ".join(chunks[(correction + 1) :]),
+                "file": chunks[0],
+                "evidence": extractEvidence(linenr, chunks[0])["content"],
+                "severity": levelMap[chunks[(correction + 1)].strip()],
+                "confidence": Level.HIGH,
+                "line": linenr,
+                "_other": {
+                    "col": columnnr,
+                },
+            }
+        )
+        counter += 1
+    return findings
+
+
+def isort(scan_dir: str) -> list[Finding]:
+    """
+    isort plugin for reformatting imports. This plugin doesnt return scanning results but just reformat code.
+
+    :raises: RuntimeError: if black cant be found
+    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return list[Findings]: empty list as it does not return results.
+    """
+    findings = []
+    if platform.system() == "Windows":
+        raise RuntimeError("black is not supported on windows")
+    if _doSysExec("isort --help")[0] != 0:
+        raise RuntimeError("isort is not on the system path")
+    results = _doSysExec(f"isort {scan_dir}")
     print("##################  Reformatting  #########################")
     print(f"Black results: {results[1]}")
     return []

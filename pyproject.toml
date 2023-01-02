@@ -97,6 +97,10 @@ exclude = '''
 profile = "black"
 indent = "Tab"
 
-[tool.pydocstyle]
-convention = "google"
-ignore = "D205,D415"
+[tool.mypy]
+show_error_context = true
+show_column_numbers = true
+#pretty = true
+error_summary = true
+show_absolute_path = true
+incremental = false

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import os
 from sys import exit as sysexit
 from sys import stdout
 from typing import Any
-import os
 
 from github import Github
+
 from simplesecurity import filter as secfilter
 from simplesecurity import formatter, plugins
 from simplesecurity.types import Finding
@@ -234,6 +235,18 @@ def cli():
         },
         "black": {
             "func": plugins.black,
+            "max_severity": 3,
+            "max_confidence": 3,
+            "fast": False,
+        },
+        "mypy": {
+            "func": plugins.mypy,
+            "max_severity": 3,
+            "max_confidence": 3,
+            "fast": False,
+        },
+        "isort": {
+            "func": plugins.isort,
             "max_severity": 3,
             "max_confidence": 3,
             "fast": False,
