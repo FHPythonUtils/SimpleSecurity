@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import os
 import platform
-import re
 import subprocess
 from json import loads
 from pathlib import Path
@@ -472,9 +471,12 @@ def black(scan_dir: str) -> list[Finding]:
 
 def mypy(scan_dir: str) -> list[Finding]:
     """
-    Semgrep plugin for generating list of findings using for semgrep. Requires Semgrep on the system path (wsl in windows).
+    mypy plugin for generating list of findings using for semgrep. Requires mypy on the system path (wsl in windows).
+    The structure of the output is:
+    -- path:linenr:columnr:type:message --
+    where the linenr and columnr can be optional.
 
-    :raises: RuntimeError: if black cant be found
+    :raises: RuntimeError: if mypy cant be found
     :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return: empty list as it does not return results.
     """
@@ -483,25 +485,21 @@ def mypy(scan_dir: str) -> list[Finding]:
         raise RuntimeError("mypy is not supported on windows")
     if _doSysExec("mypy --help")[0] != 0:
         raise RuntimeError("semgrep is not on the system path")
+
     sgExclude = ["--exclude {x}" for x in EXCLUDED]
-
     results = _doSysExec(f"mypy {scan_dir} --strict  {' '.join(sgExclude)}")[1].strip().split("\n")
-    print(results)
     levelMap = {"note": Level.LOW, "error": Level.HIGH}
-
     counter = 0
+
     for item in results[:-1]:
         correction = 0
         chunks = item.split(":")
-        print(chunks)
         if chunks[1].isdigit():
-            print("found line correcting with +1")
             correction += 1
             linenr = int(chunks[1])
         else:
             linenr = 0
         if chunks[2].isdigit():
-            print("found column, correcting with +1")
             correction += 1
             columnnr = int(chunks[2])
         else:
@@ -528,9 +526,9 @@ def mypy(scan_dir: str) -> list[Finding]:
 
 def isort(scan_dir: str) -> list[Finding]:
     """
-    isort plugin for reformatting imports. This plugin doesnt return scanning results but just reformat code.
+    isort plugin for reformatting imports. This plugin doesn't return scanning results but just reformat code.
 
-    :raises: RuntimeError: if black cant be found
+    :raises: RuntimeError: if isort cant be found
     :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return list[Findings]: empty list as it does not return results.
     """
