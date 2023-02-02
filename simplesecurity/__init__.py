@@ -203,6 +203,12 @@ def cli():
             "max_confidence": 3,
             "fast": True,
         },
+        "black": {
+            "func": plugins.black,
+            "max_severity": 3,
+            "max_confidence": 3,
+            "fast": False,
+        },
         "safety": {
             "func": plugins.safety,
             "max_severity": 2,
@@ -215,8 +221,9 @@ def cli():
             "max_confidence": 2,
             "fast": True,
         },
-        "dlint": {
-            "func": plugins.dlint,
+        # Needs to run after black
+        "flake8": {
+            "func": plugins.flake8,
             "max_severity": 2,
             "max_confidence": 2,
             "fast": True,
@@ -229,12 +236,6 @@ def cli():
         },
         "trivy": {
             "func": plugins.trivy,
-            "max_severity": 3,
-            "max_confidence": 3,
-            "fast": False,
-        },
-        "black": {
-            "func": plugins.black,
             "max_severity": 3,
             "max_confidence": 3,
             "fast": False,

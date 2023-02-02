@@ -90,7 +90,7 @@ def extractEvidence(LineNrOrWord: int | str, file: str) -> dict:
 
     :param LineNrOrWord: This can be an integer or string that outlines the exact line or keyword that should be scanned.
     :param file: A string that point to the file that should be interrogated for annotation
-    :return: This function returns a dictionary that contains the linenrs of where the matches were found, and content, that shows the bodies of text where the matches were found in.
+    :return: This function returns a dictionary that contains the line_nrs of where the matches were found, and content, that shows the bodies of text where the matches were found in.
     """
     results = {}
     if type(LineNrOrWord) == str:
@@ -113,10 +113,10 @@ def extractEvidence(LineNrOrWord: int | str, file: str) -> dict:
                 content.append({"selected": line == line_nr, "line": line, "content": lineContent})
 
     if len(content) > 20:
-        matches = f"Found many more matches: {len(line_nrs)}, cut-off printout to 20 items \n consult linenrs for full trace"
+        matches = f"Found many more matches: {len(line_nrs)}, cut-off printout to 20 items \n consult line_nrs for full trace"
         content = content[0:20]
         content.append({"selected": True, "line": 99999, "content": matches})
-    return {"linenrs": line_nrs, "content": content}
+    return {"line_nrs": line_nrs, "content": content}
 
 
 def bandit(scan_dir: str) -> list[Finding]:
@@ -125,7 +125,7 @@ def bandit(scan_dir: str) -> list[Finding]:
 
     :raises: RuntimeError: if bandit is not on the system path, then throw this error
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return: empty list as it does not return results.
+    :return: returns structured list of findings, if there are any
     """
     if _doSysExec("bandit -h")[0] != 0:
         raise RuntimeError("bandit is not on the system path")
@@ -165,7 +165,7 @@ def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
     Helper Function that processes the scanning results of _doPureSafety and turns it into a Finding object
 
     :param results: dictionary that is produced by _doPureSafety
-    :return: findings
+    :return: returns structured list of findings, if there are any
     """
     findings = []
     for result in results:
@@ -212,11 +212,10 @@ def safety(scan_dir: str) -> list[Finding]:
 
     :raises: RuntimeError: if safety is not on the system path, then throw this error
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return fidings: empty list as it does not return results.
+    :return: returns structured list of findings, if there are any
     """
     if _doSysExec("safety --help")[0] != 0:
         raise RuntimeError("safety is not on the system path")
-    # TODO Do we need to run poetry lock before commiting to poetry show? when using just venv it doesnt produce the poetry.lock file, which is required for scanning with poetry show.
     pShow = _doSysExec("poetry show")
     if not pShow[0]:
         lines = pShow[1].splitlines(False)
@@ -246,7 +245,7 @@ def dodgy(scan_dir: str) -> list[Finding]:
 
     :raises: RuntimeError: if dodgy is not on the system path, then throw this error
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return findings: empty list as it does not return results.
+    :return: returns structured list of findings, if there are any
     """
     if _doSysExec("dodgy -h")[0] != 0:
         raise RuntimeError("dodgy is not on the system path")
@@ -270,13 +269,13 @@ def dodgy(scan_dir: str) -> list[Finding]:
     return findings
 
 
-def dlint(scan_dir: str) -> list[Finding]:
+def flake8(scan_dir: str) -> list[Finding]:
     """
-    dlint plugin for generating list of findings using for dlint. Requires flake8 and dlint on the system path.
+    flake8 plugin for generating list of findings using for dlint. Requires flake8 and dlint on the system path.
 
     :raises: RuntimeError: if flake8 is not on the system path, then throw this error
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return findings: empty list as it does not return results.
+    :return: returns structured list of findings, if there are any
     """
 
     """Generate list of findings using dlint. Requires flake8 and dlint on the system path.
@@ -293,9 +292,9 @@ def dlint(scan_dir: str) -> list[Finding]:
     findings = []
 
     # Using codeclimate format instead of json as it supports serverity indicators
-    results = _doSysExec(
-        f"flake8 --select=DUO --exclude {','.join(EXCLUDED)} --format=codeclimate {scan_dir}"
-    )[1].splitlines(False)
+    results = _doSysExec(f"flake8 --exclude {','.join(EXCLUDED)} --format=codeclimate {scan_dir}")[
+        1
+    ].splitlines(False)
     json_results = loads(results[0])
     levelMap = {
         "info": Level.LOW,
@@ -335,7 +334,7 @@ def semgrep(scan_dir: str) -> list[Finding]:
 
     :raises: RuntimeError: if black cant be found
     :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return: empty list as it does not return results.
+    :return: returns structured list of findings, if there are any
     """
     findings = []
     if platform.system() == "Windows":
@@ -379,7 +378,7 @@ def trivy(scan_dir: str) -> list[Finding]:
 
     :raises: RuntimeError: if trivy cant be found
     :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return list[Findings]: empty list as it does not return results.
+    :return: returns structured list of findings, if there are any
     """
     findings = []
     if platform.system() == "Windows":
@@ -477,8 +476,8 @@ def mypy(scan_dir: str) -> list[Finding]:
     where the linenr and columnr can be optional.
 
     :raises: RuntimeError: if mypy cant be found
-    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return: empty list as it does not return results.
+    :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return: returns structured list of findings, if there are any
     """
     findings = []
     if platform.system() == "Windows":
@@ -529,8 +528,8 @@ def isort(scan_dir: str) -> list[Finding]:
     isort plugin for reformatting imports. This plugin doesn't return scanning results but just reformat code.
 
     :raises: RuntimeError: if isort cant be found
-    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return list[Findings]: empty list as it does not return results.
+    :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :return: empty list as it does not return results.
     """
     findings = []
     if platform.system() == "Windows":
