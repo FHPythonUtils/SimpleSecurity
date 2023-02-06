@@ -253,8 +253,8 @@ def cli():
             "fast": False,
         },
     }
-
-    assert type(args.scan_path) != None, "Please define scanning path"
+    print(args.scan_path)
+    assert args.scan_path) != None, "Please define scanning path"
     assert (
         os.path.exists(str(args.scan_path)) or os.path.exists(os.path.join(os.getcwd(), str(args.scan_path)))
     ) == True, "Scanning path not found.."
