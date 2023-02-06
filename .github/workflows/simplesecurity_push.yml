@@ -23,8 +23,5 @@ jobs:
           trivy -h
       - name: run scans
         run: > 
-          poetry run simplesecurity --send_to_git 
-          --github_repository ${{ github.event.repository.name }} 
-          --github_pr_number GITHUB_REF
-          --github_access_token ${{ secrets.GITHUB_TOKEN }} 
+          poetry run simplesecurity
           --scan_path .
