@@ -28,4 +28,4 @@ jobs:
           --github_repository ${{ github.event.repository.name }} 
           --github_pr_number GITHUB_REF
           --github_access_token ${{ secrets.GITHUB_TOKEN }} 
-          --scan_path ${{ github.path }}
+          --scan_path .
