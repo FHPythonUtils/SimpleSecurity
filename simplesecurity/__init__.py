@@ -254,7 +254,6 @@ def cli():
         },
     }
 
-    print(args.scan_path)
     assert args.scan_path != None, "Please define scanning path"
     assert (
         os.path.exists(args.scan_path) or os.path.exists(os.path.join(os.getcwd(), args.scan_path))
@@ -302,6 +301,7 @@ def cli():
                 github_access_token=args.github_access_token,
                 github_repository=args.github_repository,
                 github_pr_number=args.github_pr_number,
+                findings=findings
             )
     else:
         print(PLUGIN_HELP)
