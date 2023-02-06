@@ -23,8 +23,7 @@ jobs:
           trivy -h
       - name: run simple scan
         run: |
-          poetry run simplesecurity 
-          --scan_path .
+          poetry run simplesecurity --scan_path .
       - name: run scans
         run: |
           poetry run simplesecurity 
