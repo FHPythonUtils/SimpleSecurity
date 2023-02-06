@@ -253,6 +253,7 @@ def cli():
             "fast": False,
         },
     }
+
     print(args.scan_path)
     assert args.scan_path != None, "Please define scanning path"
     assert (
