@@ -21,6 +21,10 @@ jobs:
         run: |
           /bin/bash install_trivy.sh
           trivy -h
+      - name: run simple scan
+        run: |
+          poetry run simplesecurity 
+          --scan_path .
       - name: run scans
         run: |
           poetry run simplesecurity 
