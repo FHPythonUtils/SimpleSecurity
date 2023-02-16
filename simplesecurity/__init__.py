@@ -57,11 +57,11 @@ def annotate_in_pr(
 
     check_suite_run_url = check_suite_runs["check_runs"][0]["url"]
     # The Github check runs API will accept at most 50 annotations per API call.
-    for batch in [annotations[i : i + 50] for i in range(0, len(annotations), 50)]:
+    for batch in [findings[i : i + 50] for i in range(0, len(findings), 50)]:
         check_suite_payload = {
             "output": {
                 "title": "flake8 errors",
-                "summary": f"{len(annotations)} errors(s) found",
+                "summary": f"{len(findings)} errors(s) found",
                 "annotations": batch,
             }
         }
