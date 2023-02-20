@@ -1,12 +1,10 @@
-name: simplesecurity
+name: simplesecurity_push
 
-on: [push]
+on: push
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: Install poetry
@@ -22,5 +20,6 @@ jobs:
           /bin/bash install_trivy.sh
           trivy -h
       - name: run scans
-        run: |
-          poetry run simplesecurity --scan_path .
+        run: > 
+          poetry run simplesecurity
+          --scan_path .

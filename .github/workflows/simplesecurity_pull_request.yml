@@ -1,0 +1,28 @@
+name: simplesecurity_pr
+
+on: pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: poetry
+      - name: Install dependencies
+        run: poetry install --no-root
+      - name: Install Trivy
+        run: |
+          /bin/bash install_trivy.sh
+          trivy -h
+      - name: run scans
+        run: > 
+          poetry run simplesecurity --send_to_git 
+          --github_repo_url ${{ github.event.repository.url }} 
+          --github_workflow_run_id ${{ github.run_id }}
+          --github_access_token ${{ secrets.GITHUB_TOKEN }} 
+          --scan_path .

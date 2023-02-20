@@ -1,16 +1,24 @@
 from __future__ import annotations
-
 import argparse
 import os
 from sys import exit as sysexit
 from sys import stdout
 from typing import Any
 
-from github import Github
-
 from simplesecurity import filter as secfilter
 from simplesecurity import formatter, plugins
 from simplesecurity.types import Finding
+from simplesecurity.github import GithubAnnotationsAndComments
+
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(name)-6s %(levelname)-6s %(message)s',
+                    datefmt='%m-%d %H:%M',
+                    handlers=[logging.StreamHandler()])
+
+logger = logging.getLogger()
+
 
 stdout.reconfigure(encoding="utf-8")  # type:ignore
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
@@ -19,32 +27,6 @@ PLUGIN_HELP = (
 )
 SCAN_PATH = "Define Path that should be scannend, default path is root of CLI tool"
 
-
-def comment_in_pr(
-    github_access_token: str, github_repository: str, github_pr_number: int, findings: list[Finding]
-):
-
-    """
-    This Function uses a list of findings that are found with code scanner and annotates a GitHub PR. It therefore
-    requires GitHub credentials to send the annotations.
-
-    :param github_access_token: GitHub Access token, ideally provided within environment of execution.
-    :param github_repository: GitHub Repo, is provided within a GitHub Action environment.
-    :param github_pr_number: GitHub PR number, is provided within a Github Action environment.
-    :param findings: List of Findings objects (dicts) that detail findings of the scanners.
-    """
-    github_session = Github(github_access_token)
-    repo = github_session.get_repo(github_repository)
-    pull_request = repo.get_pull(int(github_pr_number))
-    commits = pull_request.get_commits()
-
-    for find in findings:
-        pull_request.create_comment(
-            body=f"Title: {find['title']}; \nDescription: {find['description']}",
-            commit_id=commits.reversed[0],
-            path=find["file"],
-            position=find["line"],
-        )
 
 
 def runAllPlugins(
@@ -153,18 +135,30 @@ def cli():
         default=None,
         help="Provide the GitHub Access Token if you want to annotate the PR (For CI applications)",
     )
+    # parser.add_argument(
+    #     "--github_repository",
+    #     action="store",
+    #     default=None,
+    #     help="Provide the Repo if you want to annotate the PR (For CI applications)",
+    # )
     parser.add_argument(
-        "--github_repository",
+        "--github_repo_url",
         action="store",
         default=None,
-        help="Provide the Repo if you want to annotate the PR (For CI applications)",
+        help="Provide the Repo URL if you want to annotate the PR (For CI applications)",
     )
     parser.add_argument(
-        "--github_pr_number",
+        "--github_workflow_run_id",
         action="store",
         default=None,
-        help="Provide the PR Number if you want to annotate the PR (For CI applications)",
+        help="Provide the github workflow id if you want to annotate the PR (For CI applications)",
     )
+    # parser.add_argument(
+    #     "--github_pr_number",
+    #     action="store",
+    #     default=None,
+    #     help="Provide the PR Number if you want to annotate the PR (For CI applications)",
+    # )
 
     args = parser.parse_args()
     # File
@@ -254,12 +248,12 @@ def cli():
         },
     }
 
-    assert type(args.scan_path) != None, "Please define scanning path"
+    assert args.scan_path != None, "Please define scanning path"
     assert (
         os.path.exists(args.scan_path) or os.path.exists(os.path.join(os.getcwd(), args.scan_path))
     ) == True, "Scanning path not found.."
 
-    scanning_path = os.path.abspath(args.scan_path)
+    scanning_path = os.path.abspath(str(args.scan_path))
 
     if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
         findings = []
@@ -287,21 +281,24 @@ def cli():
             ),
             file=filename,
         )
-
         if args.send_to_git:
             assert (
                 args.github_access_token != None
             ), "Error, please provide github_access_token provided"
+            assert args.github_repo_url != None, "Error, please provide github_repo_url provided"
             assert (
-                args.github_repository != None
-            ), "Error, please provide github_repository provided"
-            assert args.github_pr_number != None, "Error, please provide github_pr_number provided"
+                args.github_workflow_run_id != None
+            ), "Error, please provide github_workflow_run_id provided"
 
-            comment_in_pr(
-                github_access_token=args.github_access_token,
-                github_repository=args.github_repository,
-                github_pr_number=args.github_pr_number,
-            )
+            try:
+                GithubAnnotationsAndComments(github_access_token=args.github_access_token,
+                                             github_repo_url=args.github_repo_url,
+                                             github_workflow_run_id=args.github_workflow_run_id,
+                                             findings=findings,
+                                             logger=logger, ).annotate_and_comment_in_pr()
+
+            except Exception as e:
+                print(e)
     else:
         print(PLUGIN_HELP)
         sysexit(2)
