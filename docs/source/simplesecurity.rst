@@ -20,6 +20,14 @@ simplesecurity.formatter module
    :undoc-members:
    :show-inheritance:
 
+simplesecurity.github module
+----------------------------
+
+.. automodule:: simplesecurity.github
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 simplesecurity.level module
 ---------------------------
 

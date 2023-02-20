@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import argparse
+import logging
 import os
 from sys import exit as sysexit
 from sys import stdout
@@ -7,15 +9,15 @@ from typing import Any
 
 from simplesecurity import filter as secfilter
 from simplesecurity import formatter, plugins
-from simplesecurity.types import Finding
 from simplesecurity.github import GithubAnnotationsAndComments
+from simplesecurity.types import Finding
 
-import logging
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(name)-6s %(levelname)-6s %(message)s',
-                    datefmt='%m-%d %H:%M',
-                    handlers=[logging.StreamHandler()])
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(name)-6s %(levelname)-6s %(message)s",
+    datefmt="%m-%d %H:%M",
+    handlers=[logging.StreamHandler()],
+)
 
 logger = logging.getLogger()
 
@@ -26,7 +28,6 @@ PLUGIN_HELP = (
     "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, trivy or all, default=all"
 )
 SCAN_PATH = "Define Path that should be scannend, default path is root of CLI tool"
-
 
 
 def runAllPlugins(
@@ -291,11 +292,13 @@ def cli():
             ), "Error, please provide github_workflow_run_id provided"
 
             try:
-                GithubAnnotationsAndComments(github_access_token=args.github_access_token,
-                                             github_repo_url=args.github_repo_url,
-                                             github_workflow_run_id=args.github_workflow_run_id,
-                                             findings=findings,
-                                             logger=logger, ).annotate_and_comment_in_pr()
+                GithubAnnotationsAndComments(
+                    github_access_token=args.github_access_token,
+                    github_repo_url=args.github_repo_url,
+                    github_workflow_run_id=args.github_workflow_run_id,
+                    findings=findings,
+                    logger=logger,
+                ).annotate_and_comment_in_pr()
 
             except Exception as e:
                 print(e)

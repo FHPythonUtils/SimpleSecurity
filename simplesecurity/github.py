@@ -1,14 +1,16 @@
 import os
 import requests
 from simplesecurity.types import Finding
+
 class GithubAnnotationsAndComments(object):
-    def __init__(self,
-                 github_access_token: str,
-                 github_repo_url: str,
-                 github_workflow_run_id: str,
-                 findings: list[Finding],
-                 logger
-                 ):
+    def __init__(
+        self,
+        github_access_token: str,
+        github_repo_url: str,
+        github_workflow_run_id: str,
+        findings: list[Finding],
+        logger,
+    ):
         self.github_access_token = github_access_token
         self.github_repo_url = github_repo_url
         self.github_workflow_run_id = github_workflow_run_id
@@ -19,7 +21,6 @@ class GithubAnnotationsAndComments(object):
         self.headers = None
         self.logger = logger
 
-
     def _process_findings(self) -> bool:
         """
         This helper function does something
@@ -28,26 +29,29 @@ class GithubAnnotationsAndComments(object):
         if len(self.findings) > 0:
             for find in self.findings:
                 # if the comments are not on a file level, we will parse them as comments instead
-                if type(find['line']) != int:
-                    self.logger.info(f"Found project level comment, commenting in PR accordingly {find}")
+                if type(find["line"]) != int:
+                    self.logger.info(
+                        f"Found project level comment, commenting in PR accordingly {find}"
+                    )
                     self._post_comment(find)
                 # if the files are associated to particular files, we can annotate that within the code.
                 else:
                     # if we have an endline, use it, otherwise we use the beginning line as endline.
                     try:
-                        end = find['_other']['end']
+                        end = find["_other"]["end"]
                     except:
                         end = find["line"]
 
                     self.annotations_list.append(
                         {
-                            "path": self._get_relative_path(find["file"],
-                                                      "home/runner/work/SimpleSecurity/SimpleSecurity/"),
+                            "path": self._get_relative_path(
+                                find["file"], "home/runner/work/SimpleSecurity/SimpleSecurity/"
+                            ),
                             "start_line": find["line"],
                             "end_line": end,
                             "annotation_level": "warning",
                             "message": f"{find['title']}\nLine: {find['line']}\nDescription: {find['description']}"
-                                       f"\nSeverity: {find['severity']}\nConfidence: {find['confidence']}",
+                            f"\nSeverity: {find['severity']}\nConfidence: {find['confidence']}",
                         }
                     )
             return True
@@ -62,8 +66,8 @@ class GithubAnnotationsAndComments(object):
         repo_name = f"{self.workflow_run['repository']['name']}"
 
         comment = {
-                "body": f"SimpleSecurity Comment: \n{str(find)}",
-            }
+            "body": f"SimpleSecurity Comment: \n{str(find)}",
+        }
 
         # Do POST Request
 
@@ -79,8 +83,9 @@ class GithubAnnotationsAndComments(object):
         self.logger.info(f"Posted Comment and got return status: {resp.status_code}")
 
         if resp.status_code != 200:
-            self.logger.warning(f"Failed to post comment, the comment was {find} \n The Return was code {resp.status_code}\n The contents was: {resp.content}")
-
+            self.logger.warning(
+                f"Failed to post comment, the comment was {find} \n The Return was code {resp.status_code}\n The contents was: {resp.content}"
+            )
 
     def _search_check_suite(self):
         self.headers = {
@@ -92,7 +97,6 @@ class GithubAnnotationsAndComments(object):
         workflow_run_resp = requests.get(workflow_url, headers=self.headers)
         self.workflow_run = workflow_run_resp.json()
         self.logger.info(f"Status for checking workflow run ID: {workflow_run_resp.status_code}")
-
 
         check_suite_runs_url = f"{self.workflow_run['check_suite_url']}/check-runs"
 
@@ -111,7 +115,7 @@ class GithubAnnotationsAndComments(object):
         # The GitHub API only accepts 50 annotations per call.
         batches = {}
         for i in range(0, len(self.annotations_list), 50):
-            batches[i] = self.annotations_list[i:i + 50]
+            batches[i] = self.annotations_list[i : i + 50]
 
         for key_batch, value_batch in batches.items():
 
@@ -133,8 +137,9 @@ class GithubAnnotationsAndComments(object):
             self.logger.info(f"Sending batch nr {key_batch}, response code {resp}")
 
             if resp.status_code != 200:
-                self.logger.warning(f"failed to send annotations for batch {key_batch}, the payload was \n {value_batch} \n that returned: {resp.status_code}, with boy {resp.content}")
-
+                self.logger.warning(
+                    f"failed to send annotations for batch {key_batch}, the payload was \n {value_batch} \n that returned: {resp.status_code}, with boy {resp.content}"
+                )
 
     def annotate_and_comment_in_pr(self):
         """
@@ -154,7 +159,9 @@ class GithubAnnotationsAndComments(object):
         if found_findings:
             self._upload_batchwise_annotations()
         else:
-            self.logger.info("No annotations were found, therefore not executing any annotations in PR")
+            self.logger.info(
+                "No annotations were found, therefore not executing any annotations in PR"
+            )
 
     @staticmethod
     def _get_relative_path(absolute_path, base_path):
