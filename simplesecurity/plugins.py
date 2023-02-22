@@ -198,7 +198,6 @@ def safety(scan_dir: str) -> list[Finding]:
         for vulnerability in results["vulnerabilities"]:
             if vulnerability["package_name"] == package_name:
                 relevant_vulnerabilities += str(vulnerability)
-                id = relevant_vulnerabilities
 
         findings.append(
             {
