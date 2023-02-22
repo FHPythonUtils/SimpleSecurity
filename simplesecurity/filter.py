@@ -1,5 +1,4 @@
-"""Some of our analysis tools overlap one-another so lets remove duplicates.
-"""
+"""Some of our analysis tools overlap one-another so lets remove duplicates."""
 from __future__ import annotations
 
 from simplesecurity.types import Finding
@@ -7,7 +6,10 @@ from simplesecurity.types import Finding
 ID_MAP = {
     "DUO105": ["B102"],  # use of exec
     "DUO109": ["B506"],  # use of yaml.load
-    "DUO116": ["B602", "subprocess-shell-true"],  # use of shell=True in subprocess
+    "DUO116": [
+        "B602",
+        "subprocess-shell-true",
+    ],  # use of shell=True in subprocess
     "B602": ["subprocess-shell-true"],
     "DUO103": ["B402"],  # use of pickle
     "DUO120": ["B302"],  # use of marshal
@@ -20,11 +22,11 @@ ID_MAP = {
 
 
 def lookupId(identifier: str) -> list[str]:
-    """
-    Lookup an id in the id map
+    """Lookup an id in the id map.
 
     :param identifier: id to look up
     :return: id that it equals
+
     """
     if identifier not in ID_MAP:
         return ["not found"]
@@ -32,17 +34,18 @@ def lookupId(identifier: str) -> list[str]:
 
 
 def findingsEqual(findingA: Finding, findingB: Finding) -> int:
-    """
-    Basically and __eq__ method for findings
+    """Basically and __eq__ method for findings.
 
     :param findingA: lhs
     :param findingB: rhs
     :return: 0 if not equal. 1 if lookup(left) is equal to right - bin left.
             -1 if lookup(right) is equal to left - bin right
+
     """
 
     if (
-        findingA["file"].replace("./", "") == findingB["file"].replace("./", "")
+        findingA["file"].replace("./", "")
+        == findingB["file"].replace("./", "")
         and findingA["line"] == findingB["line"]
     ):
         if findingB["id"] in lookupId(findingA["id"]):
@@ -53,11 +56,11 @@ def findingsEqual(findingA: Finding, findingB: Finding) -> int:
 
 
 def deduplicate(findings: list[Finding]) -> list[Finding]:
-    """
-    Deduplicate the list of findings
+    """Deduplicate the list of findings.
 
     :param findings: list of findings to deduplicate
     :return: new deduplicated list
+
     """
     findings = findings.copy()
     for indexA, findingA in enumerate(findings):
@@ -73,18 +76,21 @@ def deduplicate(findings: list[Finding]) -> list[Finding]:
 def filterSeverityAndConfidence(
     findings: list[Finding], severity: int, confidence: int
 ) -> list[Finding]:
-    """
-    Filter the list of findings
+    """Filter the list of findings.
 
     :param findings: list of findings to filter
     :param severity: min severity
     :param confidence: min confidence
     :return: new deduplicated list
+
     """
     if severity == 0 and confidence == 0:
         return findings
     findings = findings.copy()
     for finding in findings:
-        if finding["severity"] < severity or finding["confidence"] < confidence:
+        if (
+            finding["severity"] < severity
+            or finding["confidence"] < confidence
+        ):
             findings.remove(finding)
     return findings

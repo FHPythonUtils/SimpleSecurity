@@ -1,7 +1,5 @@
-name: simplesecurity_push
-
-on: push
-
+name: simplesecurity
+on: pull_request
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,5 +19,8 @@ jobs:
           trivy -h
       - name: run scans
         run: > 
-          poetry run simplesecurity
+          poetry run simplesecurity --send_to_git 
+          --github_repo_url ${{ github.event.repository.url }} 
+          --github_workflow_run_id ${{ github.run_id }}
+          --github_access_token ${{ secrets.GITHUB_TOKEN }} 
           --scan_path .

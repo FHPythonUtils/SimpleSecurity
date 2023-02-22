@@ -4,6 +4,7 @@ UNKNOWN = 0
 LOW = 1
 MED = 2
 HIGH = 3
+
 """
 from __future__ import annotations
 
@@ -11,7 +12,7 @@ from enum import IntEnum
 
 
 class Level(IntEnum):
-    """Levels for confidence and severity"""
+    """Levels for confidence and severity."""
 
     UNKNOWN = 0
     LOW = 1
@@ -23,6 +24,7 @@ class Level(IntEnum):
 
         Returns:
                 str: string representation of a level
+
         """
         return self.__str__()
 
@@ -31,6 +33,7 @@ class Level(IntEnum):
 
         Returns:
                 str: string representation of a level
+
         """
         reprMap = {
             Level.UNKNOWN: "Unknown",

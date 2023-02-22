@@ -1,6 +1,6 @@
-"""
-Plugins are modules that kick-off a particular scanner and return the results as a findings object.
-The structure of the findings object is shown below:
+"""Plugins are modules that kick-off a particular scanner and return the
+results as a findings object. The structure of the findings object is shown
+below:
 
 .. highlight:: python
 .. code-block:: python
@@ -19,12 +19,11 @@ The structure of the findings object is shown below:
 """
 from __future__ import annotations
 
-import os
 import platform
 import subprocess
 from json import loads
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Type
 
 from simplesecurity.level import Level
 from simplesecurity.types import Finding, Line
@@ -44,13 +43,13 @@ EXCLUDED = [
 
 
 def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
-    """
-    Helper function for executing commandline commands.
+    """Helper function for executing commandline commands.
 
     :raises:  RuntimeWarning: throw a warning should there be a non exit code
-    :param str command: commands as a string
-    :param bool errorAsOut: optional, redirect errors to stdout
-    :return tuple[int, str]: tuple of return code (int) and stdout (str)
+    :param: commands as a string
+    :param: optional, redirect errors to stdout
+    :return: tuple of return code (int) and stdout (str)
+
     """
     with subprocess.Popen(
         command,
@@ -66,13 +65,13 @@ def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
 
 
 def stringMatchesinFile(file: str, pattern: str) -> list:
-    """
-    Search for the given string in file and return lines containing that string,
-    along with line numbers
+    """Search for the given string in file and return lines containing that
+    string, along with line numbers.
 
     :param str file: string that outlines the exact line or keyword that should be scanned.
     :param str pattern: string that provides the keyword for the search
     :return list: returns a list of matches
+
     """
     line_number = 0
     list_of_results = []
@@ -85,12 +84,12 @@ def stringMatchesinFile(file: str, pattern: str) -> list:
 
 
 def extractEvidence(LineNrOrWord: int | str, file: str) -> dict:
-    """
-    Grab evidence from the source file.
+    """Grab evidence from the source file.
 
     :param LineNrOrWord: This can be an integer or string that outlines the exact line or keyword that should be scanned.
     :param file: A string that point to the file that should be interrogated for annotation
     :return: This function returns a dictionary that contains the line_nrs of where the matches were found, and content, that shows the bodies of text where the matches were found in.
+
     """
     results = {}
     if type(LineNrOrWord) == str:
@@ -107,10 +106,18 @@ def extractEvidence(LineNrOrWord: int | str, file: str) -> dict:
             # content = []
             for line in range(start + 1, line_nr + 3):
                 try:
-                    lineContent = next(fileContents).rstrip().replace("\t", "    ")
+                    lineContent = (
+                        next(fileContents).rstrip().replace("\t", "    ")
+                    )
                 except StopIteration:
                     break
-                content.append({"selected": line == line_nr, "line": line, "content": lineContent})
+                content.append(
+                    {
+                        "selected": line == line_nr,
+                        "line": line,
+                        "content": lineContent,
+                    }
+                )
 
     if len(content) > 20:
         matches = f"Found many more matches: {len(line_nrs)}, cut-off printout to 20 items \n consult line_nrs for full trace"
@@ -119,17 +126,18 @@ def extractEvidence(LineNrOrWord: int | str, file: str) -> dict:
     return {"line_nrs": line_nrs, "content": content}
 
 
-def bandit(scan_dir: str) -> list[Finding]:
-    """
-    bandit plugin for generating list of findings using for bandit. Requires bandit on the system path.
+def bandit(scan_dir: str) -> list[dict]:
+    """bandit plugin for generating list of findings using for bandit. Requires
+    bandit on the system path.
 
     :raises: RuntimeError: if bandit is not on the system path, then throw this error
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
+
     """
     if _doSysExec("bandit -h")[0] != 0:
         raise RuntimeError("bandit is not on the system path")
-    findings = []
+    findings: Finding = []
     levelMap = {
         "LOW": Level.LOW,
         "MEDIUM": Level.MED,
@@ -137,7 +145,9 @@ def bandit(scan_dir: str) -> list[Finding]:
         "UNDEFINED": Level.UNKNOWN,
     }
     results = loads(
-        _doSysExec(f"bandit -lirq -x {','.join(EXCLUDED)} -f json {scan_dir}", False)[1]
+        _doSysExec(
+            f"bandit -lirq -x {','.join(EXCLUDED)} -f json {scan_dir}", False
+        )[1]
     )["results"]
     for result in results:
         file = result["filename"].replace("\\", "/")
@@ -147,7 +157,9 @@ def bandit(scan_dir: str) -> list[Finding]:
                 "title": f"{result['test_id']}: {result['test_name']}",
                 "description": result["issue_text"],
                 "file": file,
-                "evidence": extractEvidence(result["line_number"], file)["content"],
+                "evidence": extractEvidence(result["line_number"], file)[
+                    "content"
+                ],
                 "severity": levelMap[result["issue_severity"]],
                 "confidence": levelMap[result["issue_confidence"]],
                 "line": result["line_number"],
@@ -160,97 +172,71 @@ def bandit(scan_dir: str) -> list[Finding]:
     return findings
 
 
-def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
-    """
-    Helper Function that processes the scanning results of _doPureSafety and turns it into a Finding object
-
-    :param results: dictionary that is produced by _doPureSafety
-    :return: returns structured list of findings, if there are any
-    """
-    findings = []
-    for result in results:
-        findings.append(
-            {
-                "id": result[4],
-                "title": f"{result[4]}: {result[0]}",
-                "description": result[3],
-                "file": "Project Requirements",
-                "evidence": [
-                    {
-                        "selected": True,
-                        "line": 0,
-                        "content": f"{result[0]} version={result[2]} affects{result[1]}",
-                    }
-                ],
-                "severity": Level.MED,
-                "confidence": Level.HIGH,
-                "line": "Unknown",
-                "_other": {"id": result[4], "affected": result[1]},
-            }
-        )
-    return findings
-
-
-def _doPureSafety() -> dict:
-    """
-    Helper function for the safety scanner. If the requirements text is not found it will start a generic scan.
-
-    :return: scanning results in the form of a dictionary
-    """
-    if os.path.exists("requirements.txt"):
-        safe = _doSysExec("safety check -r requirements.txt --json")[1]
-    else:
-        safe = _doSysExec("safety check --json")[1]
-        if safe.startswith("Warning:"):
-            raise RuntimeError("some error occurred: " + safe)
-    return loads(safe)
-
-
 def safety(scan_dir: str) -> list[Finding]:
-    """
-    safety plugin for generating list of findings using for safety. Requires dodgy on the system path.
+    """safety plugin for generating list of findings using for safety. Requires
+    safety on the system path.
 
     :raises: RuntimeError: if safety is not on the system path, then throw this error
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
+
     """
     if _doSysExec("safety --help")[0] != 0:
         raise RuntimeError("safety is not on the system path")
-    pShow = _doSysExec("poetry show")
-    if not pShow[0]:
-        lines = pShow[1].splitlines(False)
-        data = []
-        for line in lines:
-            parts = line.replace("(!)", "").split()
-            if len(parts) > 1:
-                data.append(f"{parts[0]}=={parts[1]}")
-            else:
-                data.append(f"{parts[0]}")
-        with open("reqs.txt", "w", encoding="utf-8", errors="ignore") as reqs:
-            reqs.write("\n".join(data))
-        results = loads(_doSysExec("safety check -r reqs.txt --json")[1])
-        os.remove("reqs.txt")
-    elif not _doSysExec("pipreqs --savepath reqs.txt --encoding utf-8")[0]:
-        results = loads(_doSysExec("safety check -r reqs.txt --json")[1])
-        os.remove("reqs.txt")
-    else:
-        # Use plain old safety (this will miss optional dependencies)
-        results = _doPureSafety()
-    return _doSafetyProcessing(results)
+    results = loads(
+        _doSysExec(
+            f"poetry export --without-hashes -f requirements.txt | safety check --json --stdin"
+        )[1]
+    )
+
+    findings: [Finding] = []
+    for result in results["affected_packages"]:
+        package_name = result
+
+        # Retrieve all relevant vulnerabilities
+        relevant_vulnerabilities = str()
+        for vulnerability in results["vulnerabilities"]:
+            if vulnerability["package_name"] == package_name:
+                relevant_vulnerabilities += str(vulnerability)
+                id = relevant_vulnerabilities
+
+        findings.append(
+            {
+                "id": f"Safety: {package_name}",
+                "title": f"Safety: {package_name}",
+                "description": str(results["affected_packages"][package_name])
+                + relevant_vulnerabilities,
+                "file": "pyproject.toml",
+                "evidence": extractEvidence(package_name, "pyproject.toml")[
+                    "content"
+                ],
+                "severity": Level.MED,
+                "confidence": Level.MED,
+                "line": extractEvidence(package_name, "pyproject.toml")[
+                    "line_nrs"
+                ][0],
+                "_other": {},
+            }
+        )
+
+    return findings
 
 
 def dodgy(scan_dir: str) -> list[Finding]:
-    """
-    dodgy plugin for generating list of findings using for dodgy. Requires dodgy on the system path.
+    """dodgy plugin for generating list of findings using for dodgy. Requires
+    dodgy on the system path.
 
     :raises: RuntimeError: if dodgy is not on the system path, then throw this error
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
+
     """
     if _doSysExec("dodgy -h")[0] != 0:
         raise RuntimeError("dodgy is not on the system path")
-    findings = []
-    results = loads(_doSysExec(f"dodgy {scan_dir} -i {' '.join(EXCLUDED)}")[1])["warnings"]
+    findings: [Finding] = []
+    results = loads(
+        _doSysExec(f"dodgy {scan_dir} -i {' '.join(EXCLUDED)}")[1]
+    )["warnings"]
     for result in results:
         file = "./" + result["path"].replace("\\", "/")
         findings.append(
@@ -269,13 +255,14 @@ def dodgy(scan_dir: str) -> list[Finding]:
     return findings
 
 
-def flake8(scan_dir: str) -> list[Finding]:
-    """
-    flake8 plugin for generating list of findings using for dlint. Requires flake8 and dlint on the system path.
+def flake8(scan_dir: str) -> list[dict]:
+    """flake8 plugin for generating list of findings using for dlint. Requires
+    flake8 and dlint on the system path.
 
     :raises: RuntimeError: if flake8 is not on the system path, then throw this error
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
+
     """
 
     """Generate list of findings using dlint. Requires flake8 and dlint on the system path.
@@ -289,17 +276,17 @@ def flake8(scan_dir: str) -> list[Finding]:
     """
     if _doSysExec("flake8 -h")[0] != 0:
         raise RuntimeError("flake8 is not on the system path")
-    findings = []
+    findings: [Finding] = []
 
     # Using codeclimate format instead of json as it supports serverity indicators
-    results = _doSysExec(f"flake8 --exclude {','.join(EXCLUDED)} --format=codeclimate {scan_dir}")[
-        1
-    ].splitlines(False)
+    results = _doSysExec(
+        f"flake8 --exclude {','.join(EXCLUDED)} --format=codeclimate {scan_dir}"
+    )[1].splitlines(False)
     json_results = loads(results[0])
     levelMap = {
         "info": Level.LOW,
         "minor": Level.MED,
-        "major": Level.HIGH,
+        "major": Level.MED,
         "critical": Level.HIGH,
         "blocker": Level.HIGH,
     }
@@ -312,15 +299,24 @@ def flake8(scan_dir: str) -> list[Finding]:
                     "description": f"{scan_result['check_name']}: {scan_result['description']}",
                     "file": path_of_file,
                     "evidence": extractEvidence(
-                        scan_result["location"]["positions"]["begin"]["line"], path_of_file
+                        scan_result["location"]["positions"]["begin"]["line"],
+                        path_of_file,
                     )["content"],
                     "severity": levelMap[scan_result["severity"]],
                     "confidence": Level.MED,
-                    "line": scan_result["location"]["positions"]["begin"]["line"],
+                    "line": scan_result["location"]["positions"]["begin"][
+                        "line"
+                    ],
                     "_other": {
-                        "col": scan_result["location"]["positions"]["begin"]["column"],
-                        "start": scan_result["location"]["positions"]["begin"]["line"],
-                        "end": scan_result["location"]["positions"]["end"]["line"],
+                        "col": scan_result["location"]["positions"]["begin"][
+                            "column"
+                        ],
+                        "start": scan_result["location"]["positions"]["begin"][
+                            "line"
+                        ],
+                        "end": scan_result["location"]["positions"]["end"][
+                            "line"
+                        ],
                         "fingerprint": scan_result["fingerprint"],
                     },
                 }
@@ -328,15 +324,16 @@ def flake8(scan_dir: str) -> list[Finding]:
     return findings
 
 
-def semgrep(scan_dir: str) -> list[Finding]:
-    """
-    Semgrep plugin for generating list of findings using for semgrep. Requires Semgrep on the system path (wsl in windows).
+def semgrep(scan_dir: str) -> list[dict]:
+    """Semgrep plugin for generating list of findings using for semgrep.
+    Requires Semgrep on the system path (wsl in windows).
 
     :raises: RuntimeError: if black cant be found
     :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
+
     """
-    findings = []
+    findings: [Finding] = []
     if platform.system() == "Windows":
         raise RuntimeError("semgrep is not supported on windows")
     if _doSysExec("semgrep --help")[0] != 0:
@@ -357,7 +354,9 @@ def semgrep(scan_dir: str) -> list[Finding]:
                 "title": result["check_id"].split(".")[-1],
                 "description": result["extra"]["message"].strip(),
                 "file": file,
-                "evidence": extractEvidence(result["start"]["line"], file)["content"],
+                "evidence": extractEvidence(result["start"]["line"], file)[
+                    "content"
+                ],
                 "severity": levelMap[result["extra"]["severity"]],
                 "confidence": Level.HIGH,
                 "line": result["start"]["line"],
@@ -372,21 +371,24 @@ def semgrep(scan_dir: str) -> list[Finding]:
     return findings
 
 
-def trivy(scan_dir: str) -> list[Finding]:
-    """
-    Trivy plugin for generating list of findings using for trivy. Requires trivy on the system path (wsl in windows).
+def trivy(scan_dir: str) -> list[dict]:
+    """Trivy plugin for generating list of findings using for trivy. Requires
+    trivy on the system path (wsl in windows).
 
     :raises: RuntimeError: if trivy cant be found
     :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
+
     """
-    findings = []
+    findings: [Finding] = []
     if platform.system() == "Windows":
         raise RuntimeError("trivy is not supported on windows")
     if _doSysExec("trivy --help")[0] != 0:
         raise RuntimeError("trivy is not on the system path")
     # sgExclude = ["--exclude {x}" for x in EXCLUDED]
-    payload = loads(_doSysExec(f"trivy fs {scan_dir} " " --format json -q")[1].strip())
+    payload = loads(
+        _doSysExec(f"trivy fs {scan_dir} " " --format json -q")[1].strip()
+    )
 
     levelMap = {
         "UNKNOWN": Level.UNKNOWN,
@@ -410,11 +412,15 @@ def trivy(scan_dir: str) -> list[Finding]:
                         title = ""
 
                     if "PkgName" in vulnerability.keys():
-                        evidence = extractEvidence(vulnerability["PkgName"], file)
+                        evidence = extractEvidence(
+                            vulnerability["PkgName"], file
+                        )
                     else:
                         evidence = extractEvidence(0, file)
                     # Description contains a lot of additional new lines that are replaced with single new line.
-                    simplified_description = vulnerability["Description"].replace("\n\n", "\n")
+                    simplified_description = vulnerability[
+                        "Description"
+                    ].replace("\n\n", "\n")
                     findings.append(
                         {
                             "id": vulnerability["VulnerabilityID"],
@@ -435,7 +441,9 @@ def trivy(scan_dir: str) -> list[Finding]:
                             "title": f"{secret['RuleID']} : {secret['Title']}",
                             "description": f"secrets issue",
                             "file": file,
-                            "evidence": extractEvidence(secret["StartLine"], file)["content"],
+                            "evidence": extractEvidence(
+                                secret["StartLine"], file
+                            )["content"],
                             "severity": levelMap[secret["Severity"]],
                             "confidence": Level.HIGH,
                             "line": secret["StartLine"],
@@ -449,15 +457,15 @@ def trivy(scan_dir: str) -> list[Finding]:
     return findings
 
 
-def black(scan_dir: str) -> list[Finding]:
-    """
-    Black plugin for reformatting the code. This plugin doesnt return scanning results but just reformat code.
+def black(scan_dir: str) -> list[dict]:
+    """Black plugin for reformatting the code. This plugin doesnt return
+    scanning results but just reformat code.
 
     :raises: RuntimeError: if black cant be found
     :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return list[Findings]: empty list as it does not return results.
+
     """
-    findings = []
     if platform.system() == "Windows":
         raise RuntimeError("black is not supported on windows")
     if _doSysExec("black --help")[0] != 0:
@@ -468,25 +476,30 @@ def black(scan_dir: str) -> list[Finding]:
     return []
 
 
-def mypy(scan_dir: str) -> list[Finding]:
-    """
-    mypy plugin for generating list of findings using for semgrep. Requires mypy on the system path (wsl in windows).
-    The structure of the output is:
+def mypy(scan_dir: str) -> list[dict]:
+    """mypy plugin for generating list of findings using for semgrep. Requires
+    mypy on the system path (wsl in windows). The structure of the output is:
+
     -- path:linenr:columnr:type:message --
     where the linenr and columnr can be optional.
 
     :raises: RuntimeError: if mypy cant be found
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
+
     """
-    findings = []
+    findings: [Finding] = []
     if platform.system() == "Windows":
         raise RuntimeError("mypy is not supported on windows")
     if _doSysExec("mypy --help")[0] != 0:
         raise RuntimeError("semgrep is not on the system path")
 
     sgExclude = ["--exclude {x}" for x in EXCLUDED]
-    results = _doSysExec(f"mypy {scan_dir} --strict  {' '.join(sgExclude)}")[1].strip().split("\n")
+    results = (
+        _doSysExec(f"mypy {scan_dir}  {' '.join(sgExclude)}")[1]
+        .strip()
+        .split("\n")
+    )
     levelMap = {"note": Level.LOW, "error": Level.HIGH}
     counter = 0
 
@@ -512,7 +525,7 @@ def mypy(scan_dir: str) -> list[Finding]:
                 "file": chunks[0],
                 "evidence": extractEvidence(linenr, chunks[0])["content"],
                 "severity": levelMap[chunks[(correction + 1)].strip()],
-                "confidence": Level.HIGH,
+                "confidence": levelMap[chunks[(correction + 1)].strip()],
                 "line": linenr,
                 "_other": {
                     "col": columnnr,
@@ -523,17 +536,16 @@ def mypy(scan_dir: str) -> list[Finding]:
     return findings
 
 
-def isort(scan_dir: str) -> list[Finding]:
-    """
-    isort plugin for reformatting imports. This plugin doesn't return scanning results but just reformat code.
+def isort(scan_dir: str) -> list[dict]:
+    """isort plugin for reformatting imports. This plugin doesn't return
+    scanning results but just reformat code.
 
     :raises: RuntimeError: if isort cant be found
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return: empty list as it does not return results.
     """
-    findings = []
     if platform.system() == "Windows":
-        raise RuntimeError("black is not supported on windows")
+        raise RuntimeError("isort is not supported on windows")
     if _doSysExec("isort --help")[0] != 0:
         raise RuntimeError("isort is not on the system path")
     results = _doSysExec(f"isort {scan_dir}")

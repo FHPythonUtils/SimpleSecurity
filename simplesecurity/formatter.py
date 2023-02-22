@@ -1,5 +1,5 @@
-"""
-Take our findings dictionary and give things a pretty format. The findings dictionary is formatted as below:
+"""Take our findings dictionary and give things a pretty format. The findings
+dictionary is formatted as below:
 
 .. highlight:: python
 .. code-block:: python
@@ -20,6 +20,7 @@ Serveral types of outputs are supported. These include:
     - json
     - csv
     - ansi
+
 """
 # pyright: reportConstantRedefinition=false
 from __future__ import annotations
@@ -32,12 +33,12 @@ from simplesecurity.types import Finding, Line
 
 
 def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
-    """
-    Format evidence to plaintext
+    """Format evidence to plaintext.
 
     :param evidence: list of lines of code
     :param newlineChar: use newline char. Defaults to true
     :return: string representation of this
+
     """
     evidenceText = [line["content"] for line in evidence]
     if newlineChar:
@@ -45,14 +46,16 @@ def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
     return "\\n".join(evidenceText)
 
 
-def markdown(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    """
-    Format to Markdown
+def markdown(
+    findings: list[Finding], heading: str | None = None, colourMode: int = 0
+) -> str:
+    """Format to Markdown.
 
     :param findings: list of findings
     :param heading: Optional heading to include. Defaults to None
     :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
     :return: String to write to a file of stdout
+
     """
     _ = colourMode  # silence pylint
     if len(findings) == 0:
@@ -88,14 +91,16 @@ def markdown(findings: list[Finding], heading: str | None = None, colourMode: in
     return "\n".join(strBuf) + "\n"
 
 
-def json(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    """
-    Format to Json
+def json(
+    findings: list[Finding], heading: str | None = None, colourMode: int = 0
+) -> str:
+    """Format to Json.
 
     :param findings: list of findings
     :param heading: Optional heading to include. Defaults to None
     :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
     :return: String to write to a file of stdout
+
     """
     _ = colourMode  # silence pylint
     findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
@@ -108,14 +113,16 @@ def json(findings: list[Finding], heading: str | None = None, colourMode: int = 
     return dumps(out, indent="\t")
 
 
-def csv(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    """
-    Format to CSV
+def csv(
+    findings: list[Finding], heading: str | None = None, colourMode: int = 0
+) -> str:
+    """Format to CSV.
 
     :param findings: list of findings
     :param heading: Optional heading to include. Defaults to None
     :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
     :return: String to write to a file of stdout
+
     """
     _ = colourMode  # silence pylint
     findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
@@ -129,7 +136,16 @@ def csv(findings: list[Finding], heading: str | None = None, colourMode: int = 0
         ]
     )
     csvString.writerow(
-        ["id", "title", "description", "file", "evidence", "severity", "confidence", "line"]
+        [
+            "id",
+            "title",
+            "description",
+            "file",
+            "evidence",
+            "severity",
+            "confidence",
+            "line",
+        ]
     )
     for finding in findings:
         csvString.writerow(
@@ -147,14 +163,16 @@ def csv(findings: list[Finding], heading: str | None = None, colourMode: int = 0
     return output.getvalue()
 
 
-def ansi(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    """
-    Format to ansi
+def ansi(
+    findings: list[Finding], heading: str | None = None, colourMode: int = 0
+) -> str:
+    """Format to ansi.
 
     :param findings: list of findings
     :param heading: Optional heading to include. Defaults to None
     :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
     :return: String to write to a file of stdout
+
     """
 
     # pylint: disable=invalid-name
@@ -206,10 +224,14 @@ def ansi(findings: list[Finding], heading: str | None = None, colourMode: int = 
 
     # Summary Table
     strBuf.append(f"{FMT['TXT']}┌{'─' * 10}┬{'─' * 50}┐")
-    strBuf.append("│Severity  │Finding                                           │")
+    strBuf.append(
+        "│Severity  │Finding                                           │"
+    )
     strBuf.append(f"├{'─' * 10}┼{'─' * 50}┤")
     for finding in findings:
-        strBuf.append(f"│{finding['severity']: <10}│{finding['title'][:50]: <50}│")
+        strBuf.append(
+            f"│{finding['severity']: <10}│{finding['title'][:50]: <50}│"
+        )
     strBuf.append(f"└{'─' * 10}┴{'─' * 50}┘")
     strBuf.append("")
 
@@ -236,14 +258,16 @@ def ansi(findings: list[Finding], heading: str | None = None, colourMode: int = 
     return "\n".join(strBuf) + f"{FMT['CLS']}"
 
 
-def sarif(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    """
-    Format to sarif https://sarifweb.azurewebsites.net/
+def sarif(
+    findings: list[Finding], heading: str | None = None, colourMode: int = 0
+) -> str:
+    """Format to sarif https://sarifweb.azurewebsites.net/
 
     :param findings: list of findings
     :param heading: Optional heading to include. Defaults to None
     :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
     :return: String to write to a file of stdout
+
     """
     _, _ = colourMode, heading  # silence pylint
     out = {
@@ -265,29 +289,44 @@ def sarif(findings: list[Finding], heading: str | None = None, colourMode: int =
                     {
                         "ruleId": finding["id"],
                         "level": finding["severity"].toSarif(),
-                        "message": {"text": f"{finding['title']}: {finding['description']}"},
+                        "message": {
+                            "text": f"{finding['title']}: {finding['description']}"
+                        },
                         "locations": [
                             {
                                 "physicalLocation": {
-                                    "artifactLocation": {"uri": finding["file"]},
+                                    "artifactLocation": {
+                                        "uri": finding["file"]
+                                    },
                                     "region": {
                                         "startLine": finding["line"],
                                         "snippet": {
                                             "text": "".join(
                                                 [
                                                     line["content"]
-                                                    for line in finding["evidence"]
+                                                    for line in finding[
+                                                        "evidence"
+                                                    ]
                                                     if line["selected"]
                                                 ]
                                             )
                                         },
                                     },
                                     "contextRegion": {
-                                        "startLine": finding["evidence"][0]["line"],
-                                        "endLine": finding["evidence"][-1]["line"],
+                                        "startLine": finding["evidence"][0][
+                                            "line"
+                                        ],
+                                        "endLine": finding["evidence"][-1][
+                                            "line"
+                                        ],
                                         "snippet": {
                                             "text": "\n".join(
-                                                [line["content"] for line in finding["evidence"]]
+                                                [
+                                                    line["content"]
+                                                    for line in finding[
+                                                        "evidence"
+                                                    ]
+                                                ]
                                             )
                                         },
                                     },

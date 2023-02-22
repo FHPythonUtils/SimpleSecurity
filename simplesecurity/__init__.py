@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import argparse
+import logging
 import os
 from sys import exit as sysexit
 from sys import stdout
@@ -7,33 +9,35 @@ from typing import Any
 
 from simplesecurity import filter as secfilter
 from simplesecurity import formatter, plugins
-from simplesecurity.types import Finding
 from simplesecurity.github import GithubAnnotationsAndComments
+from simplesecurity.types import Finding
 
-import logging
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(name)-6s %(levelname)-6s %(message)s',
-                    datefmt='%m-%d %H:%M',
-                    handlers=[logging.StreamHandler()])
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(name)-6s %(levelname)-6s %(message)s",
+    datefmt="%m-%d %H:%M",
+    handlers=[logging.StreamHandler()],
+)
 
 logger = logging.getLogger()
 
-
 stdout.reconfigure(encoding="utf-8")  # type:ignore
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
-PLUGIN_HELP = (
-    "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, trivy or all, default=all"
+PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, trivy or all, default=all"
+SCAN_PATH = (
+    "Define Path that should be scannend, default path is root of CLI tool"
 )
-SCAN_PATH = "Define Path that should be scannend, default path is root of CLI tool"
-
 
 
 def runAllPlugins(
-    scan_path: str, pluginMap: dict[str, Any], severity: int, confidence: int, fast: bool
+    scan_path: str,
+    pluginMap: dict[str, Any],
+    severity: int,
+    confidence: int,
+    fast: bool,
 ) -> list[Finding]:
-    """
-    This helper function triggers als scans if no specific scan is requested. It triggers the scans chronologically.
+    """This helper function triggers als scans if no specific scan is
+    requested. It triggers the scans chronologically.
 
     :param scan_path: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :param pluginMap: A map of all the plugins, or scans, that are iterated over when scanning everything.
@@ -41,6 +45,7 @@ def runAllPlugins(
     :param confidence: Level of Confidence helps you filter through the results and is denoted as a integer.
     :param fast: A Boolean indicator to enable fast scanning when available.
     :return: A list findings that the list of scans have returned.
+
     """
     findings: list[Finding] = []
     for plugin in pluginMap:
@@ -135,12 +140,6 @@ def cli():
         default=None,
         help="Provide the GitHub Access Token if you want to annotate the PR (For CI applications)",
     )
-    # parser.add_argument(
-    #     "--github_repository",
-    #     action="store",
-    #     default=None,
-    #     help="Provide the Repo if you want to annotate the PR (For CI applications)",
-    # )
     parser.add_argument(
         "--github_repo_url",
         action="store",
@@ -153,19 +152,15 @@ def cli():
         default=None,
         help="Provide the github workflow id if you want to annotate the PR (For CI applications)",
     )
-    # parser.add_argument(
-    #     "--github_pr_number",
-    #     action="store",
-    #     default=None,
-    #     help="Provide the PR Number if you want to annotate the PR (For CI applications)",
-    # )
 
     args = parser.parse_args()
     # File
     filename = (
         stdout
         if args.file is None
-        else open(args.file, "w", encoding="utf-8")  # pylint: disable=consider-using-with
+        else open(
+            args.file, "w", encoding="utf-8"
+        )  # pylint: disable=consider-using-with
     )
     # Colour Mode
     colourMode = 1
@@ -248,15 +243,15 @@ def cli():
         },
     }
 
-    assert args.scan_path != None, "Please define scanning path"
+    assert args.scan_path is not None, "Please define scanning path"
     assert (
-        os.path.exists(args.scan_path) or os.path.exists(os.path.join(os.getcwd(), args.scan_path))
-    ) == True, "Scanning path not found.."
+        os.path.exists(args.scan_path)
+        or os.path.exists(os.path.join(os.getcwd(), args.scan_path))
+    ) is True, "Scanning path not found.."
 
     scanning_path = os.path.abspath(str(args.scan_path))
 
     if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
-        findings = []
         if args.plugin is None or args.plugin == "all":
             findings = runAllPlugins(
                 scan_path=scanning_path,
@@ -265,17 +260,16 @@ def cli():
                 confidence=args.confidence,
                 fast=args.fast,
             )
-        elif (
-            pluginMap[args.plugin]["max_severity"] >= args.level
-            and pluginMap[args.plugin]["max_confidence"] >= args.confidence
-        ):
+        else:
             findings = pluginMap[args.plugin]["func"](scan_dir=scanning_path)
 
         print("##################    Scanning    #########################")
         print(
             formatt(
                 secfilter.filterSeverityAndConfidence(
-                    secfilter.deduplicate(findings), args.level, args.confidence
+                    secfilter.deduplicate(findings),
+                    args.level,
+                    args.confidence,
                 ),
                 colourMode=colourMode,
             ),
@@ -283,19 +277,23 @@ def cli():
         )
         if args.send_to_git:
             assert (
-                args.github_access_token != None
+                args.github_access_token is not None
             ), "Error, please provide github_access_token provided"
-            assert args.github_repo_url != None, "Error, please provide github_repo_url provided"
             assert (
-                args.github_workflow_run_id != None
+                args.github_repo_url is not None
+            ), "Error, please provide github_repo_url provided"
+            assert (
+                args.github_workflow_run_id is not None
             ), "Error, please provide github_workflow_run_id provided"
 
             try:
-                GithubAnnotationsAndComments(github_access_token=args.github_access_token,
-                                             github_repo_url=args.github_repo_url,
-                                             github_workflow_run_id=args.github_workflow_run_id,
-                                             findings=findings,
-                                             logger=logger, ).annotate_and_comment_in_pr()
+                GithubAnnotationsAndComments(
+                    github_access_token=args.github_access_token,
+                    github_repo_url=args.github_repo_url,
+                    github_workflow_run_id=args.github_workflow_run_id,
+                    findings=findings,
+                    logger=logger,
+                ).annotate_and_comment_in_pr()
 
             except Exception as e:
                 print(e)

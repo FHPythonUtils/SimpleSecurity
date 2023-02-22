@@ -1,5 +1,4 @@
-"""Types used by simplesecurity.
-"""
+"""Types used by simplesecurity."""
 from __future__ import annotations
 
 import typing
@@ -10,7 +9,7 @@ from simplesecurity.level import Level
 
 
 class Finding(typing.TypedDict):
-    """Finding type"""
+    """Finding type."""
 
     id: str
     title: str
@@ -24,7 +23,7 @@ class Finding(typing.TypedDict):
 
 
 class Line(typing.TypedDict):
-    """Line type"""
+    """Line type."""
 
     line: int
     content: str

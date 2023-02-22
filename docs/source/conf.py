@@ -15,6 +15,12 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
 
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "private-members": True,
+}
+
 
 # -- Project information -----------------------------------------------------
 
