@@ -183,43 +183,46 @@ def safety(scan_dir: str) -> list[Finding]:
     """
     if _doSysExec("safety --help")[0] != 0:
         raise RuntimeError("safety is not on the system path")
-    try:
+    if "Dependency walk failed at virtualenv" in _doSysExec("poetry export --without-hashes -f requirements.txt")[1]:
+        raise RuntimeError("Safety cant Run, Poetry was unable to find dependencies")
+    else:
         results = loads(
             _doSysExec(
                 f"poetry export --without-hashes -f requirements.txt | safety check --json --stdin"
             )[1]
         )
-    except Exception as e:
-        self.logger.warning(f"Unable to run safety, returned {e}")
+        findings: [Finding] = []
 
-    findings: [Finding] = []
-    for result in results["affected_packages"]:
-        package_name = result
+        if results['report_meta']['scanned'] is   "No found packages in stdin":
+            print("No depedencies found")
+        else:
+            for result in results["affected_packages"]:
+                package_name = result
 
-        # Retrieve all relevant vulnerabilities
-        relevant_vulnerabilities = str()
-        for vulnerability in results["vulnerabilities"]:
-            if vulnerability["package_name"] == package_name:
-                relevant_vulnerabilities += str(vulnerability)
+                # Retrieve all relevant vulnerabilities
+                relevant_vulnerabilities = str()
+                for vulnerability in results["vulnerabilities"]:
+                    if vulnerability["package_name"] == package_name:
+                        relevant_vulnerabilities += str(vulnerability)
 
-        findings.append(
-            {
-                "id": f"Safety: {package_name}",
-                "title": f"Safety: {package_name}",
-                "description": str(results["affected_packages"][package_name])
-                + relevant_vulnerabilities,
-                "file": "pyproject.toml",
-                "evidence": extractEvidence(package_name, "pyproject.toml")[
-                    "content"
-                ],
-                "severity": Level.MED,
-                "confidence": Level.MED,
-                "line": extractEvidence(package_name, "pyproject.toml")[
-                    "line_nrs"
-                ][0],
-                "_other": {},
-            }
-        )
+                findings.append(
+                    {
+                        "id": f"Safety: {package_name}",
+                        "title": f"Safety: {package_name}",
+                        "description": str(results["affected_packages"][package_name])
+                        + relevant_vulnerabilities,
+                        "file": "pyproject.toml",
+                        "evidence": extractEvidence(package_name, "pyproject.toml")[
+                            "content"
+                        ],
+                        "severity": Level.MED,
+                        "confidence": Level.MED,
+                        "line": extractEvidence(package_name, "pyproject.toml")[
+                            "line_nrs"
+                        ][0],
+                        "_other": {},
+                    }
+                )
 
     return findings
 
