@@ -183,11 +183,14 @@ def safety(scan_dir: str) -> list[Finding]:
     """
     if _doSysExec("safety --help")[0] != 0:
         raise RuntimeError("safety is not on the system path")
-    results = loads(
-        _doSysExec(
-            f"poetry export --without-hashes -f requirements.txt | safety check --json --stdin"
-        )[1]
-    )
+    try:
+        results = loads(
+            _doSysExec(
+                f"poetry export --without-hashes -f requirements.txt | safety check --json --stdin"
+            )[1]
+        )
+    except Exception as e:
+        self.logger.warning(f"Unable to run safety, returned {e}")
 
     findings: [Finding] = []
     for result in results["affected_packages"]:
