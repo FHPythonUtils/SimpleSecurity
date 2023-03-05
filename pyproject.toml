@@ -33,8 +33,6 @@ black = "^22.6.0"
 flake8 = "^4.0.1"
 flake8-bandit = "^3.0.0"
 flake8-json = "^21.7.0"
-isort = "^5.10.1"
-mypy = "0.*"
 bandit = "^1.7.0"
 safety = "^2.2.3"
 dodgy = "<2,>=0.2.1"
@@ -47,10 +45,11 @@ sphinx-rtd-theme = "1.1.1"
 sphinx-mdinclude = "^0.5.3"
 types-requests = "^2.28.11.13"
 docformatter = {extras = ["tomli"], version = "^1.5.1"}
+ruff = "^0.0.254"
 
 [tool.poetry.extras]
 docs= ['sphinx', 'docutils', 'sphinx-autodoc-typehints', 'sphinx-rtd-theme', 'sphinx_mdinclude']
-scanners = ['flake8', 'flake8-bandit', 'flake8-json', 'mypy', 'isort', 'safety', 'bandit', 'dlint', 'semgrep']
+scanners = ['flake8', 'flake8-bandit', 'flake8-json', 'safety', 'bandit', 'dlint', 'semgrep']
 
 [build-system]
 requires = ["poetry-core"]
@@ -95,21 +94,6 @@ exclude = '''
   | tests/.*/setup.py
 )/
 '''
-
-[tool.isort]
-profile = "black"
-indent = "Tab"
-
-[tool.mypy]
-show_error_context = true
-show_column_numbers = true
-#pretty = true
-error_summary = true
-show_absolute_path = true
-incremental = false
-
-[flake8]
-max-line-length = 79
 
 [tool.docformatter]
 recursive = true

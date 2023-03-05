@@ -192,12 +192,6 @@ def cli():
             "max_confidence": 3,
             "fast": True,
         },
-        "black": {
-            "func": plugins.black,
-            "max_severity": 3,
-            "max_confidence": 3,
-            "fast": False,
-        },
         "safety": {
             "func": plugins.safety,
             "max_severity": 2,
@@ -229,18 +223,6 @@ def cli():
             "max_confidence": 3,
             "fast": False,
         },
-        "mypy": {
-            "func": plugins.mypy,
-            "max_severity": 3,
-            "max_confidence": 3,
-            "fast": False,
-        },
-        "isort": {
-            "func": plugins.isort,
-            "max_severity": 3,
-            "max_confidence": 3,
-            "fast": False,
-        },
     }
 
     assert args.scan_path is not None, "Please define scanning path"
@@ -262,8 +244,6 @@ def cli():
             )
         else:
             findings = pluginMap[args.plugin]["func"](scan_dir=scanning_path)
-
-        print("##################    Scanning    #########################")
         print(
             formatt(
                 secfilter.filterSeverityAndConfidence(
