@@ -1,5 +1,5 @@
 name: Docs Publish
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 permissions:
     contents: write
 jobs:
@@ -20,6 +20,6 @@ jobs:
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/build/
+          publish_dir: docs/build/html
           force_orphan: true
 
