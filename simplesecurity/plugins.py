@@ -193,7 +193,7 @@ def safety(scan_dir: str) -> list[Finding]:
         )
         findings: [Finding] = []
 
-        if results['report_meta']['scanned'] is   "No found packages in stdin":
+        if results['report_meta']['scanned'] == "No found packages in stdin":
             print("No depedencies found")
         else:
             for result in results["affected_packages"]:

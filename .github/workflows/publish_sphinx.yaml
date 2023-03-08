@@ -12,8 +12,8 @@ jobs:
         run: |
           pip install -r docs/requirements.txt
       - name: Sphinx build
-        run: |
-          sphinx-build -b html . ../build/html
+        run:
+          sphinx-build -b html docs/source docs/build/html
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -22,3 +22,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/build/
           force_orphan: true
+
