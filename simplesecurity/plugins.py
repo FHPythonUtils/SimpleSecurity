@@ -23,10 +23,9 @@ import platform
 import subprocess
 from json import loads
 from pathlib import Path
-from typing import Any, Dict, List, Type
 
 from simplesecurity.level import Level
-from simplesecurity.types import Finding, Line
+from simplesecurity.types import Finding
 
 THISDIR = str(Path(__file__).resolve().parent)
 
@@ -91,7 +90,6 @@ def extractEvidence(LineNrOrWord: int | str, file: str) -> dict:
     :return: This function returns a dictionary that contains the line_nrs of where the matches were found, and content, that shows the bodies of text where the matches were found in.
 
     """
-    results = {}
     if type(LineNrOrWord) == str:
         line_nrs = stringMatchesinFile(file=file, pattern=LineNrOrWord)
     elif type(LineNrOrWord) == int:
@@ -183,17 +181,22 @@ def safety(scan_dir: str) -> list[Finding]:
     """
     if _doSysExec("safety --help")[0] != 0:
         raise RuntimeError("safety is not on the system path")
-    if "Dependency walk failed at virtualenv" in _doSysExec("poetry export --without-hashes -f requirements.txt")[1]:
-        raise RuntimeError("Safety cant Run, Poetry was unable to find dependencies")
+    if (
+        "Dependency walk failed at virtualenv"
+        in _doSysExec("poetry export --without-hashes -f requirements.txt")[1]
+    ):
+        raise RuntimeError(
+            "Safety cant Run, Poetry was unable to find dependencies"
+        )
     else:
         results = loads(
             _doSysExec(
-                f"poetry export --without-hashes -f requirements.txt | safety check --json --stdin"
+                "poetry export --without-hashes -f requirements.txt | safety check --json --stdin"
             )[1]
         )
         findings: [Finding] = []
 
-        if results['report_meta']['scanned'] == "No found packages in stdin":
+        if results["report_meta"]["scanned"] == "No found packages in stdin":
             print("No depedencies found")
         else:
             for result in results["affected_packages"]:
@@ -209,17 +212,19 @@ def safety(scan_dir: str) -> list[Finding]:
                     {
                         "id": f"Safety: {package_name}",
                         "title": f"Safety: {package_name}",
-                        "description": str(results["affected_packages"][package_name])
+                        "description": str(
+                            results["affected_packages"][package_name]
+                        )
                         + relevant_vulnerabilities,
                         "file": "pyproject.toml",
-                        "evidence": extractEvidence(package_name, "pyproject.toml")[
-                            "content"
-                        ],
+                        "evidence": extractEvidence(
+                            package_name, "pyproject.toml"
+                        )["content"],
                         "severity": Level.MED,
                         "confidence": Level.MED,
-                        "line": extractEvidence(package_name, "pyproject.toml")[
-                            "line_nrs"
-                        ][0],
+                        "line": extractEvidence(
+                            package_name, "pyproject.toml"
+                        )["line_nrs"][0],
                         "_other": {},
                     }
                 )
@@ -444,7 +449,7 @@ def trivy(scan_dir: str) -> list[dict]:
                         {
                             "id": secret["RuleID"],
                             "title": f"{secret['RuleID']} : {secret['Title']}",
-                            "description": f"secrets issue",
+                            "description": "secrets issue",
                             "file": file,
                             "evidence": extractEvidence(
                                 secret["StartLine"], file
@@ -548,6 +553,7 @@ def isort(scan_dir: str) -> list[dict]:
     :raises: RuntimeError: if isort cant be found
     :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
     :return: empty list as it does not return results.
+
     """
     if platform.system() == "Windows":
         raise RuntimeError("isort is not supported on windows")

@@ -47,6 +47,7 @@ sphinx-rtd-theme = "1.1.1"
 sphinx-mdinclude = "^0.5.3"
 types-requests = "^2.28.11.13"
 docformatter = {extras = ["tomli"], version = "^1.5.1"}
+ruff = "^0.0.254"
 
 [tool.poetry.extras]
 docs= ['sphinx', 'docutils', 'sphinx-autodoc-typehints', 'sphinx-rtd-theme', 'sphinx_mdinclude']
@@ -115,3 +116,51 @@ max-line-length = 79
 recursive = true
 wrap-summaries = 79
 blank = true
+
+## adding Ruff configuration, ruff can replace a host of linters.
+
+[tool.ruff]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = ["E", "F"]
+ignore = []
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["A", "B", "C", "D", "E", "F"]
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Same as Black.
+line-length = 79
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.10.
+target-version = "py310"
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10

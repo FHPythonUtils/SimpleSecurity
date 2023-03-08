@@ -85,19 +85,19 @@ class GithubAnnotationsAndComments(object):
 
         """
         assert (
-            self.workflow_run != None
+            self.workflow_run is not None
         ), "workflow_run has not been found, please run _search_check_suite before executing this function"
         assert (
-            self.github_repo_url != None
+            self.github_repo_url is not None
         ), "github_repo_url has not been found, please run _search_check_suite before executing this function"
         assert (
-            self.owner != None
+            self.owner is not None
         ), "owner has not been found, please run _search_check_suite before executing this function"
         assert (
-            self.repo_name != None
+            self.repo_name is not None
         ), "repo_name has not been found, please run _search_check_suite before executing this function"
         assert (
-            self.headers != None
+            self.headers is not None
         ), "headers has not been found, please run _search_check_suite before executing this function"
 
         # Get the correct issue number and comment URL so you can comment to the correct PR
@@ -192,19 +192,19 @@ class GithubAnnotationsAndComments(object):
             len(self.annotations_list) > 0
         ), "annotations_list is empty, please run _search_check_suite before executing this function"
         assert (
-            self.check_suite_run_url != None
+            self.check_suite_run_url is not None
         ), "check_suite_run_url has not been found, please run _search_check_suite before executing this function"
         assert (
-            self.owner != None
+            self.owner is not None
         ), "owner has not been found, please run _search_check_suite before executing this function"
         assert (
-            self.repo_name != None
+            self.repo_name is not None
         ), "repo_name has not been found, please run _search_check_suite before executing this function"
         assert (
-            self.runID != None
+            self.runID is not None
         ), "runID has not been found, please run _search_check_suite before executing this function"
         assert (
-            self.headers != None
+            self.headers is not None
         ), "headers has not been found, please run _search_check_suite before executing this function"
 
         # The GitHub API only accepts 50 annotations per call.

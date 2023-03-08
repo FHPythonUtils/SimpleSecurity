@@ -23,7 +23,10 @@ logger = logging.getLogger()
 
 stdout.reconfigure(encoding="utf-8")  # type:ignore
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
-PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, trivy or all, default=all"
+PLUGIN_HELP = (
+    "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, "
+    "trivy or all, default=all"
+)
 SCAN_PATH = (
     "Define Path that should be scannend, default path is root of CLI tool"
 )
@@ -39,10 +42,14 @@ def runAllPlugins(
     """This helper function triggers als scans if no specific scan is
     requested. It triggers the scans chronologically.
 
-    :param scan_path: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :param pluginMap: A map of all the plugins, or scans, that are iterated over when scanning everything.
-    :param severity: Level of Severity helps you filter through the results and is denoted as a integer.
-    :param confidence: Level of Confidence helps you filter through the results and is denoted as a integer.
+    :param scan_path: The scanning path is a string that point to the directory
+     that should be scanned. This argument is required.
+    :param pluginMap: A map of all the plugins, or scans, that are iterated
+    over when scanning everything.
+    :param severity: Level of Severity helps you filter through the results and
+    is denoted as a integer.
+    :param confidence: Level of Confidence helps you filter through the results
+     and is denoted as a integer.
     :param fast: A Boolean indicator to enable fast scanning when available.
     :return: A list findings that the list of scans have returned.
 
@@ -120,37 +127,45 @@ def cli():
         "--fast",
         "--skip",
         action="store_true",
-        help="Skip long running jobs. Will omit plugins with long run time (applies to -p all only)",
+        help="Skip long running jobs. Will omit plugins with long run time "
+        "(applies to -p all only)",
     )
     parser.add_argument(
         "--zero",
         "-0",
         action="store_true",
-        help="Return non zero exit code if any security vulnerabilities are found",
+        help="Return non zero exit code if any security vulnerabilities are "
+        "found",
     )
     parser.add_argument(
         "--send_to_git",
         action="store_true",
         default=False,
-        help="Explicit Flag for I you want to annotate your PR, doesnt require value. Make sure that you use the other Git Flags too. These include --github_access_token, --github_repository and --github_pr_number",
+        help="Explicit Flag for I you want to annotate your PR, doesnt require"
+        " value. Make sure that you use the other Git Flags too. These "
+        "include --github_access_token, --github_repository and "
+        "--github_pr_number",
     )
     parser.add_argument(
         "--github_access_token",
         action="store",
         default=None,
-        help="Provide the GitHub Access Token if you want to annotate the PR (For CI applications)",
+        help="Provide the GitHub Access Token if you want to annotate the PR "
+        "(For CI applications)",
     )
     parser.add_argument(
         "--github_repo_url",
         action="store",
         default=None,
-        help="Provide the Repo URL if you want to annotate the PR (For CI applications)",
+        help="Provide the Repo URL if you want to annotate the PR (For CI "
+        "applications)",
     )
     parser.add_argument(
         "--github_workflow_run_id",
         action="store",
         default=None,
-        help="Provide the github workflow id if you want to annotate the PR (For CI applications)",
+        help="Provide the github workflow id if you want to annotate the PR "
+        "(For CI applications)",
     )
 
     args = parser.parse_args()
