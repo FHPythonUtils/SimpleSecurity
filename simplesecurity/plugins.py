@@ -181,13 +181,8 @@ def safety(scan_dir: str) -> list[Finding]:
     """
     if _doSysExec("safety --help")[0] != 0:
         raise RuntimeError("safety is not on the system path")
-    if (
-        "Dependency walk failed at virtualenv"
-        in _doSysExec("poetry export --without-hashes -f requirements.txt")[1]
-    ):
-        raise RuntimeError(
-            "Safety cant Run, Poetry was unable to find dependencies"
-        )
+    if "Dependency walk failed at virtualenv" in _doSysExec("poetry export --without-hashes -f requirements.txt")[1]:
+        raise RuntimeError("Safety cant Run, Poetry was unable to find dependencies")
     else:
         results = loads(
             _doSysExec(
@@ -196,7 +191,7 @@ def safety(scan_dir: str) -> list[Finding]:
         )
         findings: [Finding] = []
 
-        if results["report_meta"]["scanned"] == "No found packages in stdin":
+        if results['report_meta']['scanned'] == "No found packages in stdin":
             print("No depedencies found")
         else:
             for result in results["affected_packages"]:
@@ -212,19 +207,17 @@ def safety(scan_dir: str) -> list[Finding]:
                     {
                         "id": f"Safety: {package_name}",
                         "title": f"Safety: {package_name}",
-                        "description": str(
-                            results["affected_packages"][package_name]
-                        )
+                        "description": str(results["affected_packages"][package_name])
                         + relevant_vulnerabilities,
                         "file": "pyproject.toml",
-                        "evidence": extractEvidence(
-                            package_name, "pyproject.toml"
-                        )["content"],
+                        "evidence": extractEvidence(package_name, "pyproject.toml")[
+                            "content"
+                        ],
                         "severity": Level.MED,
                         "confidence": Level.MED,
-                        "line": extractEvidence(
-                            package_name, "pyproject.toml"
-                        )["line_nrs"][0],
+                        "line": extractEvidence(package_name, "pyproject.toml")[
+                            "line_nrs"
+                        ][0],
                         "_other": {},
                     }
                 )
@@ -465,101 +458,3 @@ def trivy(scan_dir: str) -> list[dict]:
     else:  # Handling no results.
         findings = []
     return findings
-
-
-def black(scan_dir: str) -> list[dict]:
-    """Black plugin for reformatting the code. This plugin doesnt return
-    scanning results but just reformat code.
-
-    :raises: RuntimeError: if black cant be found
-    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return list[Findings]: empty list as it does not return results.
-
-    """
-    if platform.system() == "Windows":
-        raise RuntimeError("black is not supported on windows")
-    if _doSysExec("black --help")[0] != 0:
-        raise RuntimeError("black is not on the system path")
-    results = _doSysExec(f"black {scan_dir}")
-    print("##################  Reformatting  #########################")
-    print(f"Black results: {results[1]}")
-    return []
-
-
-def mypy(scan_dir: str) -> list[dict]:
-    """mypy plugin for generating list of findings using for semgrep. Requires
-    mypy on the system path (wsl in windows). The structure of the output is:
-
-    -- path:linenr:columnr:type:message --
-    where the linenr and columnr can be optional.
-
-    :raises: RuntimeError: if mypy cant be found
-    :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return: returns structured list of findings, if there are any
-
-    """
-    findings: [Finding] = []
-    if platform.system() == "Windows":
-        raise RuntimeError("mypy is not supported on windows")
-    if _doSysExec("mypy --help")[0] != 0:
-        raise RuntimeError("semgrep is not on the system path")
-
-    sgExclude = ["--exclude {x}" for x in EXCLUDED]
-    results = (
-        _doSysExec(f"mypy {scan_dir}  {' '.join(sgExclude)}")[1]
-        .strip()
-        .split("\n")
-    )
-    levelMap = {"note": Level.LOW, "error": Level.HIGH}
-    counter = 0
-
-    for item in results[:-1]:
-        correction = 0
-        chunks = item.split(":")
-        if chunks[1].isdigit():
-            correction += 1
-            linenr = int(chunks[1])
-        else:
-            linenr = 0
-        if chunks[2].isdigit():
-            correction += 1
-            columnnr = int(chunks[2])
-        else:
-            columnnr = 0
-
-        findings.append(
-            {
-                "id": f"mypy issue {counter}",
-                "title": f"mypy: {chunks[correction + 1].strip()}",
-                "description": " ".join(chunks[(correction + 1) :]),
-                "file": chunks[0],
-                "evidence": extractEvidence(linenr, chunks[0])["content"],
-                "severity": levelMap[chunks[(correction + 1)].strip()],
-                "confidence": levelMap[chunks[(correction + 1)].strip()],
-                "line": linenr,
-                "_other": {
-                    "col": columnnr,
-                },
-            }
-        )
-        counter += 1
-    return findings
-
-
-def isort(scan_dir: str) -> list[dict]:
-    """isort plugin for reformatting imports. This plugin doesn't return
-    scanning results but just reformat code.
-
-    :raises: RuntimeError: if isort cant be found
-    :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
-    :return: empty list as it does not return results.
-
-    """
-    if platform.system() == "Windows":
-        raise RuntimeError("isort is not supported on windows")
-    if _doSysExec("isort --help")[0] != 0:
-        raise RuntimeError("isort is not on the system path")
-    results = _doSysExec(f"isort {scan_dir}")
-    print("##################  Reformatting  #########################")
-    print(f"Black results: {results[1]}")
-    return []

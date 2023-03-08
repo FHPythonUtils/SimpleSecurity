@@ -34,6 +34,7 @@ class GithubAnnotationsAndComments(object):
         * filtering for any non-file-specific findings, as they will be commented in the PR instead of annotated
         * retrieving the endline of the finding, when available
         * templating the findings in the correct format for the GitHub API
+
         The function returns a boolean to flag for the list being empty
 
         :return: A boolean indicator flagging whether the list contains findings (True) or is empty (False)
@@ -139,6 +140,7 @@ class GithubAnnotationsAndComments(object):
         * The API Headers
         * The repo name, owner and RunID
         * The workflow and check_suite runs
+
         This step is essential for all the other consecutive steps and the parameters are cast as attributes to the class
 
         :return: None
@@ -183,6 +185,7 @@ class GithubAnnotationsAndComments(object):
         * repo_name
         * runID
         * headers
+
         The function executes the patching in batches of 50, as this is the limit provided by GitHub.
 
         :return: None
