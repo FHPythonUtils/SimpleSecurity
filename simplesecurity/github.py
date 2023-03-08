@@ -31,42 +31,51 @@ class GithubAnnotationsAndComments(object):
         """The findings must be processed in order to make them viable for
         annotation. The steps include:
 
-        * filtering for any non-file-specific findings, as they will be commented in the PR instead of annotated
+        * filtering for any non-file-specific findings, as they will be
+        commented in the PR instead of annotated
         * retrieving the endline of the finding, when available
         * templating the findings in the correct format for the GitHub API
 
         The function returns a boolean to flag for the list being empty
 
-        :return: A boolean indicator flagging whether the list contains findings (True) or is empty (False)
+        :return: A boolean indicator flagging whether the list contains
+        findings (True) or is empty (False)
 
         """
         if len(self.findings) > 0:
             for find in self.findings:
-                # if the comments are not on a file level, we will parse them as comments instead
+                # if the comments are not on a file level, we will parse them
+                # as comments instead
                 if type(find["line"]) != int:
                     self.logger.info(
-                        f"Found project level comment, commenting in PR accordingly {find}"
+                        f"Found project level comment, commenting in "
+                        f"PR accordingly {find}"
                     )
                     self._post_comment(find)
-                # if the files are associated to particular files, we can annotate that within the code.
+                # if the files are associated to particular files,
+                # we can annotate that within the code.
                 else:
-                    # if we have an endline, use it, otherwise we use the beginning line as endline.
+                    # if we have an endline, use it, otherwise we use the
+                    # beginning line as endline.
                     try:
                         end = find["_other"]["end"]
-                    except:
+                    except RuntimeError:
                         end = find["line"]
 
                     self.annotations_list.append(
                         {
                             "path": self._get_relative_path(
                                 find["file"],
-                                "home/runner/work/SimpleSecurity/SimpleSecurity/",
+                                "home/runner/work/SimpleSecurity/"
+                                "SimpleSecurity/",
                             ),
                             "start_line": find["line"],
                             "end_line": end,
                             "annotation_level": "warning",
-                            "message": f"{find['title']}\nLine: {find['line']}\nDescription: {find['description']}"
-                            f"\nSeverity: {find['severity']}\nConfidence: {find['confidence']}",
+                            "message": f"{find['title']}\nLine: {find['line']}"
+                            f"\nDescription: {find['description']}"
+                            f"\nSeverity: {find['severity']}\nConfidence: "
+                            f"{find['confidence']}",
                         }
                     )
             return True
@@ -85,23 +94,29 @@ class GithubAnnotationsAndComments(object):
         :return: None
 
         """
-        assert (
-            self.workflow_run is not None
-        ), "workflow_run has not been found, please run _search_check_suite before executing this function"
-        assert (
-            self.github_repo_url is not None
-        ), "github_repo_url has not been found, please run _search_check_suite before executing this function"
-        assert (
-            self.owner is not None
-        ), "owner has not been found, please run _search_check_suite before executing this function"
-        assert (
-            self.repo_name is not None
-        ), "repo_name has not been found, please run _search_check_suite before executing this function"
-        assert (
-            self.headers is not None
-        ), "headers has not been found, please run _search_check_suite before executing this function"
+        assert self.workflow_run is not None, (
+            "workflow_run has not been found, please run _search_check_suite "
+            "before executing this function"
+        )
+        assert self.github_repo_url is not None, (
+            "github_repo_url has not been found, please "
+            "run _search_check_suite before executing this function"
+        )
+        assert self.owner is not None, (
+            "owner has not been found, please run "
+            "_search_check_suite before executing this function"
+        )
+        assert self.repo_name is not None, (
+            "repo_name has not been found, please run "
+            "_search_check_suite before executing this function"
+        )
+        assert self.headers is not None, (
+            "headers has not been found, please run "
+            "_search_check_suite before executing this function"
+        )
 
-        # Get the correct issue number and comment URL so you can comment to the correct PR
+        # Get the correct issue number and comment URL so you can comment to
+        # the correct PR
         self.issue_number = self.workflow_run["pull_requests"][0]["number"]
         self.comment_url = (
             f"{self.github_repo_url}/issues/{self.issue_number}/comments"
@@ -128,7 +143,9 @@ class GithubAnnotationsAndComments(object):
 
             if resp.status_code >= 400:
                 self.logger.warning(
-                    f"Failed to post comment, the comment was {find} \n The Return was code {resp.status_code}\n The contents was: {resp.content}"
+                    f"Failed to post comment, the comment was {find} \n The "
+                    f"Return was code {resp.status_code}\n "
+                    f"The contents was: {resp.content}"
                 )
         except Exception as e:
             self.logger.warning(f"Post comment request produced error, {e}")
@@ -141,7 +158,8 @@ class GithubAnnotationsAndComments(object):
         * The repo name, owner and RunID
         * The workflow and check_suite runs
 
-        This step is essential for all the other consecutive steps and the parameters are cast as attributes to the class
+        This step is essential for all the other consecutive steps and the
+        parameters are cast as attributes to the class
 
         :return: None
 
@@ -151,14 +169,19 @@ class GithubAnnotationsAndComments(object):
             "Accept": "application/vnd.github+json",
         }
 
-        workflow_url = f"{self.github_repo_url}/actions/runs/{self.github_workflow_run_id}"
+        workflow_url = (
+            f"{self.github_repo_url}/actions/"
+            f"runs/{self.github_workflow_run_id}"
+        )
         workflow_run_resp = requests.get(workflow_url, headers=self.headers)
         self.workflow_run = workflow_run_resp.json()
         self.logger.info(
-            f"Status for checking workflow run ID: {workflow_run_resp.status_code}"
+            f"Status for checking workflow run ID: "
+            f"{workflow_run_resp.status_code}"
         )
 
-        # Extracting owner, repo, and run id for the header in the patch request
+        # Extracting owner, repo, and run id for the header
+        # in the patch request
         self.repo_name = f"{self.workflow_run['repository']['name']}"
         self.owner = f"{self.workflow_run['repository']['owner']['login']}"
 
@@ -171,7 +194,8 @@ class GithubAnnotationsAndComments(object):
             "url"
         ]
         self.logger.info(
-            f"Status for check suite run ID: {check_suite_runs_resp.status_code}"
+            f"Status for check suite run ID: "
+            f"{check_suite_runs_resp.status_code}"
         )
 
         self.runID = self.check_suite_runs["check_runs"][0]["id"]
@@ -186,29 +210,36 @@ class GithubAnnotationsAndComments(object):
         * runID
         * headers
 
-        The function executes the patching in batches of 50, as this is the limit provided by GitHub.
+        The function executes the patching in batches of 50, as this is the
+        limit provided by GitHub.
 
         :return: None
 
         """
-        assert (
-            len(self.annotations_list) > 0
-        ), "annotations_list is empty, please run _search_check_suite before executing this function"
-        assert (
-            self.check_suite_run_url is not None
-        ), "check_suite_run_url has not been found, please run _search_check_suite before executing this function"
-        assert (
-            self.owner is not None
-        ), "owner has not been found, please run _search_check_suite before executing this function"
-        assert (
-            self.repo_name is not None
-        ), "repo_name has not been found, please run _search_check_suite before executing this function"
-        assert (
-            self.runID is not None
-        ), "runID has not been found, please run _search_check_suite before executing this function"
-        assert (
-            self.headers is not None
-        ), "headers has not been found, please run _search_check_suite before executing this function"
+        assert len(self.annotations_list) > 0, (
+            "annotations_list is empty, please run "
+            "_search_check_suite before executing this function"
+        )
+        assert self.check_suite_run_url is not None, (
+            "check_suite_run_url has not been found, please run "
+            "_search_check_suite before executing this function"
+        )
+        assert self.owner is not None, (
+            "owner has not been found, please run "
+            "_search_check_suite before executing this function"
+        )
+        assert self.repo_name is not None, (
+            "repo_name has not been found, please run "
+            "_search_check_suite before executing this function"
+        )
+        assert self.runID is not None, (
+            "runID has not been found, please run "
+            "_search_check_suite before executing this function"
+        )
+        assert self.headers is not None, (
+            "headers has not been found, please run "
+            "_search_check_suite before executing this function"
+        )
 
         # The GitHub API only accepts 50 annotations per call.
         batches = {}
@@ -225,7 +256,8 @@ class GithubAnnotationsAndComments(object):
                 }
             }
 
-            # Patch request to send the created annotations to GitHub through their API
+            # Patch request to send the created annotations to GitHub
+            # through their API
             resp = requests.patch(
                 self.check_suite_run_url.format(
                     owner=self.owner, repo=self.repo_name, run_id=self.runID
@@ -239,14 +271,20 @@ class GithubAnnotationsAndComments(object):
 
             if resp.status_code >= 400:
                 self.logger.warning(
-                    f"failed to send annotations for batch {key_batch}, the payload was \n {value_batch} \n that returned: {resp.status_code}, with boy {resp.content}"
+                    f"failed to send annotations for batch {key_batch}, "
+                    f"the payload was \n {value_batch} \n "
+                    f"that returned: {resp.status_code}, "
+                    f"with boy {resp.content}"
                 )
 
     def annotate_and_comment_in_pr(self):
         """
-        This function orchestrates the flow of the comment and annotation process. The flow consits out of:
-        1. searching the Check Suite and parameterize the class with all necessary tokens
-        2. process the findings: comment the non-file related findings and format the file-related findings for annotation
+        This function orchestrates the flow of the comment and annotation
+        process. The flow consits out of:
+        1. searching the Check Suite and parameterize the class with all
+        necessary tokens
+        2. process the findings: comment the non-file related findings and
+        format the file-related findings for annotation
         3. batchwise uploading of annotations for the file-related findings
 
         :return: None
@@ -260,7 +298,8 @@ class GithubAnnotationsAndComments(object):
             self._upload_batchwise_annotations()
         else:
             self.logger.info(
-                "No annotations were found, therefore not executing any annotations in PR"
+                "No annotations were found, "
+                "therefore not executing any annotations in PR"
             )
 
     @staticmethod

@@ -67,7 +67,8 @@ def stringMatchesinFile(file: str, pattern: str) -> list:
     """Search for the given string in file and return lines containing that
     string, along with line numbers.
 
-    :param str file: string that outlines the exact line or keyword that should be scanned.
+    :param str file: string that outlines the exact line or keyword that
+    should be scanned.
     :param str pattern: string that provides the keyword for the search
     :return list: returns a list of matches
 
@@ -85,9 +86,13 @@ def stringMatchesinFile(file: str, pattern: str) -> list:
 def extractEvidence(LineNrOrWord: int | str, file: str) -> dict:
     """Grab evidence from the source file.
 
-    :param LineNrOrWord: This can be an integer or string that outlines the exact line or keyword that should be scanned.
-    :param file: A string that point to the file that should be interrogated for annotation
-    :return: This function returns a dictionary that contains the line_nrs of where the matches were found, and content, that shows the bodies of text where the matches were found in.
+    :param LineNrOrWord: This can be an integer or string that outlines the
+    exact line or keyword that should be scanned.
+    :param file: A string that point to the file that should be interrogated
+    for annotation
+    :return: This function returns a dictionary that contains the line_nrs of
+    where the matches were found, and content, that shows the bodies of text
+    where the matches were found in.
 
     """
     if type(LineNrOrWord) == str:
@@ -118,7 +123,10 @@ def extractEvidence(LineNrOrWord: int | str, file: str) -> dict:
                 )
 
     if len(content) > 20:
-        matches = f"Found many more matches: {len(line_nrs)}, cut-off printout to 20 items \n consult line_nrs for full trace"
+        matches = (
+            f"Found many more matches: {len(line_nrs)}, cut-off "
+            f"printout to 20 items \n consult line_nrs for full trace"
+        )
         content = content[0:20]
         content.append({"selected": True, "line": 99999, "content": matches})
     return {"line_nrs": line_nrs, "content": content}
@@ -128,8 +136,10 @@ def bandit(scan_dir: str) -> list[dict]:
     """bandit plugin for generating list of findings using for bandit. Requires
     bandit on the system path.
 
-    :raises: RuntimeError: if bandit is not on the system path, then throw this error
-    :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :raises: RuntimeError: if bandit is not on the system path, then throw
+    this error
+    :param scan_dir: The scanning path is a string that point to the directory
+    that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
 
     """
@@ -174,24 +184,34 @@ def safety(scan_dir: str) -> list[Finding]:
     """safety plugin for generating list of findings using for safety. Requires
     safety on the system path.
 
-    :raises: RuntimeError: if safety is not on the system path, then throw this error
-    :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :raises: RuntimeError: if safety is not on the system path, then throw
+    this error
+    :param scan_dir: The scanning path is a string that point to the directory
+    that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
 
     """
     if _doSysExec("safety --help")[0] != 0:
         raise RuntimeError("safety is not on the system path")
-    if "Dependency walk failed at virtualenv" in _doSysExec("poetry export --without-hashes -f requirements.txt")[1]:
-        raise RuntimeError("Safety cant Run, Poetry was unable to find dependencies")
+    if (
+        "Dependency walk failed at virtualenv"
+        in _doSysExec("poetry export --without-hashes " "-f requirements.txt")[
+            1
+        ]
+    ):
+        raise RuntimeError(
+            "Safety cant Run, Poetry was unable " "to find dependencies"
+        )
     else:
         results = loads(
             _doSysExec(
-                "poetry export --without-hashes -f requirements.txt | safety check --json --stdin"
+                "poetry export --without-hashes -f requirements.txt "
+                "| safety check --json --stdin"
             )[1]
         )
         findings: [Finding] = []
 
-        if results['report_meta']['scanned'] == "No found packages in stdin":
+        if results["report_meta"]["scanned"] == "No found packages in stdin":
             print("No depedencies found")
         else:
             for result in results["affected_packages"]:
@@ -207,17 +227,19 @@ def safety(scan_dir: str) -> list[Finding]:
                     {
                         "id": f"Safety: {package_name}",
                         "title": f"Safety: {package_name}",
-                        "description": str(results["affected_packages"][package_name])
+                        "description": str(
+                            results["affected_packages"][package_name]
+                        )
                         + relevant_vulnerabilities,
                         "file": "pyproject.toml",
-                        "evidence": extractEvidence(package_name, "pyproject.toml")[
-                            "content"
-                        ],
+                        "evidence": extractEvidence(
+                            package_name, "pyproject.toml"
+                        )["content"],
                         "severity": Level.MED,
                         "confidence": Level.MED,
-                        "line": extractEvidence(package_name, "pyproject.toml")[
-                            "line_nrs"
-                        ][0],
+                        "line": extractEvidence(
+                            package_name, "pyproject.toml"
+                        )["line_nrs"][0],
                         "_other": {},
                     }
                 )
@@ -229,8 +251,10 @@ def dodgy(scan_dir: str) -> list[Finding]:
     """dodgy plugin for generating list of findings using for dodgy. Requires
     dodgy on the system path.
 
-    :raises: RuntimeError: if dodgy is not on the system path, then throw this error
-    :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :raises: RuntimeError: if dodgy is not on the system path, then throw this
+    error
+    :param scan_dir: The scanning path is a string that point to the directory
+    that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
 
     """
@@ -262,13 +286,16 @@ def flake8(scan_dir: str) -> list[dict]:
     """flake8 plugin for generating list of findings using for dlint. Requires
     flake8 and dlint on the system path.
 
-    :raises: RuntimeError: if flake8 is not on the system path, then throw this error
-    :param scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :raises: RuntimeError: if flake8 is not on the system path, then throw
+    this error
+    :param scan_dir: The scanning path is a string that point to the directory
+    that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
 
     """
 
-    """Generate list of findings using dlint. Requires flake8 and dlint on the system path.
+    """Generate list of findings using dlint. Requires flake8 and dlint on 
+    the system path.
 
     Raises:
             RuntimeError: if flake8 is not on the system path, then throw this
@@ -281,9 +308,11 @@ def flake8(scan_dir: str) -> list[dict]:
         raise RuntimeError("flake8 is not on the system path")
     findings: [Finding] = []
 
-    # Using codeclimate format instead of json as it supports serverity indicators
+    # Using codeclimate format instead of json as it supports
+    # serverity indicators
     results = _doSysExec(
-        f"flake8 --exclude {','.join(EXCLUDED)} --format=codeclimate {scan_dir}"
+        f"flake8 --exclude {','.join(EXCLUDED)} "
+        f"--format=codeclimate {scan_dir}"
     )[1].splitlines(False)
     json_results = loads(results[0])
     levelMap = {
@@ -298,8 +327,10 @@ def flake8(scan_dir: str) -> list[dict]:
             findings.append(
                 {
                     "id": scan_result["check_name"],
-                    "title": f"{scan_result['check_name']}: {scan_result['description']}",
-                    "description": f"{scan_result['check_name']}: {scan_result['description']}",
+                    "title": f"{scan_result['check_name']}: "
+                             f"{scan_result['description']}",
+                    "description": f"{scan_result['check_name']}: "
+                                   f"{scan_result['description']}",
                     "file": path_of_file,
                     "evidence": extractEvidence(
                         scan_result["location"]["positions"]["begin"]["line"],
@@ -332,7 +363,8 @@ def semgrep(scan_dir: str) -> list[dict]:
     Requires Semgrep on the system path (wsl in windows).
 
     :raises: RuntimeError: if black cant be found
-    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :param str scan_dir: The scanning path is a string that point to the
+    directory that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
 
     """
@@ -344,7 +376,8 @@ def semgrep(scan_dir: str) -> list[dict]:
     sgExclude = ["--exclude {x}" for x in EXCLUDED]
     results = loads(
         _doSysExec(
-            f"semgrep -f {THISDIR}/semgrep_sec.yaml {scan_dir} {' '.join(sgExclude)} "
+            f"semgrep -f {THISDIR}/semgrep_sec.yaml {scan_dir} "
+            f"{' '.join(sgExclude)} "
             "-q --json --no-rewrite-rule-ids"
         )[1].strip()
     )["results"]
@@ -379,7 +412,8 @@ def trivy(scan_dir: str) -> list[dict]:
     trivy on the system path (wsl in windows).
 
     :raises: RuntimeError: if trivy cant be found
-    :param str scan_dir: The scanning path is a string that point to the directory that should be scanned. This argument is required.
+    :param str scan_dir: The scanning path is a string that point to the
+     directory that should be scanned. This argument is required.
     :return: returns structured list of findings, if there are any
 
     """
@@ -405,7 +439,8 @@ def trivy(scan_dir: str) -> list[dict]:
         results = payload["Results"]
         for result in results:
             file = scan_dir + "/" + result["Target"].replace("\\", "/")
-            # Title key is not always present in JSON, e.g. with secret scanning.
+            # Title key is not always present in JSON, e.g.
+            # with secret scanning.
             if "Vulnerabilities" in result.keys():
                 for vulnerability in result["Vulnerabilities"]:
                     # Title key is not always present in JSON
@@ -420,15 +455,18 @@ def trivy(scan_dir: str) -> list[dict]:
                         )
                     else:
                         evidence = extractEvidence(0, file)
-                    # Description contains a lot of additional new lines that are replaced with single new line.
+                    # Description contains a lot of additional new lines that
+                    # are replaced with single new line.
                     simplified_description = vulnerability[
                         "Description"
                     ].replace("\n\n", "\n")
                     findings.append(
                         {
                             "id": vulnerability["VulnerabilityID"],
-                            "title": f"{vulnerability['VulnerabilityID']} : {title}",
-                            "description": f"{simplified_description} {vulnerability['PrimaryURL']}",
+                            "title": f"{vulnerability['VulnerabilityID']} : "
+                                     f"{title}",
+                            "description": f"{simplified_description} "
+                                           f"{vulnerability['PrimaryURL']}",
                             "file": file,
                             "evidence": evidence["content"],
                             "severity": levelMap[vulnerability["Severity"]],

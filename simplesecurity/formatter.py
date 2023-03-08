@@ -53,7 +53,8 @@ def markdown(
 
     :param findings: list of findings
     :param heading: Optional heading to include. Defaults to None
-    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
+    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for
+     default, 2 for high contrast. Defaults to 0.
     :return: String to write to a file of stdout
 
     """
@@ -83,7 +84,8 @@ def markdown(
                 f"## {finding['title']}",
                 f"{finding['description']}",
                 f"\n\nFile: `{finding['file']}`",
-                f"### Severity\n\n{finding['severity']} (confidence: {finding['confidence']})",
+                f"### Severity\n\n{finding['severity']} "
+                f"(confidence: {finding['confidence']})",
                 f"### Evidence\n\nLine: {finding['line']}\n",
                 f"```python\n{formatEvidence(finding['evidence'])}\n```",
             ]
@@ -98,7 +100,8 @@ def json(
 
     :param findings: list of findings
     :param heading: Optional heading to include. Defaults to None
-    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
+    :param colourMode: Output with a given colour mode:, 0 for no colour, 1
+    for default, 2 for high contrast. Defaults to 0.
     :return: String to write to a file of stdout
 
     """
@@ -120,7 +123,8 @@ def csv(
 
     :param findings: list of findings
     :param heading: Optional heading to include. Defaults to None
-    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
+    :param colourMode: Output with a given colour mode:, 0 for no colour, 1
+    for default, 2 for high contrast. Defaults to 0.
     :return: String to write to a file of stdout
 
     """
@@ -132,7 +136,8 @@ def csv(
         [
             heading
             if heading is not None
-            else "Findings - Findings below are ordered by severity (you may want to delete this line)"
+            else "Findings - Findings below are ordered by severity (you may "
+            "want to delete this line)"
         ]
     )
     csvString.writerow(
@@ -170,7 +175,8 @@ def ansi(
 
     :param findings: list of findings
     :param heading: Optional heading to include. Defaults to None
-    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
+    :param colourMode: Output with a given colour mode:, 0 for no colour, 1
+    for default, 2 for high contrast. Defaults to 0.
     :return: String to write to a file of stdout
 
     """
@@ -248,7 +254,8 @@ def ansi(
         evidenceStr = "\n".join(evidence)
         strBuf.extend(
             [
-                f"{FMT['BLD']}{FMT['UL']}{FMT['CG']}{finding['title']}{FMT['CLS']}",
+                f"{FMT['BLD']}{FMT['UL']}{FMT['CG']}{finding['title']}"
+                f"{FMT['CLS']}",
                 f"{FMT['TXT']}{finding['description']}",
                 f"\n{FMT['UL']}{FMT['CY']}Severity: {finding['severity']} "
                 + f"(confidence: {finding['confidence']}){FMT['CLS']}\n",
@@ -265,7 +272,8 @@ def sarif(
 
     :param findings: list of findings
     :param heading: Optional heading to include. Defaults to None
-    :param colourMode: Output with a given colour mode:, 0 for no colour, 1 for default, 2 for high contrast. Defaults to 0.
+    :param colourMode: Output with a given colour mode:, 0 for no colour,
+    1 for default, 2 for high contrast. Defaults to 0.
     :return: String to write to a file of stdout
 
     """
@@ -281,7 +289,8 @@ def sarif(
                 "tool": {
                     "driver": {
                         "name": "SimpleSecurity",
-                        "informationUri": "https://github.com/FHPythonUtils/SimpleSecurity",
+                        "informationUri":
+                            "https://github.com/FHPythonUtils/SimpleSecurity",
                         "version": "2020.*",
                     }
                 },
@@ -290,7 +299,8 @@ def sarif(
                         "ruleId": finding["id"],
                         "level": finding["severity"].toSarif(),
                         "message": {
-                            "text": f"{finding['title']}: {finding['description']}"
+                            "text": f"{finding['title']}: "
+                            f"{finding['description']}"
                         },
                         "locations": [
                             {
