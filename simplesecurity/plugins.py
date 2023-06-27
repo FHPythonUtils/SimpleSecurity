@@ -75,15 +75,17 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 	"""
 	with open(file, encoding="utf-8", errors="ignore") as fileContents:
 		start = max(desiredLine - 3, 0)
-		for line in range(start):
-			next(fileContents)
 		content = []
-		for line in range(start + 1, desiredLine + 3):
-			try:
+		try:
+			for line in range(start):
+				next(fileContents)
+			for line in range(start + 1, desiredLine + 3):
 				lineContent = next(fileContents).rstrip().replace("\t", "    ")
-			except StopIteration:
-				break
-			content.append({"selected": line == desiredLine, "line": line, "content": lineContent})
+				content.append(
+					{"selected": line == desiredLine, "line": line, "content": lineContent}
+				)
+		except StopIteration:
+			pass
 	return content
 
 
@@ -115,20 +117,22 @@ def bandit(scanDir=".") -> list[Finding]:
 		)[1]
 	)["results"]
 	for result in results:
-		file = result["filename"].replace("\\", "/")
+		file = result.get("filename").replace("\\", "/")
+		resultId = result.get("test_id")
+		line = result.get("line_number")
 		findings.append(
 			{
-				"id": result["test_id"],
-				"title": f"{result['test_id']}: {result['test_name']}",
-				"description": result["issue_text"],
+				"id": resultId,
+				"title": f"{resultId}: {result.get('test_name')}",
+				"description": result.get("issue_text"),
 				"file": file,
-				"evidence": extractEvidence(result["line_number"], file),
-				"severity": levelMap[result["issue_severity"]],
-				"confidence": levelMap[result["issue_confidence"]],
-				"line": result["line_number"],
+				"evidence": extractEvidence(line, file),
+				"severity": levelMap[result.get("issue_severity")],
+				"confidence": levelMap[result.get("issue_confidence")],
+				"line": line,
 				"_other": {
-					"more_info": result["more_info"],
-					"line_range": result["line_range"],
+					"more_info": result.get("more_info"),
+					"line_range": result.get("line_range"),
 				},
 			}
 		)
@@ -138,23 +142,45 @@ def bandit(scanDir=".") -> list[Finding]:
 def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
 	findings = []
 	for result in results["vulnerabilities"]:
+		vulnerabilityId = result.get("vulnerability_id")
+		packageName = result.get("package_name")
+		advisory = result.get("advisory")
+
+		moreInfo = result.get("more_info_url")
+		affectedVersions = "; ".join(result.get("affected_versions"))
+
+		content = f"{packageName}, version(s)={affectedVersions}"
+		description = (
+			f"Vulnerability found in package {packageName},"
+			f"version(s)={affectedVersions}. {advisory}. More info available at {moreInfo}"
+		)
+
+		cvssv3Score = result.get("severity").get("cvssv3", {}).get("base_score", 0)
+		severity = Level.LOW
+		if cvssv3Score > 3.9:
+			severity = Level.MED
+		if cvssv3Score > 6.9:
+			severity = Level.HIGH
+		if cvssv3Score > 8.9:
+			severity = Level.CRIT
+
 		findings.append(
 			{
-				"id": result[4],
-				"title": f"{result[4]}: {result[0]}",
-				"description": result[3],
+				"id": vulnerabilityId,
+				"title": f"{vulnerabilityId}: {packageName}",
+				"description": description,
 				"file": "Project Requirements",
 				"evidence": [
 					{
 						"selected": True,
 						"line": 0,
-						"content": f"{result[0]} version={result[2]} affects{result[1]}",
+						"content": content,
 					}
 				],
-				"severity": Level.MED,
+				"severity": severity,
 				"confidence": Level.HIGH,
 				"line": "Unknown",
-				"_other": {"id": result[4], "affected": result[1]},
+				"_other": {"id": vulnerabilityId, "affectedVersions": affectedVersions},
 			}
 		)
 	return findings
@@ -227,17 +253,18 @@ def dodgy(scanDir=".") -> list[Finding]:
 	rawResults = _doSysExec(f"dodgy {scanDir} -i {' '.join(EXCLUDED)}")[1]
 	results = loads(rawResults)["warnings"]
 	for result in results:
-		file = "./" + result["path"].replace("\\", "/")
+		file = "./" + result.get("path").replace("\\", "/")
+		message = result.get("message")
 		findings.append(
 			{
-				"id": result["code"],
-				"title": result["message"],
-				"description": result["message"],
+				"id": result.get("code"),
+				"title": message,
+				"description": message,
 				"file": file,
-				"evidence": extractEvidence(result["line"], file),
+				"evidence": extractEvidence(result.get("line"), file),
 				"severity": Level.MED,
 				"confidence": Level.MED,
-				"line": result["line"],
+				"line": result.get("line"),
 				"_other": {},
 			}
 		)
@@ -269,29 +296,31 @@ def dlint(scanDir=".") -> list[Finding]:
 		"info": Level.LOW,
 		"minor": Level.MED,
 		"major": Level.MED,
-		"critical": Level.HIGH,
-		"blocker": Level.HIGH,
+		"critical": Level.CRIT,
+		"blocker": Level.CRIT,
 	}
 	for filePath, scanResults in jsonResults.items():
-		for scanResult in scanResults:
+		for result in scanResults:
+			message = f"{result.get('check_name')}: " f"{result.get('description')}"
+			positions = result.get("location", {}).get("positions", {})
+			line = positions.get("begin", {}).get("line", 0)
 			findings.append(
 				{
-					"id": scanResult["check_name"],
-					"title": f"{scanResult['check_name']}: " f"{scanResult['description']}",
-					"description": f"{scanResult['check_name']}: " f"{scanResult['description']}",
+					"id": result.get("check_name"),
+					"title": message,
+					"description": message,
 					"file": filePath,
 					"evidence": extractEvidence(
-						scanResult["location"]["positions"]["begin"]["line"],
+						line,
 						filePath,
 					),
-					"severity": levelMap[scanResult["severity"]],
+					"severity": levelMap[result.get("severity")],
 					"confidence": Level.MED,
-					"line": scanResult["location"]["positions"]["begin"]["line"],
+					"line": line,
 					"_other": {
-						"col": scanResult["location"]["positions"]["begin"]["column"],
-						"start": scanResult["location"]["positions"]["begin"]["line"],
-						"end": scanResult["location"]["positions"]["end"]["line"],
-						"fingerprint": scanResult["fingerprint"],
+						"start": line,
+						"end": positions.get("end", {}).get("line", 0),
+						"fingerprint": result.get("fingerprint"),
 					},
 				}
 			)
@@ -324,23 +353,24 @@ def semgrep(scanDir=".") -> list[Finding]:
 	)["results"]
 	levelMap = {"INFO": Level.LOW, "WARNING": Level.MED, "ERROR": Level.HIGH}
 	for result in results:
-		filePath = result["Target"].replace("\\", "/")
+		filePath = result.get("Target").replace("\\", "/")
 		file = f"{scanDir}/{filePath}"
+		resultId = result.get("check_id", "")
+		extras = result.get("extra", {})
+		line = result.get("start", {}).get("line", 0)
 		findings.append(
 			{
-				"id": result["check_id"],
-				"title": result["check_id"].split(".")[-1],
-				"description": result["extra"]["message"].strip(),
+				"id": resultId,
+				"title": resultId.split(".")[-1],
+				"description": extras("message").strip(),
 				"file": file,
-				"evidence": extractEvidence(result["start"]["line"], file),
-				"severity": levelMap[result["extra"]["severity"]],
+				"evidence": extractEvidence(line, file),
+				"severity": levelMap[extras("severity")],
 				"confidence": Level.HIGH,
-				"line": result["start"]["line"],
+				"line": line,
 				"_other": {
-					"col": result["start"]["col"],
-					"start": result["start"],
-					"end": result["end"],
-					"extra": result["extra"],
+					"end": result.get("end"),
+					"extra": extras,
 				},
 			}
 		)

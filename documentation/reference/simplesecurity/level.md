@@ -18,11 +18,6 @@ Level
 
 Levels for confidence and severity.
 
-UNKNOWN = 0
-LOW = 1
-MED = 2
-HIGH = 3
-
 #### Signature
 
 ```python
@@ -32,7 +27,7 @@ class Level(IntEnum):
 
 ### Level().__repr__
 
-[Show source in level.py:27](../../../simplesecurity/level.py#L27)
+[Show source in level.py:22](../../../simplesecurity/level.py#L22)
 
 __repr__ method.
 
@@ -49,7 +44,7 @@ def __repr__(self) -> str:
 
 ### Level().__str__
 
-[Show source in level.py:35](../../../simplesecurity/level.py#L35)
+[Show source in level.py:30](../../../simplesecurity/level.py#L30)
 
 __str__ method (tostring).
 
@@ -66,7 +61,7 @@ def __str__(self) -> str:
 
 ### Level().toSarif
 
-[Show source in level.py:49](../../../simplesecurity/level.py#L49)
+[Show source in level.py:45](../../../simplesecurity/level.py#L45)
 
 Convert to sarif representation.
 

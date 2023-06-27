@@ -16,7 +16,7 @@ Plugins
 
 ## bandit
 
-[Show source in plugins.py:90](../../../simplesecurity/plugins.py#L90)
+[Show source in plugins.py:92](../../../simplesecurity/plugins.py#L92)
 
 Generate list of findings using bandit. requires bandit on the system path.
 
@@ -47,7 +47,7 @@ def bandit(scanDir=".") -> list[Finding]:
 
 ## dlint
 
-[Show source in plugins.py:247](../../../simplesecurity/plugins.py#L247)
+[Show source in plugins.py:274](../../../simplesecurity/plugins.py#L274)
 
 Generate list of findings using _tool_. requires _tool_ on the system path.
 
@@ -78,7 +78,7 @@ def dlint(scanDir=".") -> list[Finding]:
 
 ## dodgy
 
-[Show source in plugins.py:211](../../../simplesecurity/plugins.py#L211)
+[Show source in plugins.py:237](../../../simplesecurity/plugins.py#L237)
 
 Generate list of findings using _tool_. requires _tool_ on the system path.
 
@@ -137,7 +137,7 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 
 ## safety
 
-[Show source in plugins.py:172](../../../simplesecurity/plugins.py#L172)
+[Show source in plugins.py:198](../../../simplesecurity/plugins.py#L198)
 
 Generate list of findings using _tool_. requires _tool_ on the system path.
 
@@ -168,7 +168,7 @@ def safety(scanDir=".") -> list[Finding]:
 
 ## semgrep
 
-[Show source in plugins.py:302](../../../simplesecurity/plugins.py#L302)
+[Show source in plugins.py:331](../../../simplesecurity/plugins.py#L331)
 
 Generate list of findings using for semgrep. Requires semgrep on the
 system path (wsl in windows).

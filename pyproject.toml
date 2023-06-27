@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "simplesecurity"
-version = "2023.0.1"
+version = "2023.0.2"
 license = "mit"
 description = "Combine multiple popular python security tools and generate reports or output into different formats"
 authors = ["FredHappyface"]

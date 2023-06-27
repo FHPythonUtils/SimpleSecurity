@@ -11,18 +11,13 @@ from enum import IntEnum
 
 
 class Level(IntEnum):
-	"""Levels for confidence and severity.
+	"""Levels for confidence and severity."""
 
 	UNKNOWN = 0
 	LOW = 1
 	MED = 2
 	HIGH = 3
-	"""
-
-	UNKNOWN = 0
-	LOW = 1
-	MED = 2
-	HIGH = 3
+	CRIT = 4
 
 	def __repr__(self) -> str:
 		"""__repr__ method.
@@ -43,6 +38,7 @@ class Level(IntEnum):
 			Level.LOW: "Low",
 			Level.MED: "Medium",
 			Level.HIGH: "High",
+			Level.CRIT: "Critical",
 		}
 		return reprMap[self]
 
@@ -50,8 +46,9 @@ class Level(IntEnum):
 		"""Convert to sarif representation."""
 		reprMap = {
 			Level.UNKNOWN: "note",
-			Level.LOW: "warning",
+			Level.LOW: "note",
 			Level.MED: "warning",
 			Level.HIGH: "error",
+			Level.CRIT: "error",
 		}
 		return reprMap[self]

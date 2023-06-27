@@ -79,7 +79,7 @@ def _processPlugin(args) -> list[Callable]:
 		},
 		"safety": {
 			"func": plugins.safety,
-			"max_severity": 2,
+			"max_severity": 4,
 			"max_confidence": 3,
 			"fast": True,
 		},
@@ -91,7 +91,7 @@ def _processPlugin(args) -> list[Callable]:
 		},
 		"dlint": {
 			"func": plugins.dlint,
-			"max_severity": 3,
+			"max_severity": 4,
 			"max_confidence": 2,
 			"fast": True,
 		},
