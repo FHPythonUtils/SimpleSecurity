@@ -29,7 +29,7 @@ def lookupId(identifier: str) -> list[str]:
 		str: id that it equals
 	"""
 	if identifier not in ID_MAP:
-		return ["not found"]
+		return [identifier]
 	return ID_MAP[identifier]
 
 
@@ -89,9 +89,12 @@ def filterSeverityAndConfidence(
 		list[Finding]: new deduplicated list
 	"""
 	if severity == 0 and confidence == 0:
-		return findings
-	findings = findings.copy()
+		return findings.copy()
+	filtered = []
 	for finding in findings:
-		if finding["severity"] < severity or finding["confidence"] < confidence:
-			findings.remove(finding)
-	return findings
+		print(
+			f'severity {finding["severity"] < severity} confidence {finding["confidence"] < confidence}'
+		)
+		if finding["severity"] >= severity and finding["confidence"] >= confidence:
+			filtered.append(finding)
+	return filtered
