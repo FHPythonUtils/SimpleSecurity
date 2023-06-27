@@ -1,6 +1,6 @@
-bandit<2,>=1.7.0
-dlint<2,>=0.11.0
+bandit<2,>=1.7.5
+dlint<2,>=0.14.1
 dodgy<2,>=0.2.1
-poetry<2,>=1.1.10
-safety<2,>=1.10.3
-semgrep<2,>=0.67.0
+poetry<2,>=1.5.1
+safety<3,>=2.3.5
+semgrep<2,>=1.29.0

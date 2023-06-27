@@ -1,20 +1,18 @@
 # Types
 
+[Simplesecurity Index](../README.md#simplesecurity-index) /
+[Simplesecurity](./index.md#simplesecurity) /
+Types
+
 > Auto-generated documentation for [simplesecurity.types](../../../simplesecurity/types.py) module.
 
-Types used by simplesecurity.
-
-- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../MODULES.md#simplesecurity-modules) / [Simplesecurity](index.md#simplesecurity) / Types
-    - [Finding](#finding)
-    - [Line](#line)
+- [Types](#types)
+  - [Finding](#finding)
+  - [Line](#line)
 
 ## Finding
 
-[[find in source code]](../../../simplesecurity/types.py#L12)
-
-```python
-class Finding(typing.TypedDict):
-```
+[Show source in types.py:12](../../../simplesecurity/types.py#L12)
 
 Finding type.
 
@@ -29,13 +27,18 @@ Finding type.
  _other: dict[str, str]
 }
 
-## Line
-
-[[find in source code]](../../../simplesecurity/types.py#L38)
+#### Signature
 
 ```python
-class Line(typing.TypedDict):
+class Finding(typing.TypedDict):
+    ...
 ```
+
+
+
+## Line
+
+[Show source in types.py:38](../../../simplesecurity/types.py#L38)
 
 Line type.
 
@@ -44,3 +47,12 @@ Line type.
  content: str
  selected: bool
 }
+
+#### Signature
+
+```python
+class Line(typing.TypedDict):
+    ...
+```
+
+

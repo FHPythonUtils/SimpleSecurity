@@ -1,74 +1,35 @@
 # Simplesecurity
 
+[Simplesecurity Index](../README.md#simplesecurity-index) /
+Simplesecurity
+
 > Auto-generated documentation for [simplesecurity](../../../simplesecurity/__init__.py) module.
 
-Combine multiple popular python security tools and generate reports or output
-into different formats
-
-- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../MODULES.md#simplesecurity-modules) / Simplesecurity
-    - [cli](#cli)
-    - [runAllPlugins](#runallplugins)
-    - Modules
-        - [Module](module.md#module)
-        - [Filter](filter.md#filter)
-        - [Formatter](formatter.md#formatter)
-        - [Level](level.md#level)
-        - [Plugins](plugins.md#plugins)
-        - [Types](types.md#types)
-
-Plugins (these require the plugin executable in the system path. e.g. bandit
-requires bandit to be in the system path...)
-
-- bandit
-- safety
-- dodgy
-- dlint
-- semgrep
-
-Formats
-
-- ansi (for terminal)
-- json
-- markdown
-- csv
-- sarif
+- [Simplesecurity](#simplesecurity)
+  - [cli](#cli)
+  - [Modules](#modules)
 
 ## cli
 
-[[find in source code]](../../../simplesecurity/__init__.py#L67)
-
-```python
-def cli():
-```
+[Show source in __init__.py:127](../../../simplesecurity/__init__.py#L127)
 
 Cli entry point.
 
-## runAllPlugins
-
-[[find in source code]](../../../simplesecurity/__init__.py#L38)
+#### Signature
 
 ```python
-def runAllPlugins(
-    pluginMap: dict[str, Any],
-    severity: int,
-    confidence: int,
-    fast: bool,
-) -> list[Finding]:
+def cli():
+    ...
 ```
 
-Run each plugin. Optimise as much as we can.
 
-#### Arguments
 
-pluginMap (dict[str, Any]): the plugin map
-- `severity` *int* - the minimum severity to report on
-- `confidence` *int* - the minimum confidence to report on
-- `fast` *bool* - runAllPlugins with optimisations
+## Modules
 
-#### Returns
-
-- `list[Finding]` - list of findings
-
-#### See also
-
-- [Finding](types.md#finding)
+- [Module](./module.md)
+- [Excluded](./excluded.md)
+- [Filter](./filter.md)
+- [Formatter](./formatter.md)
+- [Level](./level.md)
+- [Plugins](./plugins.md)
+- [Types](./types.md)

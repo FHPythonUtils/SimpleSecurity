@@ -3,6 +3,15 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2023 - 2023/06/27
+
+- Refactor to fix bugs and improve readability
+- Add `scan-dir` argument
+- Add support for levels/severity to `dlint`
+- Ensure `bandit` ignores relative files (see https://github.com/PyCQA/bandit/issues/975)
+- Fix bug with `safety` plugin where results were corrupted
+- Update deps
+
 ## 2022 - 2022/04/09
 
 - Move docs

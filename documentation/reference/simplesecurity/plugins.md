@@ -1,47 +1,27 @@
 # Plugins
 
+[Simplesecurity Index](../README.md#simplesecurity-index) /
+[Simplesecurity](./index.md#simplesecurity) /
+Plugins
+
 > Auto-generated documentation for [simplesecurity.plugins](../../../simplesecurity/plugins.py) module.
 
-Add plugins here.
-
-- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../MODULES.md#simplesecurity-modules) / [Simplesecurity](index.md#simplesecurity) / Plugins
-    - [bandit](#bandit)
-    - [dlint](#dlint)
-    - [dodgy](#dodgy)
-    - [extractEvidence](#extractevidence)
-    - [safety](#safety)
-    - [semgrep](#semgrep)
-
-- bandit
-- safety
-- dodgy
-- dlint
-- semgrep
-
-Functions return finding dictionary
-
-```json
-{
- title: str
- description: str
- file: str
- evidence: list[Line]
- severity: Level
- confidence: Level
- line: int
- _other: dict[str, str]
-}
-```
+- [Plugins](#plugins)
+  - [bandit](#bandit)
+  - [dlint](#dlint)
+  - [dodgy](#dodgy)
+  - [extractEvidence](#extractevidence)
+  - [safety](#safety)
+  - [semgrep](#semgrep)
 
 ## bandit
 
-[[find in source code]](../../../simplesecurity/plugins.py#L100)
-
-```python
-def bandit() -> list[Finding]:
-```
+[Show source in plugins.py:90](../../../simplesecurity/plugins.py#L90)
 
 Generate list of findings using bandit. requires bandit on the system path.
+
+Params:
+ scanDir(str): select a scan directory (useful for cicd etc)
 
 #### Raises
 
@@ -52,19 +32,27 @@ error
 
 - `list[Finding]` - our findings dictionary
 
+#### Signature
+
+```python
+def bandit(scanDir=".") -> list[Finding]:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## dlint
 
-[[find in source code]](../../../simplesecurity/plugins.py#L244)
+[Show source in plugins.py:247](../../../simplesecurity/plugins.py#L247)
 
-```python
-def dlint() -> list[Finding]:
-```
+Generate list of findings using _tool_. requires _tool_ on the system path.
 
-Generate list of findings using dlint. Requires flake8 and dlint on the system path.
+Params:
+ scanDir(str): select a scan directory (useful for cicd etc)
 
 #### Raises
 
@@ -75,19 +63,27 @@ error
 
 - `list[Finding]` - our findings dictionary
 
+#### Signature
+
+```python
+def dlint(scanDir=".") -> list[Finding]:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## dodgy
 
-[[find in source code]](../../../simplesecurity/plugins.py#L212)
+[Show source in plugins.py:211](../../../simplesecurity/plugins.py#L211)
 
-```python
-def dodgy() -> list[Finding]:
-```
+Generate list of findings using _tool_. requires _tool_ on the system path.
 
-Generate list of findings using dodgy. Requires dodgy on the system path.
+Params:
+ scanDir(str): select a scan directory (useful for cicd etc)
 
 #### Raises
 
@@ -98,17 +94,22 @@ error
 
 - `list[Finding]` - our findings dictionary
 
+#### Signature
+
+```python
+def dodgy(scanDir=".") -> list[Finding]:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## extractEvidence
 
-[[find in source code]](../../../simplesecurity/plugins.py#L76)
-
-```python
-def extractEvidence(desiredLine: int, file: str) -> list[Line]:
-```
+[Show source in plugins.py:66](../../../simplesecurity/plugins.py#L66)
 
 Grab evidence from the source file.
 
@@ -121,19 +122,27 @@ Grab evidence from the source file.
 
 - `list[Line]` - list of lines
 
+#### Signature
+
+```python
+def extractEvidence(desiredLine: int, file: str) -> list[Line]:
+    ...
+```
+
 #### See also
 
-- [Line](types.md#line)
+- [Line](./types.md#line)
+
+
 
 ## safety
 
-[[find in source code]](../../../simplesecurity/plugins.py#L177)
+[Show source in plugins.py:172](../../../simplesecurity/plugins.py#L172)
 
-```python
-def safety() -> list[Finding]:
-```
+Generate list of findings using _tool_. requires _tool_ on the system path.
 
-Generate list of findings using safety.
+Params:
+ scanDir(str): select a scan directory (useful for cicd etc)
 
 #### Raises
 
@@ -144,17 +153,22 @@ error
 
 - `list[Finding]` - our findings dictionary
 
+#### Signature
+
+```python
+def safety(scanDir=".") -> list[Finding]:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## semgrep
 
-[[find in source code]](../../../simplesecurity/plugins.py#L282)
-
-```python
-def semgrep() -> list[Finding]:
-```
+[Show source in plugins.py:302](../../../simplesecurity/plugins.py#L302)
 
 Generate list of findings using for semgrep. Requires semgrep on the
 system path (wsl in windows).
@@ -168,6 +182,15 @@ error
 
 - `list[Finding]` - our findings dictionary
 
+#### Signature
+
+```python
+def semgrep(scanDir=".") -> list[Finding]:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+

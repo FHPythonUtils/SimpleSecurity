@@ -30,21 +30,11 @@ from os import remove
 from pathlib import Path
 from typing import Any
 
+from simplesecurity.excluded import EXCLUDED
 from simplesecurity.level import Level
 from simplesecurity.types import Finding, Line
 
 THISDIR = str(Path(__file__).resolve().parent)
-
-EXCLUDED = [
-	"./.env",
-	"./tests",
-	"./.venv",
-	"./env/",
-	"./venv/",
-	"./ENV/",
-	"./env.bak/",
-	"./venv.bak/",
-]
 
 
 def _doSysExec(command: str, errorAsOut: bool = True) -> tuple[int, str]:
@@ -97,8 +87,11 @@ def extractEvidence(desiredLine: int, file: str) -> list[Line]:
 	return content
 
 
-def bandit() -> list[Finding]:
+def bandit(scanDir=".") -> list[Finding]:
 	"""Generate list of findings using bandit. requires bandit on the system path.
+
+	Params:
+		scanDir(str): select a scan directory (useful for cicd etc)
 
 	Raises:
 		RuntimeError: if bandit is not on the system path, then throw this
@@ -116,9 +109,11 @@ def bandit() -> list[Finding]:
 		"HIGH": Level.HIGH,
 		"UNDEFINED": Level.UNKNOWN,
 	}
-	results = loads(_doSysExec(f"bandit -lirq -x {','.join(EXCLUDED)} -f json .", False)[1])[
-		"results"
-	]
+	results = loads(
+		_doSysExec(
+			f"bandit -lirq -x {','.join([f'./{x}' for x in EXCLUDED])} -f json {scanDir}", False
+		)[1]
+	)["results"]
 	for result in results:
 		file = result["filename"].replace("\\", "/")
 		findings.append(
@@ -142,7 +137,7 @@ def bandit() -> list[Finding]:
 
 def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
 	findings = []
-	for result in results:
+	for result in results["vulnerabilities"]:
 		findings.append(
 			{
 				"id": result[4],
@@ -165,7 +160,7 @@ def _doSafetyProcessing(results: dict[str, Any]) -> list[Finding]:
 	return findings
 
 
-def _doPureSafety():
+def _doPureSafety() -> dict[str, Any]:
 	safe = _doSysExec("safety check -r requirements.txt --json")[1]
 	if safe.startswith("Warning:"):
 		safe = _doSysExec("safety check --json")[1]
@@ -174,8 +169,11 @@ def _doPureSafety():
 	return loads(safe)
 
 
-def safety() -> list[Finding]:
-	"""Generate list of findings using safety.
+def safety(scanDir=".") -> list[Finding]:
+	"""Generate list of findings using _tool_. requires _tool_ on the system path.
+
+	Params:
+		scanDir(str): select a scan directory (useful for cicd etc)
 
 	Raises:
 		RuntimeError: if safety is not on the system path, then throw this
@@ -184,6 +182,7 @@ def safety() -> list[Finding]:
 	Returns:
 		list[Finding]: our findings dictionary
 	"""
+	_ = scanDir
 	if _doSysExec("safety --help")[0] != 0:
 		raise RuntimeError("safety is not on the system path")
 	pShow = _doSysExec("poetry show")
@@ -209,8 +208,11 @@ def safety() -> list[Finding]:
 	return _doSafetyProcessing(results)
 
 
-def dodgy() -> list[Finding]:
-	"""Generate list of findings using dodgy. Requires dodgy on the system path.
+def dodgy(scanDir=".") -> list[Finding]:
+	"""Generate list of findings using _tool_. requires _tool_ on the system path.
+
+	Params:
+		scanDir(str): select a scan directory (useful for cicd etc)
 
 	Raises:
 		RuntimeError: if dodgy is not on the system path, then throw this
@@ -222,7 +224,8 @@ def dodgy() -> list[Finding]:
 	if _doSysExec("dodgy -h")[0] != 0:
 		raise RuntimeError("dodgy is not on the system path")
 	findings = []
-	results = loads(_doSysExec(f"dodgy -i {' '.join(EXCLUDED)}")[1])["warnings"]
+	rawResults = _doSysExec(f"dodgy {scanDir} -i {' '.join(EXCLUDED)}")[1]
+	results = loads(rawResults)["warnings"]
 	for result in results:
 		file = "./" + result["path"].replace("\\", "/")
 		findings.append(
@@ -241,8 +244,11 @@ def dodgy() -> list[Finding]:
 	return findings
 
 
-def dlint() -> list[Finding]:
-	"""Generate list of findings using dlint. Requires flake8 and dlint on the system path.
+def dlint(scanDir=".") -> list[Finding]:
+	"""Generate list of findings using _tool_. requires _tool_ on the system path.
+
+	Params:
+		scanDir(str): select a scan directory (useful for cicd etc)
 
 	Raises:
 		RuntimeError: if flake8 is not on the system path, then throw this
@@ -255,31 +261,45 @@ def dlint() -> list[Finding]:
 		raise RuntimeError("flake8 is not on the system path")
 	findings = []
 	results = _doSysExec(
-		f"flake8 --select=DUO --exclude {','.join(EXCLUDED)} --format='%(path)s"
-		"::%(row)d::%(col)d::%(code)s::%(text)s' ."
+		f"flake8 --select=DUO --exclude {','.join(EXCLUDED)} --format=codeclimate {scanDir}"
 	)[1].splitlines(False)
-	for line in results:
-		if line[0] == "'":
-			line = line[1:-1]
-		result = line.split("::")
-		file = result[0].replace("\\", "/")
-		findings.append(
-			{
-				"id": result[3],
-				"title": f"{result[3]}: {result[4]}",
-				"description": result[4],
-				"file": file,
-				"evidence": extractEvidence(int(result[1]), file),
-				"severity": Level.MED,
-				"confidence": Level.MED,
-				"line": int(result[1]),
-				"_other": {"col": result[2]},
-			}
-		)
+
+	jsonResults = loads("".join(results)) if len(results) > 0 else {}
+	levelMap = {
+		"info": Level.LOW,
+		"minor": Level.MED,
+		"major": Level.MED,
+		"critical": Level.HIGH,
+		"blocker": Level.HIGH,
+	}
+	for filePath, scanResults in jsonResults.items():
+		for scanResult in scanResults:
+			findings.append(
+				{
+					"id": scanResult["check_name"],
+					"title": f"{scanResult['check_name']}: " f"{scanResult['description']}",
+					"description": f"{scanResult['check_name']}: " f"{scanResult['description']}",
+					"file": filePath,
+					"evidence": extractEvidence(
+						scanResult["location"]["positions"]["begin"]["line"],
+						filePath,
+					),
+					"severity": levelMap[scanResult["severity"]],
+					"confidence": Level.MED,
+					"line": scanResult["location"]["positions"]["begin"]["line"],
+					"_other": {
+						"col": scanResult["location"]["positions"]["begin"]["column"],
+						"start": scanResult["location"]["positions"]["begin"]["line"],
+						"end": scanResult["location"]["positions"]["end"]["line"],
+						"fingerprint": scanResult["fingerprint"],
+					},
+				}
+			)
+
 	return findings
 
 
-def semgrep() -> list[Finding]:
+def semgrep(scanDir=".") -> list[Finding]:
 	"""Generate list of findings using for semgrep. Requires semgrep on the
 	system path (wsl in windows).
 
@@ -298,13 +318,14 @@ def semgrep() -> list[Finding]:
 	sgExclude = ["--exclude {x}" for x in EXCLUDED]
 	results = loads(
 		_doSysExec(
-			f"semgrep -f {THISDIR}/semgrep_sec.yaml {' '.join(sgExclude)} "
+			f"semgrep -f {THISDIR}/semgrep_sec.yaml {scanDir} {' '.join(sgExclude)} "
 			"-q --json --no-rewrite-rule-ids"
 		)[1].strip()
 	)["results"]
 	levelMap = {"INFO": Level.LOW, "WARNING": Level.MED, "ERROR": Level.HIGH}
 	for result in results:
-		file = "./" + result["path"].replace("\\", "/")
+		filePath = result["Target"].replace("\\", "/")
+		file = f"{scanDir}/{filePath}"
 		findings.append(
 			{
 				"id": result["check_id"],

@@ -1,27 +1,20 @@
 # Level
 
+[Simplesecurity Index](../README.md#simplesecurity-index) /
+[Simplesecurity](./index.md#simplesecurity) /
+Level
+
 > Auto-generated documentation for [simplesecurity.level](../../../simplesecurity/level.py) module.
 
-Levels for confidence and severity.
-
-- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../MODULES.md#simplesecurity-modules) / [Simplesecurity](index.md#simplesecurity) / Level
-    - [Level](#level)
-        - [Level().\_\_repr\_\_](#level__repr__)
-        - [Level().\_\_str\_\_](#level__str__)
-        - [Level().toSarif](#leveltosarif)
-
-UNKNOWN = 0
-LOW = 1
-MED = 2
-HIGH = 3
+- [Level](#level)
+  - [Level](#level-1)
+    - [Level().__repr__](#level()__repr__)
+    - [Level().__str__](#level()__str__)
+    - [Level().toSarif](#level()tosarif)
 
 ## Level
 
-[[find in source code]](../../../simplesecurity/level.py#L13)
-
-```python
-class Level(IntEnum):
-```
+[Show source in level.py:13](../../../simplesecurity/level.py#L13)
 
 Levels for confidence and severity.
 
@@ -30,13 +23,16 @@ LOW = 1
 MED = 2
 HIGH = 3
 
-### Level().\_\_repr\_\_
-
-[[find in source code]](../../../simplesecurity/level.py#L27)
+#### Signature
 
 ```python
-def __repr__() -> str:
+class Level(IntEnum):
+    ...
 ```
+
+### Level().__repr__
+
+[Show source in level.py:27](../../../simplesecurity/level.py#L27)
 
 __repr__ method.
 
@@ -44,13 +40,16 @@ __repr__ method.
 
 - `str` - string representation of a level
 
-### Level().\_\_str\_\_
-
-[[find in source code]](../../../simplesecurity/level.py#L35)
+#### Signature
 
 ```python
-def __str__() -> str:
+def __repr__(self) -> str:
+    ...
 ```
+
+### Level().__str__
+
+[Show source in level.py:35](../../../simplesecurity/level.py#L35)
 
 __str__ method (tostring).
 
@@ -58,12 +57,24 @@ __str__ method (tostring).
 
 - `str` - string representation of a level
 
-### Level().toSarif
-
-[[find in source code]](../../../simplesecurity/level.py#L49)
+#### Signature
 
 ```python
-def toSarif() -> str:
+def __str__(self) -> str:
+    ...
 ```
 
+### Level().toSarif
+
+[Show source in level.py:49](../../../simplesecurity/level.py#L49)
+
 Convert to sarif representation.
+
+#### Signature
+
+```python
+def toSarif(self) -> str:
+    ...
+```
+
+

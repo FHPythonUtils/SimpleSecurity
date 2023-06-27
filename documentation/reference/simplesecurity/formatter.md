@@ -1,50 +1,22 @@
 # Formatter
 
+[Simplesecurity Index](../README.md#simplesecurity-index) /
+[Simplesecurity](./index.md#simplesecurity) /
+Formatter
+
 > Auto-generated documentation for [simplesecurity.formatter](../../../simplesecurity/formatter.py) module.
 
-Take our findings dictionary and give things a pretty format.
-
-- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../MODULES.md#simplesecurity-modules) / [Simplesecurity](index.md#simplesecurity) / Formatter
-    - [ansi](#ansi)
-    - [csv](#csv)
-    - [formatEvidence](#formatevidence)
-    - [json](#json)
-    - [markdown](#markdown)
-    - [sarif](#sarif)
-
-finding dictionary
-
-```json
-{
- title: str
- description: str
- file: str
- evidence: list[Line]
- severity: Level
- confidence: Level
- line: int
- _other: {}
-}
-```
-
-Formats
-
-- markdown
-- json
-- csv
-- ansi
+- [Formatter](#formatter)
+  - [ansi](#ansi)
+  - [csv](#csv)
+  - [formatEvidence](#formatevidence)
+  - [json](#json)
+  - [markdown](#markdown)
+  - [sarif](#sarif)
 
 ## ansi
 
-[[find in source code]](../../../simplesecurity/formatter.py#L162)
-
-```python
-def ansi(
-    findings: list[Finding],
-    heading: str | None = None,
-    colourMode: int = 0,
-) -> str:
-```
+[Show source in formatter.py:162](../../../simplesecurity/formatter.py#L162)
 
 Format to ansi.
 
@@ -59,21 +31,24 @@ Format to ansi.
 
 - `str` - String to write to a file of stdout
 
+#### Signature
+
+```python
+def ansi(
+    findings: list[Finding], heading: str | None = None, colourMode: int = 0
+) -> str:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## csv
 
-[[find in source code]](../../../simplesecurity/formatter.py#L120)
-
-```python
-def csv(
-    findings: list[Finding],
-    heading: str | None = None,
-    colourMode: int = 0,
-) -> str:
-```
+[Show source in formatter.py:120](../../../simplesecurity/formatter.py#L120)
 
 Format to CSV.
 
@@ -88,17 +63,22 @@ Format to CSV.
 
 - `str` - String to write to a file of stdout
 
+#### Signature
+
+```python
+def csv(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## formatEvidence
 
-[[find in source code]](../../../simplesecurity/formatter.py#L35)
-
-```python
-def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
-```
+[Show source in formatter.py:35](../../../simplesecurity/formatter.py#L35)
 
 Format evidence to plaintext.
 
@@ -111,21 +91,22 @@ Format evidence to plaintext.
 
 - `str` - string representation of this
 
+#### Signature
+
+```python
+def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
+    ...
+```
+
 #### See also
 
-- [Line](types.md#line)
+- [Line](./types.md#line)
+
+
 
 ## json
 
-[[find in source code]](../../../simplesecurity/formatter.py#L97)
-
-```python
-def json(
-    findings: list[Finding],
-    heading: str | None = None,
-    colourMode: int = 0,
-) -> str:
-```
+[Show source in formatter.py:97](../../../simplesecurity/formatter.py#L97)
 
 Format to Json.
 
@@ -140,21 +121,24 @@ Format to Json.
 
 - `str` - String to write to a file of stdout
 
+#### Signature
+
+```python
+def json(
+    findings: list[Finding], heading: str | None = None, colourMode: int = 0
+) -> str:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## markdown
 
-[[find in source code]](../../../simplesecurity/formatter.py#L51)
-
-```python
-def markdown(
-    findings: list[Finding],
-    heading: str | None = None,
-    colourMode: int = 0,
-) -> str:
-```
+[Show source in formatter.py:51](../../../simplesecurity/formatter.py#L51)
 
 Format to Markdown.
 
@@ -169,21 +153,24 @@ Format to Markdown.
 
 - `str` - String to write to a file of stdout
 
+#### Signature
+
+```python
+def markdown(
+    findings: list[Finding], heading: str | None = None, colourMode: int = 0
+) -> str:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## sarif
 
-[[find in source code]](../../../simplesecurity/formatter.py#L253)
-
-```python
-def sarif(
-    findings: list[Finding],
-    heading: str | None = None,
-    colourMode: int = 0,
-) -> str:
-```
+[Show source in formatter.py:253](../../../simplesecurity/formatter.py#L253)
 
 Format to sarif https://sarifweb.azurewebsites.net/.
 
@@ -198,6 +185,17 @@ Format to sarif https://sarifweb.azurewebsites.net/.
 
 - `str` - String to write to a file of stdout
 
+#### Signature
+
+```python
+def sarif(
+    findings: list[Finding], heading: str | None = None, colourMode: int = 0
+) -> str:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+

@@ -1,22 +1,20 @@
 # Filter
 
+[Simplesecurity Index](../README.md#simplesecurity-index) /
+[Simplesecurity](./index.md#simplesecurity) /
+Filter
+
 > Auto-generated documentation for [simplesecurity.filter](../../../simplesecurity/filter.py) module.
 
-Some of our analysis tools overlap one-another so lets remove duplicates.
-
-- [Simplesecurity](../README.md#simplesecurity-index) / [Modules](../MODULES.md#simplesecurity-modules) / [Simplesecurity](index.md#simplesecurity) / Filter
-    - [deduplicate](#deduplicate)
-    - [filterSeverityAndConfidence](#filterseverityandconfidence)
-    - [findingsEqual](#findingsequal)
-    - [lookupId](#lookupid)
+- [Filter](#filter)
+  - [deduplicate](#deduplicate)
+  - [filterSeverityAndConfidence](#filterseverityandconfidence)
+  - [findingsEqual](#findingsequal)
+  - [lookupId](#lookupid)
 
 ## deduplicate
 
-[[find in source code]](../../../simplesecurity/filter.py#L58)
-
-```python
-def deduplicate(findings: list[Finding]) -> list[Finding]:
-```
+[Show source in filter.py:58](../../../simplesecurity/filter.py#L58)
 
 Deduplicate the list of findings.
 
@@ -28,21 +26,22 @@ Deduplicate the list of findings.
 
 - `list[Finding]` - new deduplicated list
 
+#### Signature
+
+```python
+def deduplicate(findings: list[Finding]) -> list[Finding]:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## filterSeverityAndConfidence
 
-[[find in source code]](../../../simplesecurity/filter.py#L78)
-
-```python
-def filterSeverityAndConfidence(
-    findings: list[Finding],
-    severity: int,
-    confidence: int,
-) -> list[Finding]:
-```
+[Show source in filter.py:78](../../../simplesecurity/filter.py#L78)
 
 Filter the list of findings.
 
@@ -56,17 +55,24 @@ Filter the list of findings.
 
 - `list[Finding]` - new deduplicated list
 
+#### Signature
+
+```python
+def filterSeverityAndConfidence(
+    findings: list[Finding], severity: int, confidence: int
+) -> list[Finding]:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## findingsEqual
 
-[[find in source code]](../../../simplesecurity/filter.py#L36)
-
-```python
-def findingsEqual(findingA: Finding, findingB: Finding) -> int:
-```
+[Show source in filter.py:36](../../../simplesecurity/filter.py#L36)
 
 Basically and __eq__ method for findings.
 
@@ -80,17 +86,22 @@ Basically and __eq__ method for findings.
 - `int` - 0 if not equal. 1 if lookup(left) is equal to right - bin left.
 -1 if lookup(right) is equal to left - bin right
 
+#### Signature
+
+```python
+def findingsEqual(findingA: Finding, findingB: Finding) -> int:
+    ...
+```
+
 #### See also
 
-- [Finding](types.md#finding)
+- [Finding](./types.md#finding)
+
+
 
 ## lookupId
 
-[[find in source code]](../../../simplesecurity/filter.py#L22)
-
-```python
-def lookupId(identifier: str) -> list[str]:
-```
+[Show source in filter.py:22](../../../simplesecurity/filter.py#L22)
 
 Lookup an id in the id map.
 
@@ -101,3 +112,12 @@ Lookup an id in the id map.
 #### Returns
 
 - `str` - id that it equals
+
+#### Signature
+
+```python
+def lookupId(identifier: str) -> list[str]:
+    ...
+```
+
+

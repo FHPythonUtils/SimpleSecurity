@@ -1,12 +1,12 @@
-# Simplesecurity Modules
+# Simplesecurity Index
 
-> Auto-generated documentation modules index.
+> Auto-generated documentation index.
 
-Full list of [Simplesecurity](README.md#simplesecurity-index) project modules.
+A full list of `Simplesecurity` project modules.
 
-- [Simplesecurity Index](README.md#simplesecurity-index)
 - [Simplesecurity](simplesecurity/index.md#simplesecurity)
     - [Module](simplesecurity/module.md#module)
+    - [Excluded](simplesecurity/excluded.md#excluded)
     - [Filter](simplesecurity/filter.md#filter)
     - [Formatter](simplesecurity/formatter.md#formatter)
     - [Level](simplesecurity/level.md#level)

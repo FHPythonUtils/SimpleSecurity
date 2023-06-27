@@ -24,50 +24,115 @@ from __future__ import annotations
 import argparse
 from sys import exit as sysexit
 from sys import stdout
-from typing import Any
+from typing import Any, Callable, TextIO
 
 from simplesecurity import filter as secfilter
 from simplesecurity import formatter, plugins
-from simplesecurity.types import Finding
 
 stdout.reconfigure(encoding="utf-8")  # type:ignore
 FORMAT_HELP = "Output format. One of ansi, json, markdown, csv. default=ansi"
 PLUGIN_HELP = "Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, all, default=all"
 
 
-def runAllPlugins(
-	pluginMap: dict[str, Any], severity: int, confidence: int, fast: bool
-) -> list[Finding]:
-	"""Run each plugin. Optimise as much as we can.
+def _processFile(file: str | None) -> TextIO:
+	return (
+		stdout
+		if file is None
+		else open(file, "w", encoding="utf-8")  # pylint: disable=consider-using-with
+	)
 
-	Args:
-		pluginMap (dict[str, Any]): the plugin map
-		severity (int): the minimum severity to report on
-		confidence (int): the minimum confidence to report on
-		fast (bool): runAllPlugins with optimisations
 
-	Returns:
-		list[Finding]: list of findings
-	"""
-	findings: list[Finding] = []
-	for plugin in pluginMap:
-		# Do optimisations
+def _processColour(noColour: bool, highContrast: bool) -> int:
+	colourMode = 1
+	if noColour:
+		colourMode = 0
+	if highContrast:
+		colourMode = 2
+	return colourMode
+
+
+def _processFormat(formatin: str | None) -> Callable:
+	formatMap = {
+		"json": formatter.json,
+		"markdown": formatter.markdown,
+		"csv": formatter.csv,
+		"ansi": formatter.ansi,
+		"sarif": formatter.sarif,
+	}
+	if formatin is None:
+		formatt = formatter.ansi
+	elif formatin in formatMap:
+		formatt = formatMap[formatin]
+	else:
+		print(FORMAT_HELP)
+		sysexit(1)
+	return formatt
+
+
+def _processPlugin(args) -> list[Callable]:
+	pluginMap: dict[str, Any] = {
+		"bandit": {
+			"func": plugins.bandit,
+			"max_severity": 3,
+			"max_confidence": 3,
+			"fast": True,
+		},
+		"safety": {
+			"func": plugins.safety,
+			"max_severity": 2,
+			"max_confidence": 3,
+			"fast": True,
+		},
+		"dodgy": {
+			"func": plugins.dodgy,
+			"max_severity": 2,
+			"max_confidence": 2,
+			"fast": True,
+		},
+		"dlint": {
+			"func": plugins.dlint,
+			"max_severity": 3,
+			"max_confidence": 2,
+			"fast": True,
+		},
+		"semgrep": {
+			"func": plugins.semgrep,
+			"max_severity": 3,
+			"max_confidence": 3,
+			"fast": False,
+		},
+	}
+
+	plugin = args.plugin
+
+	filtered = {
+		k: v["func"]
+		for k, v in pluginMap.items()
 		if (
-			pluginMap[plugin]["max_severity"] >= severity
-			and pluginMap[plugin]["max_confidence"] >= confidence
-			and (not fast or pluginMap[plugin]["fast"])
-		):
-			try:
-				findings.extend(pluginMap[plugin]["func"]())
-			except RuntimeError as error:
-				print(error)
-	return findings
+			v["max_severity"] >= args.level
+			and v["max_confidence"] >= args.confidence
+			and (not args.fast or v["fast"])
+		)
+	}
+
+	if plugin in (None, "all"):
+		return [v for _, v in filtered.items()]
+	if plugin in filtered:
+		return [filtered[plugin]]
+
+	print(PLUGIN_HELP)
+	sysexit(2)
 
 
 def cli():
 	"""Cli entry point."""
 	parser = argparse.ArgumentParser(
 		description=__doc__, formatter_class=argparse.RawTextHelpFormatter
+	)
+	parser.add_argument(
+		"--scan-dir",
+		"-s",
+		help="Pass a path to the scan directory (optional)",
 	)
 	parser.add_argument(
 		"--format",
@@ -84,11 +149,11 @@ def cli():
 		"-o",
 		help="Filename to write to (omit for stdout)",
 	)
-	# Let's use a low severity and medium confidence by default
+	# Let's use a low level and medium confidence by default
 	parser.add_argument(
 		"--level",
 		"-l",
-		help="Minimum level/ severity to show",
+		help="Minimum severity/ level to show",
 		type=int,
 		default=1,
 	)
@@ -124,89 +189,35 @@ def cli():
 		help="Return non zero exit code if any security vulnerabilities are found",
 	)
 	args = parser.parse_args()
-	# File
-	filename = (
-		stdout
-		if args.file is None
-		else open(args.file, "w", encoding="utf-8")  # pylint: disable=consider-using-with
+
+	scanDir = args.scan_dir or "."
+	filename = _processFile(args.file)
+	colourMode = _processColour(args.no_colour, args.high_contrast)
+	formatt = _processFormat(args.format)
+
+	filteredPlugins = _processPlugin(args)
+
+	findings = []
+	for plugin in filteredPlugins:
+		finding = []
+		try:
+			finding = plugin(scanDir=scanDir)
+		except BaseException as e:
+			print(f"! SimpleSecurity encountered an error: {e}")
+		findings.extend(finding)
+
+	filteredFindings = secfilter.filterSeverityAndConfidence(
+		secfilter.deduplicate(findings), args.level, args.confidence
 	)
-	# Colour Mode
-	colourMode = 1
-	if args.no_colour:
-		colourMode = 0
-	if args.high_contrast:
-		colourMode = 2
-	# Format
-	formatMap = {
-		"json": formatter.json,
-		"markdown": formatter.markdown,
-		"csv": formatter.csv,
-		"ansi": formatter.ansi,
-		"sarif": formatter.sarif,
-	}
-	if args.format is None:
-		formatt = formatter.ansi
-	elif args.format in formatMap:
-		formatt = formatMap[args.format]
-	else:
-		print(FORMAT_HELP)
-		sysexit(1)
 
-	# Plugin
-	pluginMap: dict[str, Any] = {
-		"bandit": {
-			"func": plugins.bandit,
-			"max_severity": 3,
-			"max_confidence": 3,
-			"fast": True,
-		},
-		"safety": {
-			"func": plugins.safety,
-			"max_severity": 2,
-			"max_confidence": 3,
-			"fast": True,
-		},
-		"dodgy": {
-			"func": plugins.dodgy,
-			"max_severity": 2,
-			"max_confidence": 2,
-			"fast": True,
-		},
-		"dlint": {
-			"func": plugins.dlint,
-			"max_severity": 2,
-			"max_confidence": 2,
-			"fast": True,
-		},
-		"semgrep": {
-			"func": plugins.semgrep,
-			"max_severity": 3,
-			"max_confidence": 3,
-			"fast": False,
-		},
-	}
+	print(
+		formatt(
+			filteredFindings,
+			colourMode=colourMode,
+		),
+		file=filename,
+	)
 
-	if args.plugin is None or args.plugin == "all" or args.plugin in pluginMap:
-		findings = []
-		if args.plugin is None or args.plugin == "all":
-			findings = runAllPlugins(pluginMap, args.level, args.confidence, args.fast)
-		elif (
-			pluginMap[args.plugin]["max_severity"] >= args.level
-			and pluginMap[args.plugin]["max_confidence"] >= args.confidence
-		):
-			findings = pluginMap[args.plugin]["func"]()
-		print(
-			formatt(
-				secfilter.filterSeverityAndConfidence(
-					secfilter.deduplicate(findings), args.level, args.confidence
-				),
-				colourMode=colourMode,
-			),
-			file=filename,
-		)
-	else:
-		print(PLUGIN_HELP)
-		sysexit(2)
-	if len(findings) > 0 and args.zero:
+	if len(filteredFindings) > 0 and args.zero:
 		sysexit(1)
 	sysexit(0)
