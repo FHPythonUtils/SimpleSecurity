@@ -1,0 +1,75 @@
+{
+	"version": "2.1.0",
+	"$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+	"runs": [
+		{
+			"tool": {
+				"driver": {
+					"name": "SimpleSecurity",
+					"informationUri": "https://github.com/FHPythonUtils/SimpleSecurity",
+					"version": "2020.*"
+				}
+			},
+			"results": [
+				{
+					"ruleId": "TEST_ID",
+					"level": "warning",
+					"message": {
+						"text": "TEST: This is a test"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "this_file_does_not_exist"
+								},
+								"region": {
+									"startLine": 1,
+									"snippet": {
+										"text": "lineContent"
+									}
+								},
+								"contextRegion": {
+									"startLine": 1,
+									"endLine": 1,
+									"snippet": {
+										"text": "lineContent"
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					"ruleId": "TEST_ID2",
+					"level": "warning",
+					"message": {
+						"text": "TEST2: This is a test2"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "this_file_does_not_exist2"
+								},
+								"region": {
+									"startLine": 700,
+									"snippet": {
+										"text": "59999999999999999999999999999999999"
+									}
+								},
+								"contextRegion": {
+									"startLine": 3,
+									"endLine": 99,
+									"snippet": {
+										"text": "3\n5\n9\n999999999999999999999999999999999"
+									}
+								}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

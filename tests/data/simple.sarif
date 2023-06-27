@@ -1,0 +1,46 @@
+{
+	"version": "2.1.0",
+	"$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+	"runs": [
+		{
+			"tool": {
+				"driver": {
+					"name": "SimpleSecurity",
+					"informationUri": "https://github.com/FHPythonUtils/SimpleSecurity",
+					"version": "2020.*"
+				}
+			},
+			"results": [
+				{
+					"ruleId": "TEST_ID",
+					"level": "warning",
+					"message": {
+						"text": "TEST: This is a test"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "this_file_does_not_exist"
+								},
+								"region": {
+									"startLine": 1,
+									"snippet": {
+										"text": "lineContent"
+									}
+								},
+								"contextRegion": {
+									"startLine": 1,
+									"endLine": 1,
+									"snippet": {
+										"text": "lineContent"
+									}
+								}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

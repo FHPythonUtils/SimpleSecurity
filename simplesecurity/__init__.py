@@ -70,7 +70,7 @@ def _processFormat(formatin: str | None) -> Callable:
 
 
 def _processPlugin(args) -> list[Callable]:
-	pluginMap: dict[str, Any] = {
+	pluginMap = {
 		"bandit": {
 			"func": plugins.bandit,
 			"max_severity": 3,

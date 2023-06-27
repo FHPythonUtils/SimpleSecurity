@@ -1,0 +1,3 @@
+"Findings - Findings below are ordered by severity (you may want to delete this line)"
+"id","title","description","file","evidence","severity","confidence","line"
+"TEST_ID","TEST","This is a test","this_file_does_not_exist","lineContent","Medium","Medium","0"

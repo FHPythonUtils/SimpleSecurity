@@ -3,6 +3,13 @@
 All major and minor version changes will be documented in this file. Details of
 patch-level version changes can be found in [commit messages](../../commits/master).
 
+## 2023.0.1 - 2023/06/27
+
+- Fix `csv` writer
+- Fix python 3.8 compatibility
+- Fix `ansi` writer on python 3.11
+- Fix `sarif` writer so output conforms with the schema
+
 ## 2023 - 2023/06/27
 
 - Refactor to fix bugs and improve readability

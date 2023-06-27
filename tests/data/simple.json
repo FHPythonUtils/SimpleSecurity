@@ -1,0 +1,22 @@
+{
+	"heading": "Findings - Findings below are ordered by severity",
+	"findings": [
+		{
+			"id": "TEST_ID",
+			"title": "TEST",
+			"description": "This is a test",
+			"file": "this_file_does_not_exist",
+			"evidence": [
+				{
+					"selected": true,
+					"line": 0,
+					"content": "lineContent"
+				}
+			],
+			"severity": 2,
+			"confidence": 2,
+			"line": 0,
+			"_other": {}
+		}
+	]
+}

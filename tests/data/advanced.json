@@ -1,0 +1,54 @@
+{
+	"heading": "Findings - Findings below are ordered by severity",
+	"findings": [
+		{
+			"id": "TEST_ID",
+			"title": "TEST",
+			"description": "This is a test",
+			"file": "this_file_does_not_exist",
+			"evidence": [
+				{
+					"selected": true,
+					"line": 0,
+					"content": "lineContent"
+				}
+			],
+			"severity": 2,
+			"confidence": 2,
+			"line": 0,
+			"_other": {}
+		},
+		{
+			"id": "TEST_ID2",
+			"title": "TEST2",
+			"description": "This is a test2",
+			"file": "this_file_does_not_exist2",
+			"evidence": [
+				{
+					"selected": false,
+					"line": 3,
+					"content": "3"
+				},
+				{
+					"selected": true,
+					"line": 5,
+					"content": "5"
+				},
+				{
+					"selected": true,
+					"line": 9,
+					"content": "9"
+				},
+				{
+					"selected": true,
+					"line": 99,
+					"content": "999999999999999999999999999999999"
+				}
+			],
+			"severity": 1,
+			"confidence": 3,
+			"line": 700,
+			"_other": {}
+		}
+	]
+}

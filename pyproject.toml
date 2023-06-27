@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "simplesecurity"
-version = "2023"
+version = "2023.0.1"
 license = "mit"
 description = "Combine multiple popular python security tools and generate reports or output into different formats"
 authors = ["FredHappyface"]
@@ -38,6 +38,9 @@ semgrep = {version = "<2,>=1.29.0", optional = true}
 [tool.poetry.extras]
 full = ["poetry", "bandit", "safety", "dodgy", "dlint", "semgrep"]
 
+[tool.poetry.group.dev.dependencies]
+jsonschema = "^4.17.3"
+
 [tool.black]
 line-length = 100
 target-version = ["py38"]
@@ -74,6 +77,7 @@ disable = ["pointless-string-statement", "superfluous-parens"]
 [tool.tox]
 legacy_tox_ini = """
 [tox]
+isolated_build = True
 env_list =
 	py311
 	py310
@@ -81,6 +85,8 @@ env_list =
 	py38
 
 [testenv]
-deps = pytest
-commands = pytest tests
+allowlist_externals = poetry
+commands =
+  poetry install -v
+  poetry run pytest
 """

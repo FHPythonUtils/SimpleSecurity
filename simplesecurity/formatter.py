@@ -133,7 +133,7 @@ def csv(findings: list[Finding], heading: str | None = None, colourMode: int = 0
 	_ = colourMode  # silence pylint
 	findings = sorted(findings, key=lambda i: i["severity"], reverse=True)
 	output = StringIO()
-	csvString = writer(output, quoting=QUOTE_ALL)
+	csvString = writer(output, quoting=QUOTE_ALL, lineterminator="\n", strict=True)
 	csvString.writerow(
 		[
 			heading
@@ -224,7 +224,7 @@ def ansi(findings: list[Finding], heading: str | None = None, colourMode: int = 
 	strBuf.append("│Severity  │Finding                                           │")
 	strBuf.append(f"├{'─'*10}┼{'─'*50}┤")
 	for finding in findings:
-		strBuf.append(f"│{finding['severity']: <10}│{finding['title'][:50]: <50}│")
+		strBuf.append(f"│{str(finding['severity']): <10}│{finding['title'][:50]: <50}│")
 	strBuf.append(f"└{'─'*10}┴{'─'*50}┘")
 	strBuf.append("")
 
@@ -289,7 +289,7 @@ def sarif(findings: list[Finding], heading: str | None = None, colourMode: int =
 								"physicalLocation": {
 									"artifactLocation": {"uri": finding["file"]},
 									"region": {
-										"startLine": finding["line"],
+										"startLine": max(finding["line"], 1),
 										"snippet": {
 											"text": "".join(
 												[
@@ -301,8 +301,8 @@ def sarif(findings: list[Finding], heading: str | None = None, colourMode: int =
 										},
 									},
 									"contextRegion": {
-										"startLine": finding["evidence"][0]["line"],
-										"endLine": finding["evidence"][-1]["line"],
+										"startLine": max(finding["evidence"][0]["line"], 1),
+										"endLine": max(finding["evidence"][-1]["line"], 1),
 										"snippet": {
 											"text": "\n".join(
 												[line["content"] for line in finding["evidence"]]

@@ -16,7 +16,7 @@ Formatter
 
 ## ansi
 
-[Show source in formatter.py:162](../../../simplesecurity/formatter.py#L162)
+[Show source in formatter.py:163](../../../simplesecurity/formatter.py#L163)
 
 Format to ansi.
 
@@ -48,7 +48,7 @@ def ansi(
 
 ## csv
 
-[Show source in formatter.py:120](../../../simplesecurity/formatter.py#L120)
+[Show source in formatter.py:121](../../../simplesecurity/formatter.py#L121)
 
 Format to CSV.
 
@@ -78,7 +78,7 @@ def csv(findings: list[Finding], heading: str | None = None, colourMode: int = 0
 
 ## formatEvidence
 
-[Show source in formatter.py:35](../../../simplesecurity/formatter.py#L35)
+[Show source in formatter.py:36](../../../simplesecurity/formatter.py#L36)
 
 Format evidence to plaintext.
 
@@ -106,7 +106,7 @@ def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
 
 ## json
 
-[Show source in formatter.py:97](../../../simplesecurity/formatter.py#L97)
+[Show source in formatter.py:98](../../../simplesecurity/formatter.py#L98)
 
 Format to Json.
 
@@ -138,7 +138,7 @@ def json(
 
 ## markdown
 
-[Show source in formatter.py:51](../../../simplesecurity/formatter.py#L51)
+[Show source in formatter.py:52](../../../simplesecurity/formatter.py#L52)
 
 Format to Markdown.
 
@@ -170,7 +170,7 @@ def markdown(
 
 ## sarif
 
-[Show source in formatter.py:253](../../../simplesecurity/formatter.py#L253)
+[Show source in formatter.py:254](../../../simplesecurity/formatter.py#L254)
 
 Format to sarif https://sarifweb.azurewebsites.net/.
 
