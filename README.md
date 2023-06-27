@@ -41,23 +41,25 @@ See below for the output if you run `simplesecurity` in this directory
 
 ### Help
 
-```txt
-usage: __main__.py [-h] [--format FORMAT] [--plugin PLUGIN] [--file FILE] [--level LEVEL] [--confidence CONFIDENCE]
-                   [--no-colour] [--high-contrast] [--fast] [--zero]
+```bash
+$ simplesecurity --help
+usage: simplesecurity [-h] [--scan-dir SCAN_DIR] [--format FORMAT] [--plugin PLUGIN] [--file FILE] [--level LEVEL]
+                      [--confidence CONFIDENCE] [--no-colour] [--high-contrast] [--fast] [--zero]
 
-Combine multiple popular python security tools...
+Combine multiple popular python security tools and generate reports or output
+into different formats...
 
-and generate reports or output into different formats.
-
-optional arguments:
+options:
   -h, --help            show this help message and exit
+  --scan-dir SCAN_DIR, -s SCAN_DIR
+                        Pass a path to the scan directory (optional)
   --format FORMAT, -f FORMAT
                         Output format. One of ansi, json, markdown, csv. default=ansi
   --plugin PLUGIN, -p PLUGIN
                         Plugin to use. One of bandit, safety, dodgy, dlint, semgrep, all, default=all
   --file FILE, -o FILE  Filename to write to (omit for stdout)
   --level LEVEL, -l LEVEL
-                        Minimum level/ severity to show
+                        Minimum severity/ level to show
   --confidence CONFIDENCE, -c CONFIDENCE
                         Minimum confidence to show
   --no-colour, -z       No ANSI colours

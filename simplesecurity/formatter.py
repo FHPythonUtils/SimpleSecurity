@@ -17,10 +17,11 @@ finding dictionary
 
 Formats
 
-- markdown
+- ansi (for terminal)
 - json
+- markdown
 - csv
-- ansi
+- sarif
 """
 # pyright: reportConstantRedefinition=false
 from __future__ import annotations
