@@ -35,8 +35,7 @@ error
 #### Signature
 
 ```python
-def bandit(scanDir=".") -> list[Finding]:
-    ...
+def bandit(scanDir=".") -> list[Finding]: ...
 ```
 
 #### See also
@@ -66,8 +65,7 @@ error
 #### Signature
 
 ```python
-def dlint(scanDir=".") -> list[Finding]:
-    ...
+def dlint(scanDir=".") -> list[Finding]: ...
 ```
 
 #### See also
@@ -97,8 +95,7 @@ error
 #### Signature
 
 ```python
-def dodgy(scanDir=".") -> list[Finding]:
-    ...
+def dodgy(scanDir=".") -> list[Finding]: ...
 ```
 
 #### See also
@@ -125,8 +122,7 @@ Grab evidence from the source file.
 #### Signature
 
 ```python
-def extractEvidence(desiredLine: int, file: str) -> list[Line]:
-    ...
+def extractEvidence(desiredLine: int, file: str) -> list[Line]: ...
 ```
 
 #### See also
@@ -156,8 +152,7 @@ error
 #### Signature
 
 ```python
-def safety(scanDir=".") -> list[Finding]:
-    ...
+def safety(scanDir=".") -> list[Finding]: ...
 ```
 
 #### See also
@@ -185,12 +180,9 @@ error
 #### Signature
 
 ```python
-def semgrep(scanDir=".") -> list[Finding]:
-    ...
+def semgrep(scanDir=".") -> list[Finding]: ...
 ```
 
 #### See also
 
 - [Finding](./types.md#finding)
-
-

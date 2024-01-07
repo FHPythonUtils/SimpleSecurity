@@ -5,5 +5,4 @@
 Module
 
 > Auto-generated documentation for [simplesecurity.__main__](../../../simplesecurity/__main__.py) module.
-
 - [Module](#module)

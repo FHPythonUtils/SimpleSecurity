@@ -5,5 +5,4 @@
 Excluded
 
 > Auto-generated documentation for [simplesecurity.excluded](../../../simplesecurity/excluded.py) module.
-
 - [Excluded](#excluded)

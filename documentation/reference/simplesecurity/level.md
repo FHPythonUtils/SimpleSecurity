@@ -21,8 +21,7 @@ Levels for confidence and severity.
 #### Signature
 
 ```python
-class Level(IntEnum):
-    ...
+class Level(IntEnum): ...
 ```
 
 ### Level().__repr__
@@ -38,8 +37,7 @@ __repr__ method.
 #### Signature
 
 ```python
-def __repr__(self) -> str:
-    ...
+def __repr__(self) -> str: ...
 ```
 
 ### Level().__str__
@@ -55,8 +53,7 @@ __str__ method (tostring).
 #### Signature
 
 ```python
-def __str__(self) -> str:
-    ...
+def __str__(self) -> str: ...
 ```
 
 ### Level().toSarif
@@ -68,8 +65,5 @@ Convert to sarif representation.
 #### Signature
 
 ```python
-def toSarif(self) -> str:
-    ...
+def toSarif(self) -> str: ...
 ```
-
-

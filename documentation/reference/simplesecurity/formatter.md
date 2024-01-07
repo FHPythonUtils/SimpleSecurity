@@ -36,8 +36,7 @@ Format to ansi.
 ```python
 def ansi(
     findings: list[Finding], heading: str | None = None, colourMode: int = 0
-) -> str:
-    ...
+) -> str: ...
 ```
 
 #### See also
@@ -66,8 +65,9 @@ Format to CSV.
 #### Signature
 
 ```python
-def csv(findings: list[Finding], heading: str | None = None, colourMode: int = 0) -> str:
-    ...
+def csv(
+    findings: list[Finding], heading: str | None = None, colourMode: int = 0
+) -> str: ...
 ```
 
 #### See also
@@ -94,8 +94,7 @@ Format evidence to plaintext.
 #### Signature
 
 ```python
-def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str:
-    ...
+def formatEvidence(evidence: list[Line], newlineChar: bool = True) -> str: ...
 ```
 
 #### See also
@@ -126,8 +125,7 @@ Format to Json.
 ```python
 def json(
     findings: list[Finding], heading: str | None = None, colourMode: int = 0
-) -> str:
-    ...
+) -> str: ...
 ```
 
 #### See also
@@ -158,8 +156,7 @@ Format to Markdown.
 ```python
 def markdown(
     findings: list[Finding], heading: str | None = None, colourMode: int = 0
-) -> str:
-    ...
+) -> str: ...
 ```
 
 #### See also
@@ -190,12 +187,9 @@ Format to sarif https://sarifweb.azurewebsites.net/.
 ```python
 def sarif(
     findings: list[Finding], heading: str | None = None, colourMode: int = 0
-) -> str:
-    ...
+) -> str: ...
 ```
 
 #### See also
 
 - [Finding](./types.md#finding)
-
-

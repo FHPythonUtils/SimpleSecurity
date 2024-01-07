@@ -29,8 +29,7 @@ Deduplicate the list of findings.
 #### Signature
 
 ```python
-def deduplicate(findings: list[Finding]) -> list[Finding]:
-    ...
+def deduplicate(findings: list[Finding]) -> list[Finding]: ...
 ```
 
 #### See also
@@ -60,8 +59,7 @@ Filter the list of findings.
 ```python
 def filterSeverityAndConfidence(
     findings: list[Finding], severity: int, confidence: int
-) -> list[Finding]:
-    ...
+) -> list[Finding]: ...
 ```
 
 #### See also
@@ -89,8 +87,7 @@ Basically and __eq__ method for findings.
 #### Signature
 
 ```python
-def findingsEqual(findingA: Finding, findingB: Finding) -> int:
-    ...
+def findingsEqual(findingA: Finding, findingB: Finding) -> int: ...
 ```
 
 #### See also
@@ -116,8 +113,5 @@ Lookup an id in the id map.
 #### Signature
 
 ```python
-def lookupId(identifier: str) -> list[str]:
-    ...
+def lookupId(identifier: str) -> list[str]: ...
 ```
-
-

@@ -30,8 +30,7 @@ Finding type.
 #### Signature
 
 ```python
-class Finding(typing.TypedDict):
-    ...
+class Finding(typing.TypedDict): ...
 ```
 
 
@@ -51,8 +50,5 @@ Line type.
 #### Signature
 
 ```python
-class Line(typing.TypedDict):
-    ...
+class Line(typing.TypedDict): ...
 ```
-
-
